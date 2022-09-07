@@ -18,3 +18,6 @@ Run it as
 Will output a csv with the same name at the same location.
 
 Depends on pip packages h5py, numpy, pandas, itertools
+
+> **Warning**
+> Keep in mind that .csv will be a lot bigger, so use with care.
