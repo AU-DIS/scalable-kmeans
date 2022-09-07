@@ -2,7 +2,7 @@
 KMeans but really fast
 
 
-Datafiles will be ignored so please take care of them on your own.
+Datafiles will be ignored so please take care of them on your own, or add a download script for others to use.
 
 
 # Converting .h5 to .csv
