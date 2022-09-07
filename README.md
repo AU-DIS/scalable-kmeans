@@ -2,7 +2,10 @@
 KMeans but really fast
 
 
+# Datasets
 Datafiles will be ignored so please take care of them on your own, or add a download script for others to use.
+
+Some can be found on odin at ```/storage/ARPESDATA/Data```.
 
 
 # Converting .h5 to .csv
