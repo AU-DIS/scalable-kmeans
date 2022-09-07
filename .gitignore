@@ -1,4 +1,4 @@
 *.csv
 *.h5
 *.nxs
-*ncdf
+*.ncdf
