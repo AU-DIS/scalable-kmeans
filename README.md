@@ -39,3 +39,8 @@ Where x,y,z,k is the coordinate and v is the value.
 
 > **Warning**
 > Keep in mind that .csv will be a lot bigger, so use with care.
+
+# C++ dependencies
+Blas can be a mess to install, but following should work:
+
+Install with '''sudo apt-get install libblas-dev liblapack-dev''' and include as '''#include <cblas.h>'''
