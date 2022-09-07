@@ -43,4 +43,4 @@ Where x,y,z,k is the coordinate and v is the value.
 # C++ dependencies
 Blas can be a mess to install, but following should work:
 
-Install with '''sudo apt-get install libblas-dev liblapack-dev''' and include as '''#include <cblas.h>'''
+Install with ```sudo apt-get install libblas-dev liblapack-dev``` and include as ```#include <cblas.h>```
