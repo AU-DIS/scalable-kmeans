@@ -18,10 +18,18 @@
 #include <ctime>
 #include <limits.h>
 #include <float.h>
-#include "cblas.h"
+#include <cblas.h>
 
 
-using namespace std;
+
+#ifdef DEBUG
+#define DEBUG_TEST 1
+#else
+#define DEBUG_TEST 0
+#endif
+#define DEBUGPRINT(fmt, ...) \
+            do { if (DEBUG_TEST) fprintf(stderr, fmt, __VA_ARGS__); } while (0)
+
 
 #define D 784 // data dimensionality
 #define K 10 // k variable in kmeans
@@ -76,7 +84,7 @@ double euclidean_distance(int i, int j) {
 
 // lloyd, simple
 void kmeans() {
-    cout << "in kmeans..." << endl;
+    std::cout << "in kmeans..." << std::endl;
     int folan = 0;
     int filan = 0; // for loop usage
     // set initial centroids
@@ -89,7 +97,7 @@ void kmeans() {
     // }
     // TODO : check if I can do this with memcpy, DONE but not tested
     memcpy(centroids, data_arr, sizeof(double) * K * D);
-    cout << "copied init centroids" << endl;
+    std::cout << "copied init centroids" << std::endl;
     // srand(time(0)); 
     // int rand_index = 0;
     // for(folan = 0; folan < K; folan++){
@@ -99,7 +107,7 @@ void kmeans() {
     //         centroids[folan][filan] = data_arr[rand_index][filan];
     //     }
     // }
-    // cout << "filled centroids randomly for init" << endl;
+    // std::cout << "filled centroids randomly for init" << std::endl;
 
 
 
@@ -108,7 +116,7 @@ void kmeans() {
 
     // loop over max_iter
     for (int iter = 0; iter < MAX_ITERATIONS; iter++) {
-        cout << "iteration " << iter << "..." << endl;
+        std::cout << "iteration " << iter << "..." << std::endl;
         // assign points to closest centroid
         // TODO : DONE
         for (folan = 0; folan < N; folan++) {
@@ -116,7 +124,7 @@ void kmeans() {
                 distances[folan][filan] = euclidean_distance(folan, filan);
             }
         }
-        cout << "calculated distances" << endl;
+        std::cout << "calculated distances" << std::endl;
         // I don't think we need to do this
         // memset(labels, 0, sizeof(labels));
         // set converged to true, innocent until proven guilty:)
@@ -133,7 +141,7 @@ void kmeans() {
             }
         }
 
-        cout << "set labels" << endl;
+        std::cout << "set labels" << std::endl;
 
 
         // calc new centroids
@@ -146,10 +154,10 @@ void kmeans() {
                 old_centroids[folan][filan] = centroids[folan][filan];
             }
         }
-        cout << "copied centroids to old centroids" << endl;
+        std::cout << "copied centroids to old centroids" << std::endl;
         // set centroids to 0
         memset(cluster_counts, 0, sizeof(int) * K);
-        cout << "set cluster counts to 0" << endl;
+        std::cout << "set cluster counts to 0" << std::endl;
         for (folan = 0; folan < K; folan++) {
             // just testing
             // cluster_counts[folan] = 0;
@@ -159,7 +167,7 @@ void kmeans() {
         }
         // This doesn't work on doubles
         // memset(centroids, 0, sizeof(double) * K * D);
-        cout << "after all the memcpys" << endl;
+        std::cout << "after all the memcpys" << std::endl;
 
         for (folan = 0; folan < N; folan++) {
             cluster_counts[labels[folan]]++;
@@ -172,15 +180,15 @@ void kmeans() {
                 centroids[folan][filan] /= cluster_counts[folan];
             }
         }
-        cout << "calculated new centroids" << endl;
+        std::cout << "calculated new centroids" << std::endl;
         // just to check
         int sanity_check = 0;
-        cout << "cluster counts..." << endl;
+        std::cout << "cluster counts..." << std::endl;
         for (folan = 0; folan < K; folan++) {
             sanity_check += cluster_counts[folan];
-            cout << cluster_counts[folan] << " ";
+            std::cout << cluster_counts[folan] << " ";
         }
-        cout << sanity_check << endl;
+        std::cout << sanity_check << std::endl;
         // check convergence
         // TODO: gonna do it in labels assignment, changed my mind will do it here, DONE
         has_converged = true;
@@ -192,7 +200,7 @@ void kmeans() {
                 }
             }
         }
-        cout << "checked convergence" << endl;
+        std::cout << "checked convergence" << std::endl;
 
         // end if converged
         if (has_converged) break;
@@ -207,7 +215,7 @@ void kmeans() {
 // the x.cT I will first do simply with a for loop
 // TESTED
 void kmeans_v2() {
-    cout << "in kmeans_v2 ..." << endl;
+    std::cout << "in kmeans_v2 ..." << std::endl;
     int folan = 0;
     int filan = 0;
     int ashghal = 0;// for loop usage
@@ -221,7 +229,7 @@ void kmeans_v2() {
     // }
     // TODO : check if I can do this with memcpy, DONE but not tested
     memcpy(centroids, data_arr, sizeof(double) * K * D);
-    cout << "copied init centroids" << endl;
+    std::cout << "copied init centroids" << std::endl;
     // srand(time(0)); 
     // int rand_index = 0;
     // for(folan = 0; folan < K; folan++){
@@ -231,7 +239,7 @@ void kmeans_v2() {
     //         centroids[folan][filan] = data_arr[rand_index][filan];
     //     }
     // }
-    // cout << "filled centroids randomly for init" << endl;
+    // std::cout << "filled centroids randomly for init" << std::endl;
 
 
 
@@ -243,7 +251,7 @@ void kmeans_v2() {
 
     // loop over max_iter
     for (int iter = 0; iter < MAX_ITERATIONS; iter++) {
-        cout << "iteration " << iter << "..." << endl;
+        std::cout << "iteration " << iter << "..." << std::endl;
         // assign points to closest centroid
         // TODO : DONE
         // V2 DIFF start
@@ -267,7 +275,7 @@ void kmeans_v2() {
                 // V2 DIFF end
             }
         }
-        cout << "calculated distances" << endl;
+        std::cout << "calculated distances" << std::endl;
 
         // I don't think we need to do this
         // memset(labels, 0, sizeof(labels));
@@ -285,7 +293,7 @@ void kmeans_v2() {
             }
         }
 
-        cout << "set labels" << endl;
+        std::cout << "set labels" << std::endl;
 
 
         // calc new centroids
@@ -298,10 +306,10 @@ void kmeans_v2() {
                 old_centroids[folan][filan] = centroids[folan][filan];
             }
         }
-        cout << "copied centroids to old centroids" << endl;
+        std::cout << "copied centroids to old centroids" << std::endl;
         // set centroids to 0
         memset(cluster_counts, 0, sizeof(int) * K);
-        cout << "set cluster counts to 0" << endl;
+        std::cout << "set cluster counts to 0" << std::endl;
         for (folan = 0; folan < K; folan++) {
             // just testing
             // cluster_counts[folan] = 0;
@@ -311,7 +319,7 @@ void kmeans_v2() {
         }
         // This doesn't work on doubles
         // memset(centroids, 0, sizeof(double) * K * D);
-        cout << "after all the memcpys" << endl;
+        std::cout << "after all the memcpys" << std::endl;
 
         for (folan = 0; folan < N; folan++) {
             cluster_counts[labels[folan]]++;
@@ -324,15 +332,15 @@ void kmeans_v2() {
                 centroids[folan][filan] /= cluster_counts[folan];
             }
         }
-        cout << "calculated new centroids" << endl;
+        std::cout << "calculated new centroids" << std::endl;
         // just to check
         int sanity_check = 0;
-        cout << "cluster counts..." << endl;
+        std::cout << "cluster counts..." << std::endl;
         for (folan = 0; folan < K; folan++) {
             sanity_check += cluster_counts[folan];
-            cout << cluster_counts[folan] << " ";
+            std::cout << cluster_counts[folan] << " ";
         }
-        cout << sanity_check << endl;
+        std::cout << sanity_check << std::endl;
         // check convergence
         // TODO: gonna do it in labels assignment, changed my mind will do it here, DONE
         has_converged = true;
@@ -344,7 +352,7 @@ void kmeans_v2() {
                 }
             }
         }
-        cout << "checked convergence" << endl;
+        std::cout << "checked convergence" << std::endl;
 
         // end if converged
         if (has_converged) break;
@@ -377,7 +385,7 @@ void calculate_data_square_sums() {
             data_arr_ss[i][j] = data_arr_ss[i][j + 1];
 
             two_p_level_m1 = int(pow(2, j - 1));
-            two_p_level = min(int(pow(2, j)), d_sqrt);
+            two_p_level = std::min(int(pow(2, j)), d_sqrt);
 
             for (ashghal = 0; ashghal < two_p_level_m1; ashghal++) {
                 // ofoghi ha
@@ -415,7 +423,7 @@ void calculate_centroids_square_sums() {
             centroids_ss[i][j] = centroids_ss[i][j + 1];
 
             two_p_level_m1 = int(pow(2, j - 1));
-            two_p_level = min(int(pow(2, j)), d_sqrt);
+            two_p_level = std::min(int(pow(2, j)), d_sqrt);
 
             for (ashghal = 0; ashghal < two_p_level_m1; ashghal++) {
                 // ofoghi ha
@@ -440,7 +448,7 @@ void calculate_centroids_square_sums() {
 void calculate_distances_till_level(int level) {
     int folan, filan, ashghal, halghe;
     int d_sqrt = sqrt(D);
-    int two_p_level_m1 = int(pow(2, level - 1)), two_p_level = min(int(pow(2, level)), d_sqrt);
+    int two_p_level_m1 = int(pow(2, level - 1)), two_p_level = std::min(int(pow(2, level)), d_sqrt);
     double this_dot = 0.0;
 
     for (folan = 0; folan < N; folan++) {
@@ -508,7 +516,7 @@ void calculate_distances_till_level(int level) {
 void calculate_sqrt_distances_till_level(int level) {
     int folan, filan, ashghal, halghe;
     int d_sqrt = sqrt(D);
-    int two_p_level_m1 = int(pow(2, level - 1)), two_p_level = min(int(pow(2, level)), d_sqrt);
+    int two_p_level_m1 = int(pow(2, level - 1)), two_p_level = std::min(int(pow(2, level)), d_sqrt);
     double this_dot = 0.0;
     double tmp_ub, tmp_lb;
 
@@ -580,7 +588,7 @@ void calculate_sqrt_distances_till_level(int level) {
 void calculate_sqrt_distances_till_level_with_assigned(int level) {
     int folan, filan, ashghal, halghe;
     int d_sqrt = sqrt(D);
-    int two_p_level_m1 = int(pow(2, level - 1)), two_p_level = min(int(pow(2, level)), d_sqrt);
+    int two_p_level_m1 = int(pow(2, level - 1)), two_p_level = std::min(int(pow(2, level)), d_sqrt);
     double this_dot = 0.0;
     double tmp_ub, tmp_lb;
 
@@ -662,13 +670,13 @@ void calculate_labels() {
     // sanity check
     // for(folan = 0; folan < N; folan++){
     //     if(labels[folan] != -1){
-    //         cout << "TERROR! DISASTER! WE WERE DECIEVED:(" << endl;
+    //         std::cout << "TERROR! DISASTER! WE WERE DECIEVED:(" << std::endl;
     //     }
     // }
     // end of sanity check
     for (folan = 0; folan < N; folan++) labels[folan] = -1;
 
-    cout << "after memset labels" << endl;
+    std::cout << "after memset labels" << std::endl;
 
 
     int level = 0;
@@ -679,12 +687,12 @@ void calculate_labels() {
 
     int *smallest_ub = (int *) malloc(N * sizeof(int));
 
-    cout << "after init labels and inc_dots and smallest_ub" << endl;
+    std::cout << "after init labels and inc_dots and smallest_ub" << std::endl;
 
     while (level < int(log2(int(sqrt(D))) + 2)) {
-        cout << "in level while loop, level = " << level << endl;
+        std::cout << "in level while loop, level = " << level << std::endl;
         calculate_distances_till_level(level);
-        cout << "after calculate dist till level" << endl;
+        std::cout << "after calculate dist till level" << std::endl;
 
 
 
@@ -735,13 +743,13 @@ void calculate_labels_with_sqrt() {
     // sanity check
     // for(folan = 0; folan < N; folan++){
     //     if(labels[folan] != -1){
-    //         cout << "TERROR! DISASTER! WE WERE DECIEVED:(" << endl;
+    //         std::cout << "TERROR! DISASTER! WE WERE DECIEVED:(" << std::endl;
     //     }
     // }
     // end of sanity check
     for (folan = 0; folan < N; folan++) labels[folan] = -1;
 
-    cout << "after memset labels" << endl;
+    std::cout << "after memset labels" << std::endl;
 
 
     int level = 0;
@@ -752,12 +760,12 @@ void calculate_labels_with_sqrt() {
 
     int *smallest_ub = (int *) malloc(N * sizeof(int));
 
-    cout << "after init labels and inc_dots and smallest_ub" << endl;
+    std::cout << "after init labels and inc_dots and smallest_ub" << std::endl;
 
     while (level < int(log2(int(sqrt(D))) + 2)) {
-        cout << "in level while loop, level = " << level << endl;
+        std::cout << "in level while loop, level = " << level << std::endl;
         calculate_sqrt_distances_till_level(level);
-        cout << "after calculate dist till level" << endl;
+        std::cout << "after calculate dist till level" << std::endl;
 
 
 
@@ -810,13 +818,13 @@ void calculate_labels_with_sqrt_integrated() {
     // sanity check
     // for(folan = 0; folan < N; folan++){
     //     if(labels[folan] != -1){
-    //         cout << "TERROR! DISASTER! WE WERE DECIEVED:(" << endl;
+    //         std::cout << "TERROR! DISASTER! WE WERE DECIEVED:(" << std::endl;
     //     }
     // }
     // end of sanity check
     for (folan = 0; folan < N; folan++) labels[folan] = -1;
 
-    cout << "after memset labels" << endl;
+    std::cout << "after memset labels" << std::endl;
 
 
     int level = 0;
@@ -827,12 +835,12 @@ void calculate_labels_with_sqrt_integrated() {
 
     int *smallest_ub = (int *) malloc(N * sizeof(int));
 
-    cout << "after init labels and inc_dots and smallest_ub" << endl;
+    std::cout << "after init labels and inc_dots and smallest_ub" << std::endl;
 
     while (level < int(log2(int(sqrt(D))) + 2)) {
-        cout << "in level while loop, level = " << level << endl;
+        std::cout << "in level while loop, level = " << level << std::endl;
         calculate_sqrt_distances_till_level(level);
-        cout << "after calculate dist till level" << endl;
+        std::cout << "after calculate dist till level" << std::endl;
 
 
 
@@ -899,14 +907,14 @@ void calculate_labels_with_sqrt_integrated() {
 // just calls the sqrt_dist function
 // fills up the hamerly and elkan ub and lbs
 void calculate_labels_with_sqrt_hamerly_integrated() {
-    cout << "in calc_labels_ham_integrated" << endl;
+    std::cout << "in calc_labels_ham_integrated" << std::endl;
     int folan, filan, ashghal, alaki;
     // I really thought this would work:(, sadly it doesn't
     // memset(labels, 1, sizeof(int) * N);
     // sanity check
     // for(folan = 0; folan < N; folan++){
     //     if(labels[folan] != -1){
-    //         cout << "TERROR! DISASTER! WE WERE DECIEVED:(" << endl;
+    //         std::cout << "TERROR! DISASTER! WE WERE DECIEVED:(" << std::endl;
     //     }
     // }
     // end of sanity check
@@ -914,7 +922,7 @@ void calculate_labels_with_sqrt_hamerly_integrated() {
     // for(folan = 0; folan < N; folan++) labels[folan] = -1;
     // V9
 
-    // cout << "after memset labels" << endl;
+    // std::cout << "after memset labels" << std::endl;
 
 
     int level = 0;
@@ -934,12 +942,12 @@ void calculate_labels_with_sqrt_hamerly_integrated() {
     memset(assigned, 0, sizeof(int) * N);
     // V9
 
-    cout << "after init assigned and inc_dots and smallest_ub" << endl;
+    std::cout << "after init assigned and inc_dots and smallest_ub" << std::endl;
 
     while (level < int(log2(int(sqrt(D))) + 2)) {
-        cout << "in level while loop, level = " << level << endl;
+        std::cout << "in level while loop, level = " << level << std::endl;
         calculate_sqrt_distances_till_level_with_assigned(level);
-        cout << "after calculate dist till level" << endl;
+        std::cout << "after calculate dist till level" << std::endl;
 
 
 
@@ -1012,7 +1020,7 @@ void calculate_labels_with_sqrt_hamerly_integrated() {
 // copied from v2
 // TODO: DONE
 void kmeans_v4() {
-    cout << "in kmeans_v4 ..." << endl;
+    std::cout << "in kmeans_v4 ..." << std::endl;
     int folan = 0;
     int filan = 0;
     int ashghal = 0;// for loop usage
@@ -1030,7 +1038,7 @@ void kmeans_v4() {
     // TODO : check if I can do this with memcpy, DONE but not tested
     memcpy(centroids, data_arr, sizeof(double) * K * D);
     calculate_centroids_square_sums();
-    cout << "copied init centroids, and ss-ed them" << endl;
+    std::cout << "copied init centroids, and ss-ed them" << std::endl;
 
 
     // srand(time(0)); 
@@ -1042,7 +1050,7 @@ void kmeans_v4() {
     //         centroids[folan][filan] = data_arr[rand_index][filan];
     //     }
     // }
-    // cout << "filled centroids randomly for init" << endl;
+    // std::cout << "filled centroids randomly for init" << std::endl;
 
 
 
@@ -1054,7 +1062,7 @@ void kmeans_v4() {
 
     // loop over max_iter
     for (int iter = 0; iter < MAX_ITERATIONS; iter++) {
-        cout << "iteration " << iter << "..." << endl;
+        std::cout << "iteration " << iter << "..." << std::endl;
 
         // assign points to closest centroid
         // TODO 
@@ -1070,7 +1078,7 @@ void kmeans_v4() {
         calculate_labels_with_sqrt_hamerly_integrated();
 
         // V4 DIFF end
-        cout << "set labels" << endl;
+        std::cout << "set labels" << std::endl;
 
 
         // calc new centroids
@@ -1083,10 +1091,10 @@ void kmeans_v4() {
                 old_centroids[folan][filan] = centroids[folan][filan];
             }
         }
-        cout << "copied centroids to old centroids" << endl;
+        std::cout << "copied centroids to old centroids" << std::endl;
         // set centroids to 0
         memset(cluster_counts, 0, sizeof(int) * K);
-        cout << "set cluster counts to 0" << endl;
+        std::cout << "set cluster counts to 0" << std::endl;
         for (folan = 0; folan < K; folan++) {
             // just testing
             // cluster_counts[folan] = 0;
@@ -1096,38 +1104,38 @@ void kmeans_v4() {
         }
         // This doesn't work on doubles
         // memset(centroids, 0, sizeof(double) * K * D);
-        cout << "after all the memcpys" << endl;
+        std::cout << "after all the memcpys" << std::endl;
 
         for (folan = 0; folan < N; folan++) {
-            // cout << "debug checkpoint 1, folan = " << folan << endl;
-            // cout << "labels[folan] " << labels[folan] << endl;
+            // std::cout << "debug checkpoint 1, folan = " << folan << std::endl;
+            // std::cout << "labels[folan] " << labels[folan] << std::endl;
             cluster_counts[labels[folan]]++;
-            // cout << "debug checkpoint 2, folan = " << folan << endl;
+            // std::cout << "debug checkpoint 2, folan = " << folan << std::endl;
             for (filan = 0; filan < D; filan++) {
-                // cout << "debug checkpoint 3, folan = " << folan << " filan = " << filan << endl;
+                // std::cout << "debug checkpoint 3, folan = " << folan << " filan = " << filan << std::endl;
                 centroids[labels[folan]][filan] += data_arr[folan][filan];
-                // cout << "debug checkpoint 4, folan = " << folan << " filan = " << filan << endl;
+                // std::cout << "debug checkpoint 4, folan = " << folan << " filan = " << filan << std::endl;
             }
-            // cout << "debug checkpoint 5, folan = " << folan << endl;
+            // std::cout << "debug checkpoint 5, folan = " << folan << std::endl;
         }
-        // cout << "debug checkpoint 6" << endl;
+        // std::cout << "debug checkpoint 6" << std::endl;
 
         for (folan = 0; folan < K; folan++) {
             for (filan = 0; filan < D; filan++) {
                 centroids[folan][filan] /= cluster_counts[folan];
             }
         }
-        cout << "calculated new centroids" << endl;
+        std::cout << "calculated new centroids" << std::endl;
         calculate_centroids_square_sums();
-        cout << "and ss-ed them" << endl;
+        std::cout << "and ss-ed them" << std::endl;
         // just to check
         int sanity_check = 0;
-        cout << "cluster counts..." << endl;
+        std::cout << "cluster counts..." << std::endl;
         for (folan = 0; folan < K; folan++) {
             sanity_check += cluster_counts[folan];
-            cout << cluster_counts[folan] << " ";
+            std::cout << cluster_counts[folan] << " ";
         }
-        cout << sanity_check << endl;
+        std::cout << sanity_check << std::endl;
         // check convergence
         // TODO: gonna do it in labels assignment, changed my mind will do it here, DONE
         has_converged = true;
@@ -1139,7 +1147,7 @@ void kmeans_v4() {
                 }
             }
         }
-        cout << "checked convergence" << endl;
+        std::cout << "checked convergence" << std::endl;
 
         // end if converged
         if (has_converged) break;
@@ -1153,7 +1161,7 @@ void kmeans_v4() {
 // UPDATE: I think it's the x^2 and sqrt that I removed then the TE doesn't make sense anymore so I have to add them back 
 // DONE: holy shit, that was it:)) I just added the sqrt and x^2 everywhere and now it's correct:)
 void kmeans_v5() {
-    cout << "in kmeans_v5 ..." << endl;
+    std::cout << "in kmeans_v5 ..." << std::endl;
     int folan = 0;
     int filan = 0;
     int ashghal = 0;// for loop usage
@@ -1163,7 +1171,7 @@ void kmeans_v5() {
     // set initial centroids
 
     memcpy(centroids, data_arr, sizeof(double) * K * D);
-    cout << "copied init centroids" << endl;
+    std::cout << "copied init centroids" << std::endl;
 
 
     bool has_converged = false;
@@ -1174,7 +1182,7 @@ void kmeans_v5() {
 
     // loop over max_iter
     for (int iter = 0; iter < MAX_ITERATIONS; iter++) {
-        cout << "iteration " << iter << "..." << endl;
+        std::cout << "iteration " << iter << "..." << std::endl;
 
         // calculate the square sum of centroids
         for (folan = 0; folan < K; folan++) {
@@ -1196,7 +1204,7 @@ void kmeans_v5() {
             }
             closest_centroid_distance[folan] = sqrt(smallest);
         }
-        cout << "found closest distance to each centroid" << endl;
+        std::cout << "found closest distance to each centroid" << std::endl;
 
 
         if (iter == 0) {
@@ -1228,7 +1236,7 @@ void kmeans_v5() {
                 hamerly_upper_bounds[folan] = smallest;
                 hamerly_lower_bounds[folan] = second_smallest;
             }
-            cout << "calculated distances" << endl;
+            std::cout << "calculated distances" << std::endl;
             // bad implementation for now
             // TODO: make it more efficient
             // if first iter, fill out the hamer_ub_lb
@@ -1248,7 +1256,7 @@ void kmeans_v5() {
             //     hamerly_upper_bounds[folan] = smallest;
             //     hamerly_lower_bounds[folan] = second_smallest;
             // }
-            cout << "filled out hamerly ub and lb for first time" << endl;
+            std::cout << "filled out hamerly ub and lb for first time" << std::endl;
 
         } else {
             int hamerly_count = 0;
@@ -1281,7 +1289,7 @@ void kmeans_v5() {
                 // otherwise we skip this distance calculation and the label remains the same
             }
 
-            cout << "hamerly pruned " << hamerly_count << endl;
+            std::cout << "hamerly pruned " << hamerly_count << std::endl;
         }
 
         // I do this in the loops that calculate the distances now, no need to do it here:)
@@ -1294,11 +1302,11 @@ void kmeans_v5() {
         //     }
         // }
 
-        cout << "set labels" << endl;
+        std::cout << "set labels" << std::endl;
 
         // FATEMEH DEBUG
-        cout << "data_arr_ss[0][0] " << data_arr_ss[0][0] << endl;
-        cout << "hamerly_ub[0] " << hamerly_upper_bounds[0] << " hamerly_lb[0] " << hamerly_lower_bounds[0] << endl;
+        std::cout << "data_arr_ss[0][0] " << data_arr_ss[0][0] << std::endl;
+        std::cout << "hamerly_ub[0] " << hamerly_upper_bounds[0] << " hamerly_lb[0] " << hamerly_lower_bounds[0] << std::endl;
         // FATEMEH DEBUG
 
 
@@ -1311,10 +1319,10 @@ void kmeans_v5() {
                 old_centroids[folan][filan] = centroids[folan][filan];
             }
         }
-        cout << "copied centroids to old centroids" << endl;
+        std::cout << "copied centroids to old centroids" << std::endl;
         // set centroids to 0
         memset(cluster_counts, 0, sizeof(int) * K);
-        cout << "set cluster counts to 0" << endl;
+        std::cout << "set cluster counts to 0" << std::endl;
         for (folan = 0; folan < K; folan++) {
             // just testing
             // cluster_counts[folan] = 0;
@@ -1324,7 +1332,7 @@ void kmeans_v5() {
         }
         // This doesn't work on doubles
         // memset(centroids, 0, sizeof(double) * K * D);
-        cout << "after all the memcpys" << endl;
+        std::cout << "after all the memcpys" << std::endl;
 
         for (folan = 0; folan < N; folan++) {
             cluster_counts[labels[folan]]++;
@@ -1337,15 +1345,15 @@ void kmeans_v5() {
                 centroids[folan][filan] /= cluster_counts[folan];
             }
         }
-        cout << "calculated new centroids" << endl;
+        std::cout << "calculated new centroids" << std::endl;
         // just to check
         int sanity_check = 0;
-        cout << "cluster counts..." << endl;
+        std::cout << "cluster counts..." << std::endl;
         for (folan = 0; folan < K; folan++) {
             sanity_check += cluster_counts[folan];
-            cout << cluster_counts[folan] << " ";
+            std::cout << cluster_counts[folan] << " ";
         }
-        cout << sanity_check << endl;
+        std::cout << sanity_check << std::endl;
 
         // calculating the movement of new to old cluster centers
         furthest_moving_centroid = 0;
@@ -1363,25 +1371,25 @@ void kmeans_v5() {
                      centroid_movement[second_furthest_moving_centroid])
                 second_furthest_moving_centroid = folan;
         }
-        cout << "calculated centroid movements" << endl;
+        std::cout << "calculated centroid movements" << std::endl;
 
         // update upper and lower hamerly bounds based on centroid movements
         for (folan = 0; folan < N; folan++) {
-            if (folan == 0) cout << "moving ub " << centroid_movement[labels[folan]] << endl;
+            if (folan == 0) std::cout << "moving ub " << centroid_movement[labels[folan]] << std::endl;
             hamerly_upper_bounds[folan] += centroid_movement[labels[folan]];
             if (labels[folan] == furthest_moving_centroid) {
-                if (folan == 0) cout << "moving lb " << centroid_movement[second_furthest_moving_centroid] << endl;
+                if (folan == 0) std::cout << "moving lb " << centroid_movement[second_furthest_moving_centroid] << std::endl;
                 hamerly_lower_bounds[folan] -= centroid_movement[second_furthest_moving_centroid];
             } else {
-                if (folan == 0) cout << "moving lb " << centroid_movement[furthest_moving_centroid] << endl;
+                if (folan == 0) std::cout << "moving lb " << centroid_movement[furthest_moving_centroid] << std::endl;
                 hamerly_lower_bounds[folan] -= centroid_movement[furthest_moving_centroid];
             }
         }
 
 
         // FATEMEH DEBUG
-        cout << "after updating the bounds, hamerly_ub[0] " << hamerly_upper_bounds[0] << " hamerly_lb[0] "
-             << hamerly_lower_bounds[0] << endl;
+        std::cout << "after updating the bounds, hamerly_ub[0] " << hamerly_upper_bounds[0] << " hamerly_lb[0] "
+             << hamerly_lower_bounds[0] << std::endl;
         // FATEMEH DEBUG
 
 
@@ -1396,7 +1404,7 @@ void kmeans_v5() {
                 }
             }
         }
-        cout << "checked convergence" << endl;
+        std::cout << "checked convergence" << std::endl;
 
         // end if converged
         if (has_converged) break;
@@ -1413,7 +1421,7 @@ void kmeans_v5() {
 // I changed all the floats to doubles, and that helps a bit, but still a bit different
 // I DIDN'T CHECK THE HAMERLY UB CHANGES IN DETAIL, MAYBE LATER TODO
 void kmeans_v6() {
-    cout << "in kmeans_v6 ..." << endl;
+    std::cout << "in kmeans_v6 ..." << std::endl;
     int folan = 0;
     int filan = 0;
     int ashghal = 0;// for loop usage
@@ -1424,7 +1432,7 @@ void kmeans_v6() {
     // set initial centroids
 
     memcpy(centroids, data_arr, sizeof(double) * K * D);
-    cout << "copied init centroids" << endl;
+    std::cout << "copied init centroids" << std::endl;
 
 
     bool has_converged = false;
@@ -1435,7 +1443,7 @@ void kmeans_v6() {
 
     // loop over max_iter
     for (int iter = 0; iter < MAX_ITERATIONS; iter++) {
-        cout << "iteration " << iter << "..." << endl;
+        std::cout << "iteration " << iter << "..." << std::endl;
 
         // calculate the square sum of centroids
         for (folan = 0; folan < K; folan++) {
@@ -1464,7 +1472,7 @@ void kmeans_v6() {
             }
             closest_centroid_distance[folan] = smallest;
         }
-        cout << "found closest distance to each centroid, and the centr-centr distances" << endl;
+        std::cout << "found closest distance to each centroid, and the centr-centr distances" << std::endl;
 
 
         if (iter == 0) {
@@ -1496,7 +1504,7 @@ void kmeans_v6() {
                 hamerly_upper_bounds[folan] = smallest;
                 // hamerly_lower_bounds[folan] = second_smallest;
             }
-            cout << "calculated distances" << endl;
+            std::cout << "calculated distances" << std::endl;
             // bad implementation for now
             // TODO: make it more efficient
             // if first iter, fill out the hamer_ub_lb
@@ -1516,7 +1524,7 @@ void kmeans_v6() {
             //     hamerly_upper_bounds[folan] = smallest;
             //     hamerly_lower_bounds[folan] = second_smallest;
             // }
-            cout << "filled out hamerly ub and elkan lb for first time" << endl;
+            std::cout << "filled out hamerly ub and elkan lb for first time" << std::endl;
 
         } else {
             for (folan = 0; folan < N; folan++) {
@@ -1544,11 +1552,11 @@ void kmeans_v6() {
                                 elkan_lower_bounds[folan][labels[folan]] = hamerly_upper_bounds[folan];
                                 r = false;
                                 if (folan == 0) {
-                                    cout
+                                    std::cout
                                             << "ALSO CHANGED THE HAMERLY_UB to same thing, WHICH I HAD THOUGHT WAS HARMLESS, BUT MAYBE I SHOULDN'T "
-                                            << endl;
-                                    cout << "changing elkan_lb[0][" << labels[folan] << "] to "
-                                         << hamerly_upper_bounds[folan] << endl;
+                                            << std::endl;
+                                    std::cout << "changing elkan_lb[0][" << labels[folan] << "] to "
+                                         << hamerly_upper_bounds[folan] << std::endl;
                                 }
                             }
 
@@ -1559,7 +1567,7 @@ void kmeans_v6() {
                             distances[folan][filan] = sqrt(tmp);
                             elkan_lower_bounds[folan][filan] = distances[folan][filan];
                             if (folan == 0) {
-                                cout << "changing elkan_lb[0][" << filan << "] to " << distances[folan][filan] << endl;
+                                std::cout << "changing elkan_lb[0][" << filan << "] to " << distances[folan][filan] << std::endl;
                             }
 
                             if (distances[folan][filan] < distances[folan][labels[folan]]) {
@@ -1569,7 +1577,7 @@ void kmeans_v6() {
                                 // i am doing this under duress...
                                 hamerly_upper_bounds[folan] = distances[folan][labels[folan]];
                                 if (folan == 0) {
-                                    cout << "changing hamerly_ub[0] to " << distances[folan][labels[folan]] << endl;
+                                    std::cout << "changing hamerly_ub[0] to " << distances[folan][labels[folan]] << std::endl;
                                 }
                             }
                             // else if(hamerly_lower_bounds[folan] > distances[folan][filan]){
@@ -1597,7 +1605,7 @@ void kmeans_v6() {
         //     }
         // }
 
-        cout << "set labels" << endl;
+        std::cout << "set labels" << std::endl;
 
 
         // calc new centroids
@@ -1609,10 +1617,10 @@ void kmeans_v6() {
                 old_centroids[folan][filan] = centroids[folan][filan];
             }
         }
-        cout << "copied centroids to old centroids" << endl;
+        std::cout << "copied centroids to old centroids" << std::endl;
         // set centroids to 0
         memset(cluster_counts, 0, sizeof(int) * K);
-        cout << "set cluster counts to 0" << endl;
+        std::cout << "set cluster counts to 0" << std::endl;
         for (folan = 0; folan < K; folan++) {
             // just testing
             // cluster_counts[folan] = 0;
@@ -1622,7 +1630,7 @@ void kmeans_v6() {
         }
         // This doesn't work on doubles
         // memset(centroids, 0, sizeof(double) * K * D);
-        cout << "after all the memcpys" << endl;
+        std::cout << "after all the memcpys" << std::endl;
 
         for (folan = 0; folan < N; folan++) {
             cluster_counts[labels[folan]]++;
@@ -1635,27 +1643,27 @@ void kmeans_v6() {
                 centroids[folan][filan] /= cluster_counts[folan];
             }
         }
-        cout << "calculated new centroids" << endl;
+        std::cout << "calculated new centroids" << std::endl;
 
 
-        cout << "centroid 0 ************** " << endl;
+        std::cout << "centroid 0 ************** " << std::endl;
         for (filan = 120; filan < 140; filan++) {
-            cout << centroids[0][filan] << " ";
+            std::cout << centroids[0][filan] << " ";
         }
         tmp = 0.0;
         for (filan = 0; filan < D; filan++) tmp += (centroids[0][filan] * centroids[0][filan]);
-        cout << endl;
+        std::cout << std::endl;
 
-        cout << "sum_ss_centroids[0] " << tmp << endl;
+        std::cout << "sum_ss_centroids[0] " << tmp << std::endl;
 
         // just to check
         int sanity_check = 0;
-        cout << "cluster counts..." << endl;
+        std::cout << "cluster counts..." << std::endl;
         for (folan = 0; folan < K; folan++) {
             sanity_check += cluster_counts[folan];
-            cout << cluster_counts[folan] << " ";
+            std::cout << cluster_counts[folan] << " ";
         }
-        cout << sanity_check << endl;
+        std::cout << sanity_check << std::endl;
 
         // calculating the movement of new to old cluster centers
         furthest_moving_centroid = 0;
@@ -1673,10 +1681,10 @@ void kmeans_v6() {
                      centroid_movement[second_furthest_moving_centroid])
                 second_furthest_moving_centroid = folan;
         }
-        cout << "calculated centroid movements" << endl;
+        std::cout << "calculated centroid movements" << std::endl;
 
-        cout << "before updating bounds ----------" << endl;
-        cout << "elkan lb[0][0] " << elkan_lower_bounds[0][0] << " hamerly ub[0] " << hamerly_upper_bounds[0] << endl;
+        std::cout << "before updating bounds ----------" << std::endl;
+        std::cout << "elkan lb[0][0] " << elkan_lower_bounds[0][0] << " hamerly ub[0] " << hamerly_upper_bounds[0] << std::endl;
 
         // update upper and lower elkan bounds based on centroid movements
         for (folan = 0; folan < N; folan++) {
@@ -1686,8 +1694,8 @@ void kmeans_v6() {
             }
         }
 
-        cout << "after updating bounds ----------" << endl;
-        cout << "elkan lb[0][0] " << elkan_lower_bounds[0][0] << " hamerly ub[0] " << hamerly_upper_bounds[0] << endl;
+        std::cout << "after updating bounds ----------" << std::endl;
+        std::cout << "elkan lb[0][0] " << elkan_lower_bounds[0][0] << " hamerly ub[0] " << hamerly_upper_bounds[0] << std::endl;
 
 
 
@@ -1702,7 +1710,7 @@ void kmeans_v6() {
                 }
             }
         }
-        cout << "checked convergence" << endl;
+        std::cout << "checked convergence" << std::endl;
 
         // end if converged
         if (has_converged) break;
@@ -1716,7 +1724,7 @@ void kmeans_v6() {
 // TODO: also buggy, still waiting for Mo
 // DONE: changed all the sqrts, the counts of clusters are not right, but im not it might just be the fp error
 void kmeans_v7() {
-    cout << "in kmeans_v7 ..." << endl;
+    std::cout << "in kmeans_v7 ..." << std::endl;
     int folan = 0;
     int filan = 0;
     int ashghal = 0;// for loop usage
@@ -1727,7 +1735,7 @@ void kmeans_v7() {
     // set initial centroids
 
     memcpy(centroids, data_arr, sizeof(double) * K * D);
-    cout << "copied init centroids" << endl;
+    std::cout << "copied init centroids" << std::endl;
 
 
     bool has_converged = false;
@@ -1738,7 +1746,7 @@ void kmeans_v7() {
 
     // loop over max_iter
     for (int iter = 0; iter < MAX_ITERATIONS; iter++) {
-        cout << "iteration " << iter << "..." << endl;
+        std::cout << "iteration " << iter << "..." << std::endl;
 
         // calculate the square sum of centroids
         for (folan = 0; folan < K; folan++) {
@@ -1767,7 +1775,7 @@ void kmeans_v7() {
             }
             closest_centroid_distance[folan] = smallest;
         }
-        cout << "found closest distance to each centroid, and the centr-centr distances" << endl;
+        std::cout << "found closest distance to each centroid, and the centr-centr distances" << std::endl;
 
 
         if (iter == 0) {
@@ -1798,7 +1806,7 @@ void kmeans_v7() {
                 hamerly_upper_bounds[folan] = smallest;
                 // hamerly_lower_bounds[folan] = second_smallest;
             }
-            cout << "calculated distances" << endl;
+            std::cout << "calculated distances" << std::endl;
             // bad implementation for now
             // TODO: make it more efficient
             // if first iter, fill out the hamer_ub_lb
@@ -1818,7 +1826,7 @@ void kmeans_v7() {
             //     hamerly_upper_bounds[folan] = smallest;
             //     hamerly_lower_bounds[folan] = second_smallest;
             // }
-            cout << "filled out hamerly ub and elkan lb for first time" << endl;
+            std::cout << "filled out hamerly ub and elkan lb for first time" << std::endl;
 
         } else {
             for (folan = 0; folan < N; folan++) {
@@ -1893,7 +1901,7 @@ void kmeans_v7() {
         //     }
         // }
 
-        cout << "set labels" << endl;
+        std::cout << "set labels" << std::endl;
 
 
         // calc new centroids
@@ -1905,10 +1913,10 @@ void kmeans_v7() {
                 old_centroids[folan][filan] = centroids[folan][filan];
             }
         }
-        cout << "copied centroids to old centroids" << endl;
+        std::cout << "copied centroids to old centroids" << std::endl;
         // set centroids to 0
         memset(cluster_counts, 0, sizeof(int) * K);
-        cout << "set cluster counts to 0" << endl;
+        std::cout << "set cluster counts to 0" << std::endl;
         for (folan = 0; folan < K; folan++) {
             // just testing
             // cluster_counts[folan] = 0;
@@ -1918,7 +1926,7 @@ void kmeans_v7() {
         }
         // This doesn't work on doubles
         // memset(centroids, 0, sizeof(double) * K * D);
-        cout << "after all the memcpys" << endl;
+        std::cout << "after all the memcpys" << std::endl;
 
         for (folan = 0; folan < N; folan++) {
             cluster_counts[labels[folan]]++;
@@ -1931,15 +1939,15 @@ void kmeans_v7() {
                 centroids[folan][filan] /= cluster_counts[folan];
             }
         }
-        cout << "calculated new centroids" << endl;
+        std::cout << "calculated new centroids" << std::endl;
         // just to check
         int sanity_check = 0;
-        cout << "cluster counts..." << endl;
+        std::cout << "cluster counts..." << std::endl;
         for (folan = 0; folan < K; folan++) {
             sanity_check += cluster_counts[folan];
-            cout << cluster_counts[folan] << " ";
+            std::cout << cluster_counts[folan] << " ";
         }
-        cout << sanity_check << endl;
+        std::cout << sanity_check << std::endl;
 
         // calculating the movement of new to old cluster centers
         furthest_moving_centroid = 0;
@@ -1957,7 +1965,7 @@ void kmeans_v7() {
                      centroid_movement[second_furthest_moving_centroid])
                 second_furthest_moving_centroid = folan;
         }
-        cout << "calculated centroid movements" << endl;
+        std::cout << "calculated centroid movements" << std::endl;
 
         // update upper and lower elkan bounds based on centroid movements
         for (folan = 0; folan < N; folan++) {
@@ -1979,7 +1987,7 @@ void kmeans_v7() {
                 }
             }
         }
-        cout << "checked convergence" << endl;
+        std::cout << "checked convergence" << std::endl;
 
         // end if converged
         if (has_converged) break;
@@ -1992,7 +2000,7 @@ void kmeans_v7() {
 // TODO: not even compiled, but i think I have filled out the correct parts
 // DONE: compiled, runs, the cluster counts till iter 2 look ok
 void kmeans_v8() {
-    cout << "in kmeans_v8 ..." << endl;
+    std::cout << "in kmeans_v8 ..." << std::endl;
     int folan = 0;
     int filan = 0;
     int ashghal = 0;// for loop usage
@@ -2003,7 +2011,7 @@ void kmeans_v8() {
     // set initial centroids
 
     memcpy(centroids, data_arr, sizeof(double) * K * D);
-    cout << "copied init centroids" << endl;
+    std::cout << "copied init centroids" << std::endl;
 
 
     bool has_converged = false;
@@ -2012,7 +2020,7 @@ void kmeans_v8() {
 
     // loop over max_iter
     for (int iter = 0; iter < MAX_ITERATIONS; iter++) {
-        cout << "iteration " << iter << "..." << endl;
+        std::cout << "iteration " << iter << "..." << std::endl;
 
         // calculate the square sum of centroids
         for (folan = 0; folan < K; folan++) {
@@ -2041,7 +2049,7 @@ void kmeans_v8() {
             }
             closest_centroid_distance[folan] = smallest;
         }
-        cout << "found closest distance to each centroid, and the centr-centr distances" << endl;
+        std::cout << "found closest distance to each centroid, and the centr-centr distances" << std::endl;
 
 
         if (iter == 0) {
@@ -2072,9 +2080,9 @@ void kmeans_v8() {
                 hamerly_upper_bounds[folan] = smallest;
                 hamerly_lower_bounds[folan] = second_smallest;
             }
-            cout << "calculated distances" << endl;
+            std::cout << "calculated distances" << std::endl;
 
-            cout << "filled out hamerly ub and lb and elkan lb for first time" << endl;
+            std::cout << "filled out hamerly ub and lb and elkan lb for first time" << std::endl;
 
         } else {
             for (folan = 0; folan < N; folan++) {
@@ -2151,7 +2159,7 @@ void kmeans_v8() {
         //     }
         // }
 
-        cout << "set labels" << endl;
+        std::cout << "set labels" << std::endl;
 
 
         // calc new centroids
@@ -2163,10 +2171,10 @@ void kmeans_v8() {
                 old_centroids[folan][filan] = centroids[folan][filan];
             }
         }
-        cout << "copied centroids to old centroids" << endl;
+        std::cout << "copied centroids to old centroids" << std::endl;
         // set centroids to 0
         memset(cluster_counts, 0, sizeof(int) * K);
-        cout << "set cluster counts to 0" << endl;
+        std::cout << "set cluster counts to 0" << std::endl;
         for (folan = 0; folan < K; folan++) {
             // just testing
             // cluster_counts[folan] = 0;
@@ -2176,7 +2184,7 @@ void kmeans_v8() {
         }
         // This doesn't work on doubles
         // memset(centroids, 0, sizeof(double) * K * D);
-        cout << "after all the memcpys" << endl;
+        std::cout << "after all the memcpys" << std::endl;
 
         for (folan = 0; folan < N; folan++) {
             cluster_counts[labels[folan]]++;
@@ -2189,15 +2197,15 @@ void kmeans_v8() {
                 centroids[folan][filan] /= cluster_counts[folan];
             }
         }
-        cout << "calculated new centroids" << endl;
+        std::cout << "calculated new centroids" << std::endl;
         // just to check
         int sanity_check = 0;
-        cout << "cluster counts..." << endl;
+        std::cout << "cluster counts..." << std::endl;
         for (folan = 0; folan < K; folan++) {
             sanity_check += cluster_counts[folan];
-            cout << cluster_counts[folan] << " ";
+            std::cout << cluster_counts[folan] << " ";
         }
-        cout << sanity_check << endl;
+        std::cout << sanity_check << std::endl;
 
         // calculating the movement of new to old cluster centers
         furthest_moving_centroid = 0;
@@ -2215,7 +2223,7 @@ void kmeans_v8() {
                      centroid_movement[second_furthest_moving_centroid])
                 second_furthest_moving_centroid = folan;
         }
-        cout << "calculated centroid movements" << endl;
+        std::cout << "calculated centroid movements" << std::endl;
 
         // update upper and lower elkan bounds based on centroid movements
         for (folan = 0; folan < N; folan++) {
@@ -2243,7 +2251,7 @@ void kmeans_v8() {
                 }
             }
         }
-        cout << "checked convergence" << endl;
+        std::cout << "checked convergence" << std::endl;
 
         // end if converged
         if (has_converged) break;
@@ -2255,7 +2263,7 @@ void kmeans_v8() {
 // copied from v5
 // TODO
 void kmeans_v9() {
-    cout << "in kmeans_v9 ..." << endl;
+    std::cout << "in kmeans_v9 ..." << std::endl;
     int folan = 0;
     int filan = 0;
     int ashghal = 0;// for loop usage
@@ -2267,7 +2275,7 @@ void kmeans_v9() {
 
     memcpy(centroids, data_arr, sizeof(double) * K * D);
     calculate_centroids_square_sums();
-    cout << "copied init centroids" << endl;
+    std::cout << "copied init centroids" << std::endl;
 
 
     bool has_converged = false;
@@ -2278,7 +2286,7 @@ void kmeans_v9() {
 
     // loop over max_iter
     for (int iter = 0; iter < MAX_ITERATIONS; iter++) {
-        cout << "iteration " << iter << "..." << endl;
+        std::cout << "iteration " << iter << "..." << std::endl;
 
         // calculate the square sum of centroids
         for (folan = 0; folan < K; folan++) {
@@ -2300,11 +2308,11 @@ void kmeans_v9() {
             }
             closest_centroid_distance[folan] = sqrt(smallest);
         }
-        cout << "found closest distance to each centroid" << endl;
+        std::cout << "found closest distance to each centroid" << std::endl;
 
 
         if (iter == 0) {
-            cout << "in if iter == 0" << endl;
+            std::cout << "in if iter == 0" << std::endl;
             // assign points to closest centroid
             // V9
             // for(folan = 0; folan < N; folan++){
@@ -2336,7 +2344,7 @@ void kmeans_v9() {
             // the is_cand is all one from cause it's the first time from main
             calculate_labels_with_sqrt_hamerly_integrated();
             // V9
-            cout << "calculated distances" << endl;
+            std::cout << "calculated distances" << std::endl;
             // bad implementation for now
             // TODO: make it more efficient
             // if first iter, fill out the hamer_ub_lb
@@ -2356,10 +2364,10 @@ void kmeans_v9() {
             //     hamerly_upper_bounds[folan] = smallest;
             //     hamerly_lower_bounds[folan] = second_smallest;
             // }
-            cout << "filled out hamerly ub and lb for first time" << endl;
+            std::cout << "filled out hamerly ub and lb for first time" << std::endl;
 
         } else {
-            cout << "iter was not 0" << endl;
+            std::cout << "iter was not 0" << std::endl;
             // V9
             // fill out mask
             // set all to 1 first
@@ -2383,7 +2391,7 @@ void kmeans_v9() {
                     // I will leave it as false for now and change it if necessary
                 }
             }
-            cout << "hamerly pruned " << hamerly_count << endl;
+            std::cout << "hamerly pruned " << hamerly_count << std::endl;
             calculate_labels_with_sqrt_hamerly_integrated();
             // we do all the next lines in the calc_labels so no need
             // for(folan = 0; folan < N; folan++){    
@@ -2422,7 +2430,7 @@ void kmeans_v9() {
         //     }
         // }
 
-        cout << "set labels" << endl;
+        std::cout << "set labels" << std::endl;
 
 
 
@@ -2436,10 +2444,10 @@ void kmeans_v9() {
                 old_centroids[folan][filan] = centroids[folan][filan];
             }
         }
-        cout << "copied centroids to old centroids" << endl;
+        std::cout << "copied centroids to old centroids" << std::endl;
         // set centroids to 0
         memset(cluster_counts, 0, sizeof(int) * K);
-        cout << "set cluster counts to 0" << endl;
+        std::cout << "set cluster counts to 0" << std::endl;
         for (folan = 0; folan < K; folan++) {
             // just testing
             // cluster_counts[folan] = 0;
@@ -2449,7 +2457,7 @@ void kmeans_v9() {
         }
         // This doesn't work on doubles
         // memset(centroids, 0, sizeof(double) * K * D);
-        cout << "after all the memcpys" << endl;
+        std::cout << "after all the memcpys" << std::endl;
 
         for (folan = 0; folan < N; folan++) {
             cluster_counts[labels[folan]]++;
@@ -2462,17 +2470,17 @@ void kmeans_v9() {
                 centroids[folan][filan] /= cluster_counts[folan];
             }
         }
-        cout << "calculated new centroids" << endl;
+        std::cout << "calculated new centroids" << std::endl;
         calculate_centroids_square_sums();
 
         // just to check
         int sanity_check = 0;
-        cout << "cluster counts..." << endl;
+        std::cout << "cluster counts..." << std::endl;
         for (folan = 0; folan < K; folan++) {
             sanity_check += cluster_counts[folan];
-            cout << cluster_counts[folan] << " ";
+            std::cout << cluster_counts[folan] << " ";
         }
-        cout << sanity_check << endl;
+        std::cout << sanity_check << std::endl;
 
         // calculating the movement of new to old cluster centers
         furthest_moving_centroid = 0;
@@ -2490,25 +2498,25 @@ void kmeans_v9() {
                      centroid_movement[second_furthest_moving_centroid])
                 second_furthest_moving_centroid = folan;
         }
-        cout << "calculated centroid movements" << endl;
+        std::cout << "calculated centroid movements" << std::endl;
 
         // update upper and lower hamerly bounds based on centroid movements
         for (folan = 0; folan < N; folan++) {
-            if (folan == 0) cout << "moving ub " << centroid_movement[labels[folan]] << endl;
+            if (folan == 0) std::cout << "moving ub " << centroid_movement[labels[folan]] << std::endl;
             hamerly_upper_bounds[folan] += centroid_movement[labels[folan]];
             if (labels[folan] == furthest_moving_centroid) {
-                if (folan == 0) cout << "moving lb " << centroid_movement[second_furthest_moving_centroid] << endl;
+                if (folan == 0) std::cout << "moving lb " << centroid_movement[second_furthest_moving_centroid] << std::endl;
                 hamerly_lower_bounds[folan] -= centroid_movement[second_furthest_moving_centroid];
             } else {
-                if (folan == 0) cout << "moving lb " << centroid_movement[furthest_moving_centroid] << endl;
+                if (folan == 0) std::cout << "moving lb " << centroid_movement[furthest_moving_centroid] << std::endl;
                 hamerly_lower_bounds[folan] -= centroid_movement[furthest_moving_centroid];
             }
         }
 
 
         // FATEMEH DEBUG
-        cout << "after updating the bounds, hamerly_ub[0] " << hamerly_upper_bounds[0] << " hamerly_lb[0] "
-             << hamerly_lower_bounds[0] << endl;
+        std::cout << "after updating the bounds, hamerly_ub[0] " << hamerly_upper_bounds[0] << " hamerly_lb[0] "
+             << hamerly_lower_bounds[0] << std::endl;
         // FATEMEH DEBUG
 
 
@@ -2523,13 +2531,13 @@ void kmeans_v9() {
                 }
             }
         }
-        cout << "checked convergence" << endl;
+        std::cout << "checked convergence" << std::endl;
 
         // end if converged
         if (has_converged) break;
     }
 
-    cout << "hamerly pruned " << hamerly_count << endl;
+    std::cout << "hamerly pruned " << hamerly_count << std::endl;
 }
 
 
@@ -2558,30 +2566,30 @@ int main(int argc, char **argv) {
     }
 
 
-    cout << "after allocation" << endl;
+    std::cout << "after allocation" << std::endl;
 
     // read data from file
     // put into "data_arr" array
     // TODO: DONE
-    string data_file_name = argv[1];
-    string label_file_name = argv[2];
+    std::string data_file_name = argv[1];
+    std::string label_file_name = argv[2];
 
-    cout << "data file name: " << data_file_name << endl;
-    cout << "label file name: " << label_file_name << endl;
+    std::cout << "data file name: " << data_file_name << std::endl;
+    std::cout << "label file name: " << label_file_name << std::endl;
 
 
-    ifstream data_file(data_file_name.c_str());
-    int data_count = std::count(istreambuf_iterator<char>(data_file),
-                                istreambuf_iterator<char>(), '\n');
+    std::ifstream data_file(data_file_name.c_str());
+    int data_count = std::count(std::istreambuf_iterator<char>(data_file),
+                                std::istreambuf_iterator<char>(), '\n');
     if (data_count < N) {
-        cout << "NOT ENOUGH DATA!!\n";
+        std::cout << "NOT ENOUGH DATA!!\n";
         exit(3);
     }
 
-    cout << "count of data in file: " << data_count << " N: " << N << endl;
+    std::cout << "count of data in file: " << data_count << " N: " << N << std::endl;
 
     data_file.clear();
-    data_file.seekg(0, ios::beg);
+    data_file.seekg(0, std::ios::beg);
 
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < D; j++) {
@@ -2590,7 +2598,7 @@ int main(int argc, char **argv) {
     }
     data_file.close();
 
-    cout << "read data..." << endl;
+    std::cout << "read data..." << std::endl;
 
     // STEPWISE EXTRAS
     is_candidate = (bool **) malloc(N * sizeof(bool *));
@@ -2655,20 +2663,20 @@ int main(int argc, char **argv) {
     assigned = (int *) malloc(N * sizeof(int));
     // just helper
 
-    cout << "filled out the ss arr..." << endl;
+    std::cout << "filled out the ss arr..." << std::endl;
 
 
     // set labels to 0 init state
     memset(labels, 0, sizeof(int) * N);
 
-    cout << "set labels to 0, calling kmeans..." << endl;
+    std::cout << "set labels to 0, calling kmeans..." << std::endl;
 
     // do the clustering
     kmeans_v9();
 
     // write labels to somewhere I guess...
     // TODO
-    ofstream label_file;
+    std::ofstream label_file;
     label_file.open(label_file_name.c_str());
 
     for (int i = 0; i < N; i++) {
