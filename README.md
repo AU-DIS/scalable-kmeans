@@ -40,7 +40,42 @@ Where x,y,z,k is the coordinate and v is the value.
 > **Warning**
 > Keep in mind that .csv will be a lot bigger, so use with care.
 
-# C++ dependencies
-Blas can be a mess to install, but following should work:
+# Notes about C++
+## Dependencies
+C packages can be confusing to install if you do it directly form the source, but most can be found with ```apt``` instead.  
 
-Install with ```sudo apt-get install libblas-dev liblapack-dev``` and include as ```#include <cblas.h>```
+Install Blas with ```sudo apt-get install libblas-dev liblapack-dev``` and include as ```#include <cblas.h>```. Then you are done.
+
+## Print statements
+We all know prints are constly, but there are a few tricks we can utilize in C++.
+
+**First**, if a line does not need to be printet in real-time, use ```'\n'``` instead of ```std::endl```.
+```std::cout << std::endl;``` is the same as ```std::cout << '\n' << std::flush;```.
+
+```c++
+for (int n : {0, 1, 2, 3, 4, 5}) 
+        std::cout << n << std::endl;
+```
+vs 
+```c++
+for (int n : {0, 1, 2, 3, 4, 5}) 
+        std::cout << n << '\n';
+std::cout << std::flush;
+```
+
+**Secondly**, We can utilize macros to only include conditional prints when debugging instead of having a flag check on runtime.
+```c++
+#ifdef DEBUG
+#define DEBUG_TEST 1
+#else
+#define DEBUG_TEST 0
+#endif
+#define DEBUGPRINT(fmt, ...) \
+            do { if (DEBUG_TEST) fprintf(stderr, fmt, __VA_ARGS__); } while (0)
+```
+
+Replacing ```std::cout << "Hello" << std::endl;``` with ```DEBUGPRINT("Hello")``` will only add the prints if compiled with flag ```DEBUG=1```.
+
+Example with clang: ```clang++ kmeans.cpp -D DEBUG=1```
+>**Note** the ```do{} while(0)``` and the condition check on ```DEBUG_TEST``` might seem redundant, but they are failsafes. 
+
