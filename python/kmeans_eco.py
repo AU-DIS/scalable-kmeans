@@ -284,7 +284,10 @@ class kmeans_class:
                 # For Hamerly's second lower bound
                 ## Second Lower bound distance between the point and the second closest center
                 ## Initialized as distance between the point and second closest initial centroid
-                lowerBounds_Hamerly[i] = sorted(set(lowerBounds[i]))[1]
+                if len(set(lowerBounds[i])) == 1:
+                    lowerBounds_Hamerly[i] = lowerBounds[i][0]
+                else:
+                    lowerBounds_Hamerly[i] = sorted(set(lowerBounds[i]))[1]
                 #lowerBounds_Hamerly[i] = sorted(set([item for item in lowerBounds[i] if item >= lowerBounds[i][labels[i]]]))[1]
 
                 ## Upper bound distance between the point and assigned centroid
