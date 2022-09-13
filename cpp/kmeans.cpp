@@ -18,7 +18,7 @@
 #include <ctime>
 #include <limits.h>
 #include <float.h>
-#include <cblas.h>
+// #include <cblas.h>
 
 
 
@@ -380,25 +380,27 @@ void calculate_data_square_sums() {
         // fill from back to front
         // every time, we will just add the extra cells needed to complete it
         // the loop ranges are from the inc_dot calculations, I trusted them, haven't checked again
-        for (int j = int(log2(sqrt(D))) + 1; j > -1; j--) {
+        for(int j = int(log2(sqrt(D))) + 1; j > 0; j--){
 
-            data_arr_ss[i][j] = data_arr_ss[i][j + 1];
+            data_arr_ss[i][j] = data_arr_ss[i][j+1];
 
             two_p_level_m1 = int(pow(2, j - 1));
             two_p_level = std::min(int(pow(2, j)), d_sqrt);
 
-            for (ashghal = 0; ashghal < two_p_level_m1; ashghal++) {
-                // ofoghi ha
-                for (halghe = d_sqrt * (two_p_level_m1 + ashghal);
-                     halghe < d_sqrt * (two_p_level_m1 + ashghal) + two_p_level; halghe++) {
+            for(ashghal = 0; ashghal < two_p_level_m1; ashghal++){
+                // amoodi ha
+                for(halghe = ashghal * d_sqrt + two_p_level_m1; halghe < ashghal * d_sqrt + two_p_level; halghe++){
                     data_arr_ss[i][j] += (data_arr[i][halghe] * data_arr[i][halghe]);
                 }
-                // amoodi ha
-                for (halghe = ashghal * d_sqrt + two_p_level_m1; halghe < ashghal * d_sqrt + two_p_level; halghe++) {
+            }
+            for(ashghal = 0; ashghal < std::min(two_p_level_m1, d_sqrt - two_p_level_m1); ashghal++){
+                // ofoghi ha
+                for(halghe = d_sqrt * (two_p_level_m1 + ashghal); halghe < d_sqrt * (two_p_level_m1 + ashghal) + two_p_level; halghe++){
                     data_arr_ss[i][j] += (data_arr[i][halghe] * data_arr[i][halghe]);
                 }
             }
         }
+        data_arr_ss[i][0] = data_arr_ss[i][1] +  (data_arr[i][0] * data_arr[i][0]);
 
     }
 
@@ -418,25 +420,27 @@ void calculate_centroids_square_sums() {
         // fill from back to front
         // every time, we will just add the extra cells needed to complete it
         // the loop ranges are from the inc_dot calculations, I trusted them, haven't checked again
-        for (int j = int(log2(sqrt(D))) + 1; j > -1; j--) {
+        for(int j = int(log2(sqrt(D))) + 1; j > 0; j--){
 
-            centroids_ss[i][j] = centroids_ss[i][j + 1];
+            centroids_ss[i][j] = centroids_ss[i][j+1];
 
             two_p_level_m1 = int(pow(2, j - 1));
             two_p_level = std::min(int(pow(2, j)), d_sqrt);
 
-            for (ashghal = 0; ashghal < two_p_level_m1; ashghal++) {
-                // ofoghi ha
-                for (halghe = d_sqrt * (two_p_level_m1 + ashghal);
-                     halghe < d_sqrt * (two_p_level_m1 + ashghal) + two_p_level; halghe++) {
+            for(ashghal = 0; ashghal < two_p_level_m1; ashghal++){
+                // amoodi ha
+                for(halghe = ashghal * d_sqrt + two_p_level_m1; halghe < ashghal * d_sqrt + two_p_level; halghe++){
                     centroids_ss[i][j] += (centroids[i][halghe] * centroids[i][halghe]);
                 }
-                // amoodi ha
-                for (halghe = ashghal * d_sqrt + two_p_level_m1; halghe < ashghal * d_sqrt + two_p_level; halghe++) {
+            }
+            for(ashghal = 0; ashghal < std::min(two_p_level_m1, d_sqrt - two_p_level_m1); ashghal++){
+                // ofoghi ha
+                for(halghe = d_sqrt * (two_p_level_m1 + ashghal); halghe < d_sqrt * (two_p_level_m1 + ashghal) + two_p_level; halghe++){
                     centroids_ss[i][j] += (centroids[i][halghe] * centroids[i][halghe]);
                 }
             }
         }
+        centroids_ss[i][0] = centroids_ss[i][1] + (centroids[i][0] * centroids[i][0]);
 
     }
 
@@ -468,15 +472,15 @@ void calculate_distances_till_level(int level) {
             if (level == 0) {
                 incremental_dots[folan][filan] = data_arr[folan][0] * centroids[filan][0];
             } else {
-                for (ashghal = 0; ashghal < two_p_level_m1; ashghal++) {
-                    // ofoghi ha
-                    for (halghe = d_sqrt * (two_p_level_m1 + ashghal);
-                         halghe < d_sqrt * (two_p_level_m1 + ashghal) + two_p_level; halghe++) {
+                for(ashghal = 0; ashghal < two_p_level_m1; ashghal++){
+                    // amoodi ha
+                    for(halghe = ashghal * d_sqrt + two_p_level_m1; halghe < ashghal * d_sqrt + two_p_level; halghe++){
                         incremental_dots[folan][filan] += (data_arr[folan][halghe] * centroids[filan][halghe]);
                     }
-                    // amoodi ha
-                    for (halghe = ashghal * d_sqrt + two_p_level_m1;
-                         halghe < ashghal * d_sqrt + two_p_level; halghe++) {
+                }
+                for(ashghal = 0; ashghal < std::min(two_p_level_m1, d_sqrt - two_p_level_m1); ashghal++){
+                    // ofoghi ha
+                    for(halghe = d_sqrt * (two_p_level_m1 + ashghal); halghe < d_sqrt * (two_p_level_m1 + ashghal) + two_p_level; halghe++){
                         incremental_dots[folan][filan] += (data_arr[folan][halghe] * centroids[filan][halghe]);
                     }
                 }
@@ -537,15 +541,15 @@ void calculate_sqrt_distances_till_level(int level) {
             if (level == 0) {
                 incremental_dots[folan][filan] = data_arr[folan][0] * centroids[filan][0];
             } else {
-                for (ashghal = 0; ashghal < two_p_level_m1; ashghal++) {
-                    // ofoghi ha
-                    for (halghe = d_sqrt * (two_p_level_m1 + ashghal);
-                         halghe < d_sqrt * (two_p_level_m1 + ashghal) + two_p_level; halghe++) {
+                for(ashghal = 0; ashghal < two_p_level_m1; ashghal++){
+                    // amoodi ha
+                    for(halghe = ashghal * d_sqrt + two_p_level_m1; halghe < ashghal * d_sqrt + two_p_level; halghe++){
                         incremental_dots[folan][filan] += (data_arr[folan][halghe] * centroids[filan][halghe]);
                     }
-                    // amoodi ha
-                    for (halghe = ashghal * d_sqrt + two_p_level_m1;
-                         halghe < ashghal * d_sqrt + two_p_level; halghe++) {
+                }
+                for(ashghal = 0; ashghal < std::min(two_p_level_m1, d_sqrt - two_p_level_m1); ashghal++){
+                    // ofoghi ha
+                    for(halghe = d_sqrt * (two_p_level_m1 + ashghal); halghe < d_sqrt * (two_p_level_m1 + ashghal) + two_p_level; halghe++){
                         incremental_dots[folan][filan] += (data_arr[folan][halghe] * centroids[filan][halghe]);
                     }
                 }
@@ -609,15 +613,15 @@ void calculate_sqrt_distances_till_level_with_assigned(int level) {
             if (level == 0) {
                 incremental_dots[folan][filan] = data_arr[folan][0] * centroids[filan][0];
             } else {
-                for (ashghal = 0; ashghal < two_p_level_m1; ashghal++) {
-                    // ofoghi ha
-                    for (halghe = d_sqrt * (two_p_level_m1 + ashghal);
-                         halghe < d_sqrt * (two_p_level_m1 + ashghal) + two_p_level; halghe++) {
+                for(ashghal = 0; ashghal < two_p_level_m1; ashghal++){
+                    // amoodi ha
+                    for(halghe = ashghal * d_sqrt + two_p_level_m1; halghe < ashghal * d_sqrt + two_p_level; halghe++){
                         incremental_dots[folan][filan] += (data_arr[folan][halghe] * centroids[filan][halghe]);
                     }
-                    // amoodi ha
-                    for (halghe = ashghal * d_sqrt + two_p_level_m1;
-                         halghe < ashghal * d_sqrt + two_p_level; halghe++) {
+                }
+                for(ashghal = 0; ashghal < std::min(two_p_level_m1, d_sqrt - two_p_level_m1); ashghal++){
+                    // ofoghi ha
+                    for(halghe = d_sqrt * (two_p_level_m1 + ashghal); halghe < d_sqrt * (two_p_level_m1 + ashghal) + two_p_level; halghe++){
                         incremental_dots[folan][filan] += (data_arr[folan][halghe] * centroids[filan][halghe]);
                     }
                 }
