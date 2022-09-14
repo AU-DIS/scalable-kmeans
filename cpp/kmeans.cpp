@@ -179,8 +179,19 @@ void kmeans() {
             }
         }
         for (folan = 0; folan < K; folan++) {
-            for (filan = 0; filan < D; filan++) {
-                centroids[folan][filan] /= cluster_counts[folan];
+            // to deal with empty clusters
+            // if the cluster is empty, keep the old centroid
+            if(cluster_counts[folan] > 0){
+                for (filan = 0; filan < D; filan++) {
+                    centroids[folan][filan] /= cluster_counts[folan];
+                }
+            } else{
+                std::cout << "EMPTYYYYYYYYYYYYYYYYYYYY SOUUUUULLLLLLLLLLLLL" << std::endl;
+                std::cout << "EMPTYYYYYYYYYYYYYYYYYYYY SOUUUUULLLLLLLLLLLLL" << std::endl;
+                std::cout << "EMPTYYYYYYYYYYYYYYYYYYYY SOUUUUULLLLLLLLLLLLL" << std::endl;
+                for (filan = 0; filan < D; filan++) {
+                    centroids[folan][filan] = old_centroids[folan][filan];
+                }
             }
         }
         std::cout << "calculated new centroids" << std::endl;
@@ -331,8 +342,16 @@ void kmeans_v2() {
             }
         }
         for (folan = 0; folan < K; folan++) {
-            for (filan = 0; filan < D; filan++) {
-                centroids[folan][filan] /= cluster_counts[folan];
+            // to deal with empty clusters
+            // if the cluster is empty, keep the old centroid
+            if(cluster_counts[folan] > 0){
+                for (filan = 0; filan < D; filan++) {
+                    centroids[folan][filan] /= cluster_counts[folan];
+                }
+            } else{
+                for (filan = 0; filan < D; filan++) {
+                    centroids[folan][filan] = old_centroids[folan][filan];
+                }
             }
         }
         std::cout << "calculated new centroids" << std::endl;
@@ -1139,6 +1158,9 @@ void kmeans_v4() {
                     centroids[folan][filan] /= cluster_counts[folan];
                 }
             } else{
+                std::cout << "EMPTYYYYYYYYYYYYYYYYYYYY SOUUUUULLLLLLLLLLLLL" << std::endl;
+                std::cout << "EMPTYYYYYYYYYYYYYYYYYYYY SOUUUUULLLLLLLLLLLLL" << std::endl;
+                std::cout << "EMPTYYYYYYYYYYYYYYYYYYYY SOUUUUULLLLLLLLLLLLL" << std::endl;
                 for (filan = 0; filan < D; filan++) {
                     centroids[folan][filan] = old_centroids[folan][filan];
                 }
@@ -2847,7 +2869,7 @@ int main(int argc, char **argv) {
     std::cout << "set labels to 0, calling kmeans..." << std::endl;
 
     // do the clustering
-    kmeans_v9();
+    kmeans_v4();
 
     // write labels to somewhere I guess...
     // TODO
