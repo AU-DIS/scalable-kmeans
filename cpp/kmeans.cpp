@@ -31,9 +31,12 @@
             do { if (DEBUG_TEST) fprintf(stderr, fmt, __VA_ARGS__); } while (0)
 
 
-#define D 784 // data dimensionality
+// #define D 784 // data dimensionality
+// #define K 10 // k variable in kmeans
+// #define N 69997 // count of data points
+#define D 144 // data dimensionality
 #define K 10 // k variable in kmeans
-#define N 69997 // count of data points
+#define N 167 // count of data points
 #define MAX_ITERATIONS 5 // maximum number of iterations to do before giving up convergence
 
 // double data_arr[N][D]; // the data itself 
@@ -90,13 +93,13 @@ void kmeans() {
     // set initial centroids
     // TODO
     // FIX: for now let's set them to the first k points --> these are a really bad init case, gonna try the random selection 
-    // for(folan = 0; folan < K; folan++){
-    //     for(filan = 0; filan < D; filan++){
-    //         centroids[folan][filan] = data_arr[folan][filan];
-    //     }
-    // }
+    for(folan = 0; folan < K; folan++){
+        for(filan = 0; filan < D; filan++){
+            centroids[folan][filan] = data_arr[folan][filan];
+        }
+    }
     // TODO : check if I can do this with memcpy, DONE but not tested
-    memcpy(centroids, data_arr, sizeof(double) * K * D);
+    // memcpy(centroids, data_arr, sizeof(double) * K * D);
     std::cout << "copied init centroids" << std::endl;
     // srand(time(0)); 
     // int rand_index = 0;
@@ -1034,13 +1037,13 @@ void kmeans_v4() {
     // set initial centroids
     // TODO
     // FIX: for now let's set them to the first k points --> these are a really bad init case, gonna try the random selection 
-    // for(folan = 0; folan < K; folan++){
-    //     for(filan = 0; filan < D; filan++){
-    //         centroids[folan][filan] = data_arr[folan][filan];
-    //     }
-    // }
+    for(folan = 0; folan < K; folan++){
+        for(filan = 0; filan < D; filan++){
+            centroids[folan][filan] = data_arr[folan][filan];
+        }
+    }
     // TODO : check if I can do this with memcpy, DONE but not tested
-    memcpy(centroids, data_arr, sizeof(double) * K * D);
+    // memcpy(centroids, data_arr, sizeof(double) * K * D);
     calculate_centroids_square_sums();
     std::cout << "copied init centroids, and ss-ed them" << std::endl;
 
@@ -1174,7 +1177,15 @@ void kmeans_v5() {
     double tmp, hamerly_bound;
     // set initial centroids
 
-    memcpy(centroids, data_arr, sizeof(double) * K * D);
+    // FATEMEH: kasper says the memcpy ruins things:-?
+
+    for(folan = 0; folan < K; folan++){
+        for(filan = 0; filan < D; filan++){
+            centroids[folan][filan] = data_arr[folan][filan];
+        }
+    }
+
+    // memcpy(centroids, data_arr, sizeof(double) * K * D);
     std::cout << "copied init centroids" << std::endl;
 
 
@@ -1190,7 +1201,7 @@ void kmeans_v5() {
 
         // calculate the square sum of centroids
         for (folan = 0; folan < K; folan++) {
-            centroid_squares[folan] = 0;
+            centroid_squares[folan] = 0.0;
             for (filan = 0; filan < D; filan++) {
                 centroid_squares[folan] += (centroids[folan][filan] * centroids[folan][filan]);
             }
@@ -1270,27 +1281,44 @@ void kmeans_v5() {
                         0.5 * closest_centroid_distance[labels[folan]]) : hamerly_lower_bounds[folan];
                 // hamerly_bound = max(0.5 * closest_centroid_distance[labels[folan]], hamerly_lower_bounds[folan]);
                 if (hamerly_bound < hamerly_upper_bounds[folan]) {
-                    for (filan = 0; filan < K; filan++) {
-                        tmp = centroid_squares[filan] + data_arr_ss[folan][0];
-                        // the dot product
-                        for (ashghal = 0; ashghal < D; ashghal++) {
-                            tmp -= (2 * data_arr[folan][ashghal] * centroids[filan][ashghal]);
-                        }
-                        distances[folan][filan] = sqrt(tmp);
-                        if (distances[folan][filan] < distances[folan][labels[folan]]) {
-                            // keep the second smallest
-                            hamerly_lower_bounds[folan] = distances[folan][labels[folan]];
-                            labels[folan] = filan;
-                            hamerly_upper_bounds[folan] = distances[folan][labels[folan]];
-                        } else if (hamerly_lower_bounds[folan] > distances[folan][filan]) {
-                            hamerly_lower_bounds[folan] = distances[folan][filan];
-                        }
+                    // calculate correct distance to labels[folan] and update ham_upper
+                    tmp = centroid_squares[labels[folan]] + data_arr_ss[folan][0];
+                    for (ashghal = 0; ashghal < D; ashghal++) {
+                            tmp -= (2 * data_arr[folan][ashghal] * centroids[labels[folan]][ashghal]);
                     }
-                    hamerly_upper_bounds[folan] = distances[folan][labels[folan]];
+                    distances[folan][labels[folan]] = sqrt(tmp);
+                    hamerly_upper_bounds[folan] = distances[folan][labels[folan]]; 
+                    // this should tighten the bounds
+                    // check again
+                    if (hamerly_bound < hamerly_upper_bounds[folan]){
+                        for (filan = 0; filan < K; filan++) {
+
+                            tmp = centroid_squares[filan] + data_arr_ss[folan][0];
+                            // the dot product
+                            for (ashghal = 0; ashghal < D; ashghal++) {
+                                tmp -= (2 * data_arr[folan][ashghal] * centroids[filan][ashghal]);
+                            }
+                            distances[folan][filan] = sqrt(tmp);
+                            if (distances[folan][filan] < distances[folan][labels[folan]]) {
+                                // keep the second smallest
+                                hamerly_lower_bounds[folan] = distances[folan][labels[folan]];
+                                labels[folan] = filan;
+                                // we can just do this once after the for, ghamerly does this too
+                                // hamerly_upper_bounds[folan] = distances[folan][labels[folan]];
+                            } else if (hamerly_lower_bounds[folan] > distances[folan][filan]) {
+                                hamerly_lower_bounds[folan] = distances[folan][filan];
+                            }
+                        }
+                        hamerly_upper_bounds[folan] = distances[folan][labels[folan]];
+                    }
+                    else{
+                        // otherwise we skip this distance calculation and the label remains the same
+                        hamerly_count += (K - 1);
+                    }
                 } else {
+                    // otherwise we skip this distance calculation and the label remains the same
                     hamerly_count += K;
                 }
-                // otherwise we skip this distance calculation and the label remains the same
             }
 
             std::cout << "hamerly pruned " << hamerly_count << std::endl;
@@ -1361,7 +1389,10 @@ void kmeans_v5() {
 
         // calculating the movement of new to old cluster centers
         furthest_moving_centroid = 0;
-        second_furthest_moving_centroid = 0;
+        second_furthest_moving_centroid = 1;
+        if(centroid_movement[second_furthest_moving_centroid] > centroid_movement[furthest_moving_centroid]){
+            std::swap(furthest_moving_centroid, second_furthest_moving_centroid);
+        }
         for (folan = 0; folan < K; folan++) {
             tmp = 0.0;
             for (filan = 0; filan < D; filan++) {
@@ -1369,13 +1400,20 @@ void kmeans_v5() {
                         (centroids[folan][filan] - old_centroids[folan][filan]));
             }
             centroid_movement[folan] = sqrt(tmp);
-            if (centroid_movement[folan] > centroid_movement[furthest_moving_centroid])
+            if (centroid_movement[folan] > centroid_movement[furthest_moving_centroid]){
+                second_furthest_moving_centroid = furthest_moving_centroid;
                 furthest_moving_centroid = folan;
+            }
             else if (centroid_movement[folan] >
                      centroid_movement[second_furthest_moving_centroid])
                 second_furthest_moving_centroid = folan;
         }
         std::cout << "calculated centroid movements" << std::endl;
+        // std::cout << "centr_movements: " << std::endl;
+        // for(folan = 0; folan < K; folan++){
+        //     std::cout << centroid_movement[folan] << " ";
+        // }
+        // std::cout << std::endl;
 
         // update upper and lower hamerly bounds based on centroid movements
         for (folan = 0; folan < N; folan++) {
@@ -1399,15 +1437,17 @@ void kmeans_v5() {
 
         // check convergence
         // TODO: gonna do it in labels assignment, changed my mind will do it here, DONE
-        has_converged = true;
-        for (folan = 0; folan < K; folan++) {
-            for (filan = 0; filan < D; filan++) {
-                if (old_centroids[folan][filan] != centroids[folan][filan]) {
-                    has_converged = false;
-                    break;
-                }
-            }
-        }
+        // has_converged = true;
+        // for (folan = 0; folan < K; folan++) {
+        //     for (filan = 0; filan < D; filan++) {
+        //         if (old_centroids[folan][filan] != centroids[folan][filan]) {
+        //             has_converged = false;
+        //             break;
+        //         }
+        //     }
+        // }
+        // learnt from ghamerly
+        has_converged = (0.0 == centroid_movement[furthest_moving_centroid]);
         std::cout << "checked convergence" << std::endl;
 
         // end if converged
@@ -2595,8 +2635,11 @@ int main(int argc, char **argv) {
     data_file.clear();
     data_file.seekg(0, std::ios::beg);
 
+    double tmp;
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < D; j++) {
+            // data_file >> tmp;
+            // data_arr[i][j] = round(tmp / 100);
             data_file >> data_arr[i][j];
         }
     }
@@ -2676,7 +2719,7 @@ int main(int argc, char **argv) {
     std::cout << "set labels to 0, calling kmeans..." << std::endl;
 
     // do the clustering
-    kmeans_v9();
+    kmeans_v5();
 
     // write labels to somewhere I guess...
     // TODO
