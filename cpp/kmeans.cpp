@@ -2601,7 +2601,10 @@ void kmeans_v9() {
 
         // calculating the movement of new to old cluster centers
         furthest_moving_centroid = 0;
-        second_furthest_moving_centroid = 0;
+        second_furthest_moving_centroid = 1;
+        if(centroid_movement[second_furthest_moving_centroid] > centroid_movement[furthest_moving_centroid]){
+            std::swap(furthest_moving_centroid, second_furthest_moving_centroid);
+        }
         for (folan = 0; folan < K; folan++) {
             tmp = 0.0;
             for (filan = 0; filan < D; filan++) {
@@ -2610,8 +2613,10 @@ void kmeans_v9() {
             }
             if(tmp < 0.0) tmp = 0.0;
             centroid_movement[folan] = sqrt(tmp);
-            if (centroid_movement[folan] > centroid_movement[furthest_moving_centroid])
+            if (centroid_movement[folan] > centroid_movement[furthest_moving_centroid]){
+                second_furthest_moving_centroid = furthest_moving_centroid;
                 furthest_moving_centroid = folan;
+            }
             else if (centroid_movement[folan] >
                      centroid_movement[second_furthest_moving_centroid])
                 second_furthest_moving_centroid = folan;
@@ -2640,15 +2645,16 @@ void kmeans_v9() {
 
         // check convergence
         // TODO: gonna do it in labels assignment, changed my mind will do it here, DONE
-        has_converged = true;
-        for (folan = 0; folan < K; folan++) {
-            for (filan = 0; filan < D; filan++) {
-                if (old_centroids[folan][filan] != centroids[folan][filan]) {
-                    has_converged = false;
-                    break;
-                }
-            }
-        }
+        // has_converged = true;
+        // for (folan = 0; folan < K; folan++) {
+        //     for (filan = 0; filan < D; filan++) {
+        //         if (old_centroids[folan][filan] != centroids[folan][filan]) {
+        //             has_converged = false;
+        //             break;
+        //         }
+        //     }
+        // }
+        has_converged = (0.0 == centroid_movement[furthest_moving_centroid]);
         std::cout << "checked convergence" << std::endl;
 
         // end if converged
@@ -2793,7 +2799,7 @@ int main(int argc, char **argv) {
     std::cout << "set labels to 0, calling kmeans..." << std::endl;
 
     // do the clustering
-    kmeans_v8();
+    kmeans_v9();
 
     // write labels to somewhere I guess...
     // TODO
