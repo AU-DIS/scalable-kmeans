@@ -37,7 +37,7 @@
 #define D 144 // data dimensionality
 #define K 10 // k variable in kmeans
 #define N 167 // count of data points
-#define MAX_ITERATIONS 5 // maximum number of iterations to do before giving up convergence
+#define MAX_ITERATIONS 50 // maximum number of iterations to do before giving up convergence
 
 // double data_arr[N][D]; // the data itself 
 // int labels[N]; // where the labels of the algorithm will be eventually
@@ -1132,8 +1132,16 @@ void kmeans_v4() {
         // std::cout << "debug checkpoint 6" << std::endl;
 
         for (folan = 0; folan < K; folan++) {
-            for (filan = 0; filan < D; filan++) {
-                centroids[folan][filan] /= cluster_counts[folan];
+            // to deal with empty clusters
+            // if the cluster is empty, keep the old centroid
+            if(cluster_counts[folan] > 0){
+                for (filan = 0; filan < D; filan++) {
+                    centroids[folan][filan] /= cluster_counts[folan];
+                }
+            } else{
+                for (filan = 0; filan < D; filan++) {
+                    centroids[folan][filan] = old_centroids[folan][filan];
+                }
             }
         }
         std::cout << "calculated new centroids" << std::endl;
@@ -1384,8 +1392,16 @@ void kmeans_v5() {
             }
         }
         for (folan = 0; folan < K; folan++) {
-            for (filan = 0; filan < D; filan++) {
-                centroids[folan][filan] /= cluster_counts[folan];
+            // to deal with empty clusters
+            // if the cluster is empty, keep the old centroid
+            if(cluster_counts[folan] > 0){
+                for (filan = 0; filan < D; filan++) {
+                    centroids[folan][filan] /= cluster_counts[folan];
+                }
+            } else{
+                for (filan = 0; filan < D; filan++) {
+                    centroids[folan][filan] = old_centroids[folan][filan];
+                }
             }
         }
         std::cout << "calculated new centroids" << std::endl;
@@ -1710,8 +1726,16 @@ void kmeans_v6() {
             }
         }
         for (folan = 0; folan < K; folan++) {
-            for (filan = 0; filan < D; filan++) {
-                centroids[folan][filan] /= cluster_counts[folan];
+            // to deal with empty clusters
+            // if the cluster is empty, keep the old centroid
+            if(cluster_counts[folan] > 0){
+                for (filan = 0; filan < D; filan++) {
+                    centroids[folan][filan] /= cluster_counts[folan];
+                }
+            } else{
+                for (filan = 0; filan < D; filan++) {
+                    centroids[folan][filan] = old_centroids[folan][filan];
+                }
             }
         }
         std::cout << "calculated new centroids" << std::endl;
@@ -2023,8 +2047,16 @@ void kmeans_v7() {
             }
         }
         for (folan = 0; folan < K; folan++) {
-            for (filan = 0; filan < D; filan++) {
-                centroids[folan][filan] /= cluster_counts[folan];
+            // to deal with empty clusters
+            // if the cluster is empty, keep the old centroid
+            if(cluster_counts[folan] > 0){
+                for (filan = 0; filan < D; filan++) {
+                    centroids[folan][filan] /= cluster_counts[folan];
+                }
+            } else{
+                for (filan = 0; filan < D; filan++) {
+                    centroids[folan][filan] = old_centroids[folan][filan];
+                }
             }
         }
         std::cout << "calculated new centroids" << std::endl;
@@ -2296,8 +2328,16 @@ void kmeans_v8() {
             }
         }
         for (folan = 0; folan < K; folan++) {
-            for (filan = 0; filan < D; filan++) {
-                centroids[folan][filan] /= cluster_counts[folan];
+            // to deal with empty clusters
+            // if the cluster is empty, keep the old centroid
+            if(cluster_counts[folan] > 0){
+                for (filan = 0; filan < D; filan++) {
+                    centroids[folan][filan] /= cluster_counts[folan];
+                }
+            } else{
+                for (filan = 0; filan < D; filan++) {
+                    centroids[folan][filan] = old_centroids[folan][filan];
+                }
             }
         }
         std::cout << "calculated new centroids" << std::endl;
@@ -2583,8 +2623,16 @@ void kmeans_v9() {
             }
         }
         for (folan = 0; folan < K; folan++) {
-            for (filan = 0; filan < D; filan++) {
-                centroids[folan][filan] /= cluster_counts[folan];
+            // to deal with empty clusters
+            // if the cluster is empty, keep the old centroid
+            if(cluster_counts[folan] > 0){
+                for (filan = 0; filan < D; filan++) {
+                    centroids[folan][filan] /= cluster_counts[folan];
+                }
+            } else{
+                for (filan = 0; filan < D; filan++) {
+                    centroids[folan][filan] = old_centroids[folan][filan];
+                }
             }
         }
         std::cout << "calculated new centroids" << std::endl;
