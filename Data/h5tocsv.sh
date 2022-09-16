@@ -18,7 +18,7 @@ arr = np.array(dataset)
 df = pd.DataFrame(data=[(*axes, v.item()) for axes, v in zip(it.product(*[range(i) for i in arr.shape]), np.nditer(arr))], columns=tuple('xyzkv'))
 
 #print(df)
-pd.DataFrame(df).to_csv('$1.csv')
+pd.DataFrame(df).to_csv('$1.txt', header=False, index=False, sep=" ", line_terminator=" \n")
 
 EOF
 )

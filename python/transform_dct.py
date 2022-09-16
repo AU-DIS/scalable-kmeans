@@ -215,3 +215,29 @@ def get_square_squared_sums(data):
     res = np.array(res)
     print(res.shape)
     return res
+
+
+
+def main():
+    #Running DCT for c++ call
+    filename = sys.argv[1]
+    f = h5py.File(filename, 'r')
+    dataset = f['data']
+
+    dct_len = 1024
+    image_dct = cal_dct_features(dct_len, dataset)
+    arr = np.array(image_dct)
+    df = pd.DataFrame(data=arr)
+    #min_ = df.min().min()
+    #max_ = df.max().max()
+    #mean_ = df.mean().mean()
+    #df_norm = (df - min_) / (max_ - min_)
+
+    df.to_csv(filename+"_dct.txt", header=False, index=False, sep=" ", line_terminator=" \n")
+
+
+if __name__ == "__main__":
+    import sys
+    import h5py
+    import pandas as pd
+    main()
