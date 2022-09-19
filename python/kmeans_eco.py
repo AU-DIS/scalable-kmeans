@@ -73,6 +73,8 @@ def dist_masked(x, centroids, x_squared, centroid_squared, is_candidate, labels,
             lb_dist[i][j] -= 2 * this_dot
             ub_dist[i][j] += 2 * this_dot
             
+            if lb_dist[i][j] < 0: lb_dist[i][j] = 0
+            if ub_dist[i][j] < 0: ub_dist[i][j] = 0
             lb_dist[i][j] = math.sqrt(lb_dist[i][j])
             ub_dist[i][j] = math.sqrt(ub_dist[i][j])
 
