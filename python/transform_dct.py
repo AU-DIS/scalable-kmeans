@@ -226,6 +226,9 @@ def main():
 
     dct_len = 1024
     image_dct = cal_dct_features(dct_len, dataset)
+    #image_dct = trunc_dct_features(_image_dct,512)
+
+    
     arr = np.array(image_dct)
     df = pd.DataFrame(data=arr)
     #min_ = df.min().min()
@@ -233,7 +236,7 @@ def main():
     #mean_ = df.mean().mean()
     #df_norm = (df - min_) / (max_ - min_)
 
-    df.to_csv(filename+"_dct.txt", header=False, index=False, sep=" ", line_terminator=" \n")
+    df.to_csv(filename[:-3].replace("1024",str(dct_len))+"_h5_dct.txt", header=False, index=False, sep=" ", line_terminator=" \n")
 
 
 if __name__ == "__main__":

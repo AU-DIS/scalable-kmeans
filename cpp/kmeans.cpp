@@ -32,10 +32,19 @@
             do { if (DEBUG_TEST) fprintf(stderr, fmt, __VA_ARGS__); } while (0)
 
 
-#define D 784 // data dimensionality
-#define K 10 // k variable in kmeans
-#define N 69997 // count of data points
-#define MAX_ITERATIONS 5 // maximum number of iterations to do before giving up convergence
+#ifndef D 
+#define D  256// data dimensionality
+#endif
+#ifndef K
+#define K 5 // k variable in kmeans
+#endif
+#ifndef N
+#define N 168 // count of data points
+#endif
+#ifndef MAX_ITERATIONS
+#define MAX_ITERATIONS 100 // maximum number of iterations to do before giving up convergence
+#endif
+
 
 // double data_arr[N][D]; // the data itself 
 // int labels[N]; // where the labels of the algorithm will be eventually
@@ -1158,9 +1167,7 @@ void kmeans_v4() {
                     centroids[folan][filan] /= cluster_counts[folan];
                 }
             } else{
-                std::cout << "EMPTYYYYYYYYYYYYYYYYYYYY SOUUUUULLLLLLLLLLLLL" << std::endl;
-                std::cout << "EMPTYYYYYYYYYYYYYYYYYYYY SOUUUUULLLLLLLLLLLLL" << std::endl;
-                std::cout << "EMPTYYYYYYYYYYYYYYYYYYYY SOUUUUULLLLLLLLLLLLL" << std::endl;
+                std::cout << "Empty Cluster " << folan << ". Iteration " << iter <<  std::endl;
                 for (filan = 0; filan < D; filan++) {
                     centroids[folan][filan] = old_centroids[folan][filan];
                 }
@@ -1220,7 +1227,7 @@ void kmeans_v5() {
     }
 
     // memcpy(centroids, data_arr, sizeof(double) * K * D);
-    std::cout << "copied init centroids" << std::endl;
+    //std::cout << "copied init centroids" << std::endl;
 
 
     bool has_converged = false;
@@ -1269,7 +1276,7 @@ void kmeans_v5() {
                     for (ashghal = 0; ashghal < D; ashghal++) {
                         tmp -= (2 * data_arr[folan][ashghal] * centroids[filan][ashghal]);
                     }
-                    if(folan == 0 && filan == 0) std::cout << "dist tmp " << tmp << std::endl;
+                    //if(folan == 0 && filan == 0) std::cout << "dist tmp " << tmp << std::endl;
                     if(tmp < 0.0) tmp = 0.0;
                     distances[folan][filan] = sqrt(tmp);
                     if (distances[folan][filan] < smallest) {
@@ -1424,15 +1431,15 @@ void kmeans_v5() {
                 }
             }
         }
-        std::cout << "calculated new centroids" << std::endl;
+        //std::cout << "calculated new centroids" << std::endl;
         // just to check
         int sanity_check = 0;
-        std::cout << "cluster counts..." << std::endl;
+        //std::cout << "cluster counts..." << std::endl;
         for (folan = 0; folan < K; folan++) {
             sanity_check += cluster_counts[folan];
-            std::cout << cluster_counts[folan] << " ";
+            //std::cout << cluster_counts[folan] << " ";
         }
-        std::cout << sanity_check << std::endl;
+        //std::cout << sanity_check << std::endl;
 
         // calculating the movement of new to old cluster centers
         furthest_moving_centroid = 0;
@@ -1456,7 +1463,7 @@ void kmeans_v5() {
                      centroid_movement[second_furthest_moving_centroid])
                 second_furthest_moving_centroid = folan;
         }
-        std::cout << "calculated centroid movements" << std::endl;
+        //std::cout << "calculated centroid movements" << std::endl;
         // std::cout << "centr_movements: " << std::endl;
         // for(folan = 0; folan < K; folan++){
         //     std::cout << centroid_movement[folan] << " ";
@@ -1464,27 +1471,27 @@ void kmeans_v5() {
         // std::cout << std::endl;
 
         // FATEMEH DEBUG
-        std::cout << "before updating the bounds, hamerly_ub[0] " << hamerly_upper_bounds[0] << " hamerly_lb[0] "
-             << hamerly_lower_bounds[0] << std::endl;
+        //std::cout << "before updating the bounds, hamerly_ub[0] " << hamerly_upper_bounds[0] << " hamerly_lb[0] "
+        //     << hamerly_lower_bounds[0] << std::endl;
         // FATEMEH DEBUG
 
         // update upper and lower hamerly bounds based on centroid movements
         for (folan = 0; folan < N; folan++) {
-            if (folan == 0) std::cout << "moving ub " << centroid_movement[labels[folan]] << std::endl;
+            //if (folan == 0) std::cout << "moving ub " << centroid_movement[labels[folan]] << std::endl;
             hamerly_upper_bounds[folan] += centroid_movement[labels[folan]];
             if (labels[folan] == furthest_moving_centroid) {
-                if (folan == 0) std::cout << "moving lb " << centroid_movement[second_furthest_moving_centroid] << std::endl;
+                //if (folan == 0) std::cout << "moving lb " << centroid_movement[second_furthest_moving_centroid] << std::endl;
                 hamerly_lower_bounds[folan] -= centroid_movement[second_furthest_moving_centroid];
             } else {
-                if (folan == 0) std::cout << "moving lb " << centroid_movement[furthest_moving_centroid] << std::endl;
+                //if (folan == 0) std::cout << "moving lb " << centroid_movement[furthest_moving_centroid] << std::endl;
                 hamerly_lower_bounds[folan] -= centroid_movement[furthest_moving_centroid];
             }
         }
 
 
         // FATEMEH DEBUG
-        std::cout << "after updating the bounds, hamerly_ub[0] " << hamerly_upper_bounds[0] << " hamerly_lb[0] "
-             << hamerly_lower_bounds[0] << std::endl;
+        //std::cout << "after updating the bounds, hamerly_ub[0] " << hamerly_upper_bounds[0] << " hamerly_lb[0] "
+        //     << hamerly_lower_bounds[0] << std::endl;
         // FATEMEH DEBUG
 
 
@@ -1501,7 +1508,7 @@ void kmeans_v5() {
         // }
         // learnt from ghamerly
         has_converged = (0.0 == centroid_movement[furthest_moving_centroid]);
-        std::cout << "checked convergence" << std::endl;
+        //std::cout << "checked convergence" << std::endl;
 
         // end if converged
         if (has_converged) break;
@@ -1535,7 +1542,7 @@ void kmeans_v6() {
     }
 
     // memcpy(centroids, data_arr, sizeof(double) * K * D);
-    std::cout << "copied init centroids" << std::endl;
+    //std::cout << "copied init centroids" << std::endl;
 
 
     bool has_converged = false;
@@ -1812,8 +1819,8 @@ void kmeans_v6() {
             }
         }
 
-        std::cout << "after updating bounds ----------" << std::endl;
-        std::cout << "elkan lb[0][0] " << elkan_lower_bounds[0][0] << " hamerly ub[0] " << hamerly_upper_bounds[0] << std::endl;
+        //std::cout << "after updating bounds ----------" << std::endl;
+        //std::cout << "elkan lb[0][0] " << elkan_lower_bounds[0][0] << " hamerly ub[0] " << hamerly_upper_bounds[0] << std::endl;
 
 
 
@@ -1829,7 +1836,7 @@ void kmeans_v6() {
         //     }
         // }
         has_converged = (0.0 == centroid_movement[furthest_moving_centroid]);
-        std::cout << "checked convergence" << std::endl;
+        //std::cout << "checked convergence" << std::endl;
 
         // end if converged
         if (has_converged) break;
@@ -2735,6 +2742,8 @@ void kmeans_v9() {
 
 
 int main(int argc, char **argv) {
+
+    std::cout << " " << D << " "  << K << " "  << N << std::endl;
     // allocate all arrays
     labels = (int *) calloc(N, sizeof(int));
 
@@ -2777,7 +2786,7 @@ int main(int argc, char **argv) {
     if (data_count < N) {
         DEBUGPRINT("%d      %d", data_count, N);
 
-        //std::cout << "NOT ENOUGH DATA!!\n";
+        std::cout << "NOT ENOUGH DATA!!\n";
         exit(3);
     }
 
@@ -2872,7 +2881,7 @@ int main(int argc, char **argv) {
     // do the clustering
     //std::time_t t1 = std::time(nullptr);
     auto t1 = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-    kmeans_v4();
+    kmeans_v6();
     auto t2 = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     
     
@@ -2892,4 +2901,3 @@ int main(int argc, char **argv) {
 
     return 0;
 }
-
