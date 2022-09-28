@@ -33,7 +33,7 @@
 
 
 #ifndef D 
-#define D  256// data dimensionality
+#define D 256// data dimensionality
 #endif
 #ifndef K
 #define K 5 // k variable in kmeans

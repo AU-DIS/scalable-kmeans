@@ -45,6 +45,10 @@ class Dataset {
     void set(int i, int j, double val) {
         data[i*d+j] = val;
     };
+
+    double* get_data_pointer() {
+        return data;
+    }
     
 
     void load_datafile(string data_file_name){

@@ -7,7 +7,8 @@ class KmeansStrategy {
     public:
       // pure virtual function
         virtual ~KmeansStrategy() = default;
-        virtual void run(Dataset* dataset) = 0;
+        virtual int* run(Dataset* dataset) = 0;
+        virtual void init(int max_iter, int n, int d, int k, Dataset* dataset) = 0;
         //virtual int get_max_iter();
         //virtual int get_data_dims();
         //virtual int get_data_points();
@@ -16,9 +17,9 @@ class KmeansStrategy {
     private:
 
         //int max_iter;       // Maximum number of iterations
-        //int data_dims;      // Dimensions of each datapoint 
-        //int data_points;    // Number of datapoints   
-        //int num_clusters;   // Number of clusters
+        //int d;      // Dimensions of each datapoint 
+        //int n;    // Number of datapoints   
+        //int k;   // Number of clusters
                           
 };
 

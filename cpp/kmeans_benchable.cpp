@@ -34,13 +34,13 @@ int argc_;
 
 
     #ifndef D 
-    #define D 65536 // data dimensionality
+    #define D 1024 // data dimensionality
     #endif
     #ifndef K
     #define K 5 // k variable in kmeans
     #endif
     #ifndef N
-    #define N 1911 // count of data points
+    #define N 168 // count of data points
     #endif
     #ifndef MAX_ITERATIONS
     #define MAX_ITERATIONS 100 // maximum number of iterations to do before giving up convergence
@@ -189,7 +189,18 @@ class kmeans_bench {
                     centroids[labels[folan]][filan] += data_arr[folan][filan];
                 }
             }
+
+            for(int i = 0; i < K; i++) {
+                for (int j = 0; j < 10; j++) {
+                    std::cout << centroids[i][j] << " ";
+                }
+                std::cout << "\n";
+            }
+            std::cout << std::endl;
+
+
             for (folan = 0; folan < K; folan++) {
+                //std::cout << cluster_counts[folan] << std::endl;
                 // to deal with empty clusters
                 // if the cluster is empty, keep the old centroid
                 if(cluster_counts[folan] > 0){
@@ -205,6 +216,9 @@ class kmeans_bench {
                     }
                 }
             }
+
+            
+
             //std::cout << "calculated new centroids" << std::endl;
             // just to check
             int sanity_check = 0;
@@ -2908,6 +2922,19 @@ static void BM_Kmeans(benchmark::State& state) {
         state.ResumeTiming();
 
         lloyd.kmeans();
+
+        state.PauseTiming();
+        
+        std::ofstream label_file;
+        std::string file = "/mnt/c/Users/kaspe/OneDrive/Skrivebord/Reps/scalable-kmeans/cpp/remove.txt";
+        label_file.open(file.c_str());
+
+        for (int i = 0; i < N; i++) {
+            label_file << lloyd.labels[i] << "\n";
+        }
+        label_file.close();
+
+        state.ResumeTiming();
     }
 }
 
@@ -3023,12 +3050,12 @@ int main(int argc, char **argv) {
     argc_ = argc;
     data_load(argv_);
 
-    BENCHMARK(BM_Kmeans)->Iterations(20)->Unit(benchmark::kMillisecond);
-    BENCHMARK(BM_Kmeans_elkan)->Iterations(20)->Unit(benchmark::kMillisecond);
-    BENCHMARK(BM_Kmeans_hamerly)->Iterations(20)->Unit(benchmark::kMillisecond);
-    BENCHMARK(BM_Kmeans_ElkanNewTE)->Iterations(20)->Unit(benchmark::kMillisecond);
-    BENCHMARK(BM_Kmeans_ElkanHamerlyNewTE)->Iterations(20)->Unit(benchmark::kMillisecond);
-    BENCHMARK(BM_Kmeans_stepwise)->Iterations(20)->Unit(benchmark::kMillisecond);
+    BENCHMARK(BM_Kmeans)->Iterations(1)->Unit(benchmark::kMillisecond);
+    //BENCHMARK(BM_Kmeans_elkan)->Iterations(20)->Unit(benchmark::kMillisecond);
+    //BENCHMARK(BM_Kmeans_hamerly)->Iterations(20)->Unit(benchmark::kMillisecond);
+    //BENCHMARK(BM_Kmeans_ElkanNewTE)->Iterations(20)->Unit(benchmark::kMillisecond);
+    //BENCHMARK(BM_Kmeans_ElkanHamerlyNewTE)->Iterations(20)->Unit(benchmark::kMillisecond);
+    //BENCHMARK(BM_Kmeans_stepwise)->Iterations(20)->Unit(benchmark::kMillisecond);
     
     benchmark::Initialize(&argc, argv);
     benchmark::RunSpecifiedBenchmarks();
