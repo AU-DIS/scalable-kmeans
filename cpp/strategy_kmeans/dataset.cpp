@@ -1,3 +1,6 @@
+#ifndef DATASET_
+#define DATASET_
+
 #include <array>
 #include <string>
 #include <fstream>
@@ -21,6 +24,12 @@ class Dataset {
         d = _d;
     
         data = new double[n*d];
+    };
+    explicit Dataset(){
+        n = 0;
+        d = 0;
+    
+        data = new double[0];
     };
     ~Dataset(){    
         delete data; 
@@ -67,3 +76,4 @@ class Dataset {
         std::cout << std::endl;
     };
 };
+#endif

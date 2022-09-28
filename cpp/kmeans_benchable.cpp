@@ -34,7 +34,7 @@ int argc_;
 
 
     #ifndef D 
-    #define D 262144 // data dimensionality
+    #define D 65536 // data dimensionality
     #endif
     #ifndef K
     #define K 5 // k variable in kmeans
@@ -3023,12 +3023,12 @@ int main(int argc, char **argv) {
     argc_ = argc;
     data_load(argv_);
 
-    BENCHMARK(BM_Kmeans)->Iterations(10)->Unit(benchmark::kMillisecond);
-    BENCHMARK(BM_Kmeans_elkan)->Iterations(10)->Unit(benchmark::kMillisecond);
-    BENCHMARK(BM_Kmeans_hamerly)->Iterations(10)->Unit(benchmark::kMillisecond);
-    BENCHMARK(BM_Kmeans_ElkanNewTE)->Iterations(10)->Unit(benchmark::kMillisecond);
-    BENCHMARK(BM_Kmeans_ElkanHamerlyNewTE)->Iterations(10)->Unit(benchmark::kMillisecond);
-    BENCHMARK(BM_Kmeans_stepwise)->Iterations(10)->Unit(benchmark::kMillisecond);
+    BENCHMARK(BM_Kmeans)->Iterations(20)->Unit(benchmark::kMillisecond);
+    BENCHMARK(BM_Kmeans_elkan)->Iterations(20)->Unit(benchmark::kMillisecond);
+    BENCHMARK(BM_Kmeans_hamerly)->Iterations(20)->Unit(benchmark::kMillisecond);
+    BENCHMARK(BM_Kmeans_ElkanNewTE)->Iterations(20)->Unit(benchmark::kMillisecond);
+    BENCHMARK(BM_Kmeans_ElkanHamerlyNewTE)->Iterations(20)->Unit(benchmark::kMillisecond);
+    BENCHMARK(BM_Kmeans_stepwise)->Iterations(20)->Unit(benchmark::kMillisecond);
     
     benchmark::Initialize(&argc, argv);
     benchmark::RunSpecifiedBenchmarks();
