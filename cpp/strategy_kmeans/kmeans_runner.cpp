@@ -23,12 +23,13 @@ class KmeansRunner {
         void init_run(int n, int d, int k, std::string data_file_name){
             data = std::move(std::make_unique<Dataset>(n,d));
             data->load_datafile(data_file_name);
-            kmeans_strategy_->init(100,n, d, k, data.get());
+            
         };
 
 
-        void run_kmeans() {
+        void run_kmeans(int n, int d, int k) {
             // std::unique_ptr<Dataset>(new Dataset(n,d));
+            kmeans_strategy_->init(100,n, d, k, data.get());
             result_labels = kmeans_strategy_->run(data.get());
         };
 

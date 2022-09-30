@@ -34,7 +34,7 @@ int argc_;
 
 
     #ifndef D 
-    #define D 1024 // data dimensionality
+    #define D 262144 // data dimensionality
     #endif
     #ifndef K
     #define K 5 // k variable in kmeans
@@ -190,13 +190,13 @@ class kmeans_bench {
                 }
             }
 
-            for(int i = 0; i < K; i++) {
+            /*for(int i = 0; i < K; i++) {
                 for (int j = 0; j < 10; j++) {
                     std::cout << centroids[i][j] << " ";
                 }
                 std::cout << "\n";
             }
-            std::cout << std::endl;
+            std::cout << std::endl;*/
 
 
             for (folan = 0; folan < K; folan++) {
@@ -3050,7 +3050,7 @@ int main(int argc, char **argv) {
     argc_ = argc;
     data_load(argv_);
 
-    BENCHMARK(BM_Kmeans)->Iterations(1)->Unit(benchmark::kMillisecond);
+    BENCHMARK(BM_Kmeans)->Iterations(20)->Unit(benchmark::kMillisecond);
     //BENCHMARK(BM_Kmeans_elkan)->Iterations(20)->Unit(benchmark::kMillisecond);
     //BENCHMARK(BM_Kmeans_hamerly)->Iterations(20)->Unit(benchmark::kMillisecond);
     //BENCHMARK(BM_Kmeans_ElkanNewTE)->Iterations(20)->Unit(benchmark::kMillisecond);

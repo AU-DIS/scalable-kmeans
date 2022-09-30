@@ -2,6 +2,7 @@
 #include "../kmeans_utils/utils.cpp"
 #include <cstring>
 #include <algorithm>
+//#include <limits>
 
 
 class LloydKmeansStrategy : public KmeansStrategy {
@@ -11,24 +12,28 @@ class LloydKmeansStrategy : public KmeansStrategy {
             //Write lloyd
             int iter = 0;
             bool converged = false;
+            
             while ((iter < max_inter) && (!converged)) {
                 iter++;
-                std::cout << iter << std::endl;
+                //std::cout << iter << std::endl;
                 //Calculate all distances
                 for (int i = 0; i < n; i++) {
                     for (int j = 0; j < k; j++) {
-                        distances[i*k+j] = euclidian_distance(i, j, d, k, data->get_data_pointer(), centroids);
+                        distances[i*k+j] = euclidian_distance(i, j, d, k, data_ptr, centroids);
+                        if (distances[i*k+j] < distances[i*k+labels[i]]) {
+                            labels[i] = j;
+                        }
                     }
                 }
                 //Update labels
-                for (int i = 0; i < n; i++) {
+                /*for (int i = 0; i < n; i++) {
                     for (int j = 0; j < k; j++) {
                         //std::cout << distances[i*k+j] << " " << distances[i*k+labels[i]] << "\n"; 
                         if (distances[i*k+j] < distances[i*k+labels[i]]) {
                             labels[i] = j;
                         }
                     }
-                }
+                }*/
                 
 
                 //Save centroids for convergence test    
@@ -52,21 +57,20 @@ class LloydKmeansStrategy : public KmeansStrategy {
                 for (int i = 0; i < n; i++) {
                     cluster_count[labels[i]]++;
                     for (int j = 0; j < d; j++) { 
-                        centroids[labels[i]*d+j] += data->get(i,j);
+                        centroids[labels[i]*d+j] += data_ptr[i*d+j];
                     }
                 }
 
-                for(int i = 0; i < k; i++) {
+                /*for(int i = 0; i < k; i++) {
                     for (int j = 0; j < 10; j++) {
                         std::cout << centroids[i*d+j] << " ";
                     }
                     std::cout << "\n";
                 }
-                std::cout << std::endl;
+                std::cout << std::endl;*/
 
                 //Calculate new centroid positions
-                for (int i = 0; i < k; i++) {
-                    std::cout << cluster_count[i] << std::endl;    
+                for (int i = 0; i < k; i++) {  
                     if (cluster_count[i] > 0) {
                         for (int j = 0; j < d; j++) {
                             centroids[i*d+j] /= cluster_count[i]; 
@@ -93,15 +97,22 @@ class LloydKmeansStrategy : public KmeansStrategy {
                     }
                 }
             }
+
+            /*for (int i = 0; i < k; i++) {      
+                std::cout << cluster_count[i] << " "; 
+            }
+            std::cout << std::endl;*/
+
             return labels;
         };
 
-        void init(int _max_iter, int _n, int _d, int _k, Dataset* data) {
+        void init(int _max_iter, int _n, int _d, int _k, Dataset* _data) {
             
             max_inter = _max_iter;
             n = _n;
             d = _d;
             k = _k;
+            data_ptr = _data->get_data_pointer();
 
             //Init labels
             labels = new int[n];
@@ -113,11 +124,13 @@ class LloydKmeansStrategy : public KmeansStrategy {
 
             //Init distances
             distances = new double[n*k];
+            std::fill(distances, distances+n*k, std::numeric_limits<double>::max());
+            //memset(distances, std::numeric_limits<double>::max(), sizeof(double)*n*k);
 
             //Init centroids  
             centroids = new double[k*d];
             old_centroids = new double[k*d];
-            double* data_ptr = data->get_data_pointer();
+            //double* data_ptr = data_ptr->get_data_pointer();
             /*for (int i = 0; i < k; i++) {
                 for (int j = 0; j < d; j++) {
                     centroids[i*d+j] = data_ptr[i*d+j];
@@ -146,5 +159,7 @@ class LloydKmeansStrategy : public KmeansStrategy {
         //x to c [x*k+c]
         double* distances;
         int* labels;
+
+        double* data_ptr;// = data->get_data_pointer();
 
 };
