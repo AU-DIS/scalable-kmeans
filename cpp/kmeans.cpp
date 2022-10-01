@@ -72,6 +72,10 @@ double **elkan_lower_bounds;
 double **centroid_to_centroid_distances;
 // ELKAN EXTRAS end
 
+// MARIGOLD EXTRAS
+int **last_level_calculated;
+// MARIGOLD EXTRAS end
+
 
 // helper variables
 double **old_centroids;
@@ -2793,9 +2797,33 @@ void kmeans_v9() {
 // assume it is candoidate and stuff, and the inc_dot is complete till here
 // then calc the ub and lb of distance between data[folan] and cent[filan] till level
 void calculate_distance_folan_filan_till_level(int folan, int filan, int level){
+    if(folan == 4){
+        std::cout << "called folan_filan  for " << folan << " " << filan << " " << level << std::endl;
+    }
+    
+    // check to not redo anything
+    if(last_level_calculated[folan][filan] >= level){ 
+        if(folan == 4){
+            std::cout << "last level was " << last_level_calculated[folan][filan] << " so we are returning" << std::endl;
+        }
+        return;
+    }
+    if(last_level_calculated[folan][filan] != level - 1 && folan == 4){
+        std::cout << "DISTASTER!!!!!!!!!!!!!!!!! " << folan << " " << filan << " " << level << " " << last_level_calculated[folan][filan] << std::endl;
+        std:: cout << "fingers crossed..." << std::endl;
+        // exit(2);
+    }
+
+    if(last_level_calculated[folan][filan] == -1){
+        incremental_dots[folan][filan] = 0.0;
+    }
+    
+
     int ashghal, halghe;
     int d_sqrt = sqrt(D);
-    int two_p_level_m1 = int(pow(2, level - 1)), two_p_level = std::min(int(pow(2, level)), d_sqrt);
+    // int two_p_level_m1 = int(pow(2, level - 1));
+    int two_p_level_m1 = int(pow(2, last_level_calculated[folan][filan]));
+    int two_p_level = std::min(int(pow(2, level)), d_sqrt);
     double this_dot = 0.0;
     double tmp_ub, tmp_lb;
 
@@ -2820,19 +2848,52 @@ void calculate_distance_folan_filan_till_level(int folan, int filan, int level){
     //         }
     //     }
     // }
-    // tmp_ub -= 2 * incremental_dots[folan][filan];
-    // tmp_lb -= 2 * incremental_dots[folan][filan];
 
-    this_dot = 0.0;
-    for(int i = 0; i < two_p_level; i++){
-        for(int j = 0; j < two_p_level; j++){
-            this_dot += (data_arr[folan][d_sqrt*i + j] * centroids[filan][d_sqrt*i + j]);
+    // NEW FORMATION to handle starting from 2^last_level
+    if(folan == 4){
+        std::cout << "amoodi ha" << std::endl;
+    }
+    for(ashghal = 0; ashghal < two_p_level_m1; ashghal++){
+        // amoodi ha
+        for(halghe = ashghal * d_sqrt + two_p_level_m1; halghe < ashghal * d_sqrt + two_p_level; halghe++){
+            if(folan == 4){
+                std::cout << halghe << " ";
+            }
+            incremental_dots[folan][filan] += (data_arr[folan][halghe] * centroids[filan][halghe]);
+        }
+        if(folan == 4){
+        std::cout << std::endl;
         }
     }
-    // upper_bounds[folan][filan] -= (2 * this_dot);
-    // lower_bounds[folan][filan] -= (2 * this_dot);
-    tmp_ub -= (2 * this_dot);
-    tmp_lb -= (2 * this_dot);
+    // for(ashghal = 0; ashghal < std::min(two_p_level_m1, d_sqrt - two_p_level_m1); ashghal++){
+    if(folan == 4){
+        std::cout << "ofoghi ha" << std::endl;
+    }
+    for(ashghal = 0; ashghal < std::min(two_p_level - two_p_level_m1, d_sqrt - two_p_level_m1); ashghal++){
+        // ofoghi ha
+        for(halghe = d_sqrt * (two_p_level_m1 + ashghal); halghe < d_sqrt * (two_p_level_m1 + ashghal) + two_p_level; halghe++){
+            if(folan == 4){
+                std::cout << halghe << " ";
+            }
+            incremental_dots[folan][filan] += (data_arr[folan][halghe] * centroids[filan][halghe]);
+        }
+        if(folan == 4){
+        std::cout << std::endl;
+        }
+    }
+    tmp_ub -= 2 * incremental_dots[folan][filan];
+    tmp_lb -= 2 * incremental_dots[folan][filan];
+
+    // this_dot = 0.0;
+    // for(int i = 0; i < two_p_level; i++){
+    //     for(int j = 0; j < two_p_level; j++){
+    //         this_dot += (data_arr[folan][d_sqrt*i + j] * centroids[filan][d_sqrt*i + j]);
+    //     }
+    // }
+    // // upper_bounds[folan][filan] -= (2 * this_dot);
+    // // lower_bounds[folan][filan] -= (2 * this_dot);
+    // tmp_ub -= (2 * this_dot);
+    // tmp_lb -= (2 * this_dot);
 
     // debug
 
@@ -2848,6 +2909,12 @@ void calculate_distance_folan_filan_till_level(int folan, int filan, int level){
     if(tmp_ub < 0.0) tmp_ub = 0.0;
     upper_bounds[folan][filan] = sqrt(tmp_ub);
     lower_bounds[folan][filan] = sqrt(tmp_lb);   
+
+    // otherwise, increment to know we have done it
+    last_level_calculated[folan][filan] = level;
+    if(folan == 4){
+        std::cout << "went though successfully, new last-level is " << last_level_calculated[folan][filan] << std::endl;
+    }
 }
 
 // let's try for the whole thing
@@ -2917,6 +2984,13 @@ void kmeans_v10(){
     memset(smallest_ub, 0, sizeof(int) * N);
 
     std::cout << "memset out assigned and smallest_ub" << std::endl;
+
+    for(folan = 0; folan < N; folan++){
+        for(filan=0; filan <K; filan++){
+            last_level_calculated[folan][filan] = -1;
+        }
+    }
+    std::cout << "set last_level_calc to -1" << std::endl;
 
     // I think I have to put the step-wise while here
 
@@ -3224,6 +3298,13 @@ void kmeans_v10(){
         memset(assigned, 0, sizeof(int) * N);
         std::cout << "memset assigned" << std::endl;
 
+        for(folan = 0; folan < N; folan++){
+            for(filan=0; filan <K; filan++){
+                last_level_calculated[folan][filan] = -1;
+            }
+        }
+        std::cout << "set last_level_calc to -1" << std::endl;
+
         // I think I have to put the step-wise while here
 
         while (level < int(log2(int(sqrt(D))) + 2)) {
@@ -3244,7 +3325,7 @@ void kmeans_v10(){
                         0.5 * closest_centroid_distance[labels[folan]]) : hamerly_lower_bounds[folan];
                 // elkan lemma 1 and hamerly
                 if (hamerly_bound < hamerly_upper_bounds[folan]) {
-                    if(folan == 1){
+                    if(folan == 4){
                         std::cout << "not pruned by ham_bound..." << std::endl;
                     }
                     // if((0.5 * closest_centroid_distance[labels[folan]]) < hamerly_upper_bounds[folan]){
@@ -3258,14 +3339,14 @@ void kmeans_v10(){
                         // new lemma
                         if (elkan_lower_bounds[folan][filan] >
                             hamerly_upper_bounds[folan] + centroid_movement[labels[folan]] + centroid_movement[filan]) {
-                                if(folan == 1){
+                                if(folan == 4){
                                     std::cout << "skipping for new lemma " << filan << std::endl;
                                 }
                             // TODO: i think this should be a break instead of a continue, but im waiting for Mo's response
                             // DONE: I was wrong, it is just continue, cause it just means that filan will not be the correct cluster for this guy
                             continue;
                         }
-                        if(folan == 1){
+                        if(folan == 4){
                             std::cout << "not pruned by new lemma " << filan << std::endl;
                         }
                         if (hamerly_upper_bounds[folan] > elkan_lower_bounds[folan][filan]
@@ -3288,7 +3369,7 @@ void kmeans_v10(){
                                     // AS DISCUSSED WITH KASPER, lets's try it this way for now TODO: check
                                     hamerly_upper_bounds[folan] = upper_bounds[folan][labels[folan]];
                                     elkan_lower_bounds[folan][labels[folan]] = lower_bounds[folan][labels[folan]];
-                                    if(folan == 1){
+                                    if(folan == 4){
                                         std::cout << "JUST FOR THE SAKE OF FATEMEH'S SANITY: euc_dist(1, 1) " << sqrt(euclidean_distance(1, 1)) << std::endl; 
                                         std::cout << "1: changed ham_ub[" << folan << "] to " << hamerly_upper_bounds[folan];
                                         std::cout << " and elkan_lb[" << folan << "][" << labels[folan] << "] to " << elkan_lower_bounds[folan][labels[folan]] << std::endl;
@@ -3304,7 +3385,7 @@ void kmeans_v10(){
                                 calculate_distance_folan_filan_till_level(folan, filan, level);
                                 // i'm not sure about this maxing, maybe I should always set it to lb TODO?
                                 elkan_lower_bounds[folan][filan] = lower_bounds[folan][filan];
-                                if(folan == 1){
+                                if(folan == 4){
                                     std::cout << "2: changed  elkan_lb[" << folan << "][" << filan << "] to " << elkan_lower_bounds[folan][filan] << " ub was " << upper_bounds[folan][filan] << std::endl;
                                 }    
                                 // elkan_lower_bounds[folan][filan] = std::max(elkan_lower_bounds[folan][filan], lower_bounds[folan][filan]);
@@ -3335,7 +3416,7 @@ void kmeans_v10(){
                                     // hamerly_lower_bounds[folan] = hamerly_upper_bounds[folan];
                                     labels[folan] = filan;
                                     hamerly_upper_bounds[folan] = upper_bounds[folan][filan];
-                                    if(folan == 1){
+                                    if(folan == 4){
                                         std::cout << "3: changed  ham_ub[" << folan << "] to " << hamerly_upper_bounds[folan];
                                         std::cout << " and labels[" << folan << "]  to " << labels[folan] << std::endl;
                                     }
@@ -3368,7 +3449,7 @@ void kmeans_v10(){
                         // FOR NOW I WON'T
                         else{
                             // TODO: I think I need to change the is_candid
-                            if(folan == 1){
+                            if(folan == 4){
                                 std::cout << "3.5 skipping this " << filan << std::endl;
                             }
                         }
@@ -3389,10 +3470,10 @@ void kmeans_v10(){
                 // I'll move this to the start of the N loop
                 // I added it there, but will keep it here because of the else that can change assigned with ham_boung
                 if (assigned[folan] > 0) continue;
-                if(folan == 1){
-                    std::cout << "elkan_lb[1] ";
+                if(folan == 4){
+                    std::cout << "elkan_lb[4] ";
                     for(filan = 0; filan < K; filan++){
-                        std::cout << elkan_lower_bounds[1][filan] << " ";
+                        std::cout << elkan_lower_bounds[folan][filan] << " ";
                     }
                     std::cout << std::endl;
                 }
@@ -3441,7 +3522,7 @@ void kmeans_v10(){
                         }
                         if (lower_bounds[folan][filan] >= upper_bounds[folan][smallest_ub[folan]]) {
                             is_candidate[folan][filan] = false;
-                            if(folan == 1){
+                            if(folan == 4){
                                 std::cout << "4: pruning " << filan << std::endl;
                             }
                             // NOT HERE i THINK
@@ -3458,7 +3539,7 @@ void kmeans_v10(){
                         
                         if(lower_bounds[folan][filan] < hamerly_lower_bounds[folan]){
                             hamerly_lower_bounds[folan] = lower_bounds[folan][filan];
-                            if(folan == 1){
+                            if(folan == 4){
                                 std::cout << "5: chnaged ham_lb[" << folan << "] to " << hamerly_lower_bounds[folan] << std::endl; 
                             }
                         }
@@ -3476,7 +3557,7 @@ void kmeans_v10(){
                         hamerly_upper_bounds[folan] = upper_bounds[folan][smallest_ub[folan]];
                         assigned[folan] = 1;
                         // v9
-                        if(folan == 1){
+                        if(folan == 4){
                             std::cout << "6: only one candidate chnaged labels[" << folan << "] to " << labels[folan];
                             std::cout << " and ham_ub[" << folan << "] to " << hamerly_upper_bounds[folan] << std::endl; 
                         }
@@ -3744,6 +3825,13 @@ int main(int argc, char **argv) {
         centroid_to_centroid_distances[i] = (double *) malloc(K * sizeof(double));
     }
     // ELKAN EXTRAS end
+
+    // MARIGOLG EXTRAS
+    last_level_calculated = (int **) malloc(N * sizeof(int *));
+    for (int i = 0; i < N; i++) {
+        last_level_calculated[i] = (int *) malloc(K * sizeof(int));
+    }
+    // MARIGOLG EXTRAS end
 
     // just helper
     assigned = (int *) malloc(N * sizeof(int));
