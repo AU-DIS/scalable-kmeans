@@ -34,9 +34,9 @@
 // #define D 784 // data dimensionality
 // #define K 10 // k variable in kmeans
 // #define N 69997 // count of data points
-// #define D 144 // data dimensionality
-#define D 128*128 // data dimensionality
-#define K 5
+#define D 144 // data dimensionality
+// #define D 128*128 // data dimensionality
+#define K 10
 // k variable in kmeans
 #define N 167 // count of data points
 #define MAX_ITERATIONS 50 // maximum number of iterations to do before giving up convergence
@@ -1109,9 +1109,10 @@ void kmeans_v4() {
                 is_candidate[folan][filan] = true;
             }
         }
-        // calculate_labels();
+        calculate_labels();
         // calculate_labels_with_sqrt();
-        calculate_labels_with_sqrt_hamerly_integrated();
+
+        // calculate_labels_with_sqrt_hamerly_integrated();
 
         // V4 DIFF end
         std::cout << "set labels" << std::endl;
@@ -2848,18 +2849,18 @@ void kmeans_v9() {
         std::cout << "iteration " << iter << "..." << std::endl;
 
         // calculate the square sum of centroids
-        for (folan = 0; folan < K; folan++) {
-            centroid_squares[folan] = 0;
-            for (filan = 0; filan < D; filan++) {
-                centroid_squares[folan] += (centroids[folan][filan] * centroids[folan][filan]);
-            }
-        }
+        // for (folan = 0; folan < K; folan++) {
+        //     centroid_squares[folan] = 0;
+        //     for (filan = 0; filan < D; filan++) {
+        //         centroid_squares[folan] += (centroids[folan][filan] * centroids[folan][filan]);
+        //     }
+        // }
 
         // calculate closest centroid to each centroid
         for (folan = 0; folan < K; folan++) {
             smallest = DBL_MAX;
             for (filan = 0; filan < K; filan++) {
-                tmp = centroid_squares[filan] + centroid_squares[folan];
+                tmp = centroids_ss[filan][0] + centroids_ss[folan][0];
                 for (ashghal = 0; ashghal < D; ashghal++) {
                     tmp -= (2 * centroids[folan][ashghal] * centroids[filan][ashghal]);
                 }
