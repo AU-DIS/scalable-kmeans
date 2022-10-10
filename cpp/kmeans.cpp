@@ -4969,7 +4969,7 @@ int main(int argc, char **argv) {
     std::cout << "set labels to 0, calling kmeans..." << std::endl;
 
     // do the clustering
-    kmeans_v10();
+    kmeans_v9();
 
     // write labels to somewhere I guess...
     // TODO
