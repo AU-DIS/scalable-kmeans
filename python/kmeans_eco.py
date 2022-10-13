@@ -73,6 +73,12 @@ def dist_masked(x, centroids, x_squared, centroid_squared, is_candidate, labels,
             lb_dist[i][j] -= 2 * this_dot
             ub_dist[i][j] += 2 * this_dot
             
+            #Debugging
+            #if i == 28 and j == 2: #For simBi simulation data
+            #if i == 5 and j == 5: #For misfit_Bi5d_1024
+            #    print(lb_dist[i][j], ub_dist[i][j])
+            #print(i, j)
+
             if lb_dist[i][j] < 0: lb_dist[i][j] = 0
             if ub_dist[i][j] < 0: ub_dist[i][j] = 0
             lb_dist[i][j] = math.sqrt(lb_dist[i][j])
@@ -286,6 +292,7 @@ class kmeans_class:
                 # For Hamerly's second lower bound
                 ## Second Lower bound distance between the point and the second closest center
                 ## Initialized as distance between the point and second closest initial centroid
+                #lowerBounds_Hamerly[i] = sorted(set(lowerBounds[i]))[1]
                 if len(set(lowerBounds[i])) == 1:
                     lowerBounds_Hamerly[i] = lowerBounds[i][0]
                 else:
@@ -301,7 +308,7 @@ class kmeans_class:
             ## Update lower and upper bound distances
             for centroid in self.pointsClassif:
                 for i in list(range(data_x.shape[0])):
-                    lowerBounds[i][centroid] -= centroidDistanceChange[centroid]
+                    #lowerBounds[i][centroid] -= centroidDistanceChange[centroid]
                     lowerBounds[i][centroid] -= maxCentroidDistanceChange
                     
                 for i in self.pointsClassif[centroid]:
@@ -364,16 +371,17 @@ class kmeans_class:
                             assigned_centroid = centroid
                             for c_prime in (listCentroids[:centroid]+listCentroids[centroid+1:]):
                                 #Proposed New_Lemma (tighter version of Elkan lemma1 for individual distances)
-                                if lowerBounds[i][c_prime] > (upperBounds[i] + centroidDistanceChange[assigned_centroid] + centroidDistanceChange[c_prime]):
+                                #if lowerBounds[i][c_prime] > (upperBounds[i] + centroidDistanceChange[assigned_centroid] + centroidDistanceChange[c_prime]):
                                     ## If condition is met : said point keeps its centroid with no further computation needed
-                                    this_itr_dist_discard += 1
-                                    itr_discard_count_total += 1
-                                    mask[i][c_prime] = 0
+                                    #this_itr_dist_discard += 1
+                                    #itr_discard_count_total += 1
+                                    #mask[i][c_prime] = 0
+                                    #pass
 
                                 #Elkan lemma2 covering Hammerly lemma partially
                                 ## Check if lower bound between point and c_prime < upper bound between point and its current centroid
                                 ## AND if (0.5*distance between current centroid and c_prime) < upper bound between point and its current centroid
-                                elif ((upperBounds[i] < lowerBounds[i][c_prime]) or (upperBounds[i] < 0.5*centroidDistances[assigned_centroid][c_prime])): 
+                                if ((upperBounds[i] < lowerBounds[i][c_prime]) or (upperBounds[i] < 0.5*centroidDistances[assigned_centroid][c_prime])): 
                                     this_itr_dist_discard += 1
                                     itr_discard_count_total += 1
                                     mask[i][c_prime] = 0
