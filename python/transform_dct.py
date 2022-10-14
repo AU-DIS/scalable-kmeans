@@ -169,11 +169,15 @@ def make2d(array, cols=None, dtype=None):
 
 
 ##(Way1) calculate DCT features from raw dataset
-def cal_dct_features(dct_len, dataset):
+def cal_dct_features(dct_len, dataset, norm='ortho'):
     coordinate_grid = list(product(range(dataset.shape[0]),range(dataset.shape[1])))
     #print(len(coordinate_grid))
-    dct_image = list(
-        map(dct_2d_truncated_flattened, iter(torch.tensor((dataset[i,j,:,:])) for i, j in coordinate_grid), [dct_len for _ in range(len(coordinate_grid))]))
+    if norm == 'ortho': 
+        #print('Using ortho normality')
+        dct_image = list(map(dct_2d_truncated_flattened, iter(torch.tensor((dataset[i,j,:,:])) for i, j in coordinate_grid), [dct_len for _ in range(len(coordinate_grid))], ['ortho' for _ in range(len(coordinate_grid))]))
+    else:
+        #print('Using no normality factor')
+        dct_image = list(map(dct_2d_truncated_flattened, iter(torch.tensor((dataset[i,j,:,:])) for i, j in coordinate_grid), [dct_len for _ in range(len(coordinate_grid))])) #Without orthonormality
     dct_image = make2d(dct_image, dtype=float)
     print(dct_image.shape)
     return dct_image
