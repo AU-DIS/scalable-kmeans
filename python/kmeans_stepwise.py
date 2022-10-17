@@ -73,6 +73,12 @@ def dist_masked(x, centroids, x_squared, centroid_squared, is_candidate, labels,
             lb_dist[i][j] -= 2 * this_dot
             ub_dist[i][j] += 2 * this_dot
             
+            #Debugging
+            #if i == 28 and j == 2: #For simBi simulation data
+            #if i == 5 and j == 5: #For misfit_Bi5d_1024
+            #    print(lb_dist[i][j], ub_dist[i][j])
+            #print(i, j)
+
             if lb_dist[i][j] < 0: lb_dist[i][j] = 0
             if ub_dist[i][j] < 0: ub_dist[i][j] = 0
             lb_dist[i][j] = math.sqrt(lb_dist[i][j])
@@ -173,7 +179,7 @@ def get_square_squared_sums(data):
 
 
 class kmeans_class:
-    def __init__(self, data_points, k, max_iter=100, initialCentroids=None, kmeans_threshold=0, is_print='no'):
+    def __init__(self, data_points, k, max_iter=100, initialCentroids=None, kmeans_threshold=0, is_print='no', mode='fast'):
         # k: no. of clusters
         # data_points: data to cluster
         # max_iter: iteration before termination
@@ -184,6 +190,7 @@ class kmeans_class:
         self.max_iter = max_iter
         self.kmeans_threshold = kmeans_threshold
         self.method = 'Step-wise'
+        self.mode = mode #Based on distance mode
 
         if initialCentroids != None:
             self.centroids = dict(zip(list(range(self.k)),initialCentroids))
@@ -367,8 +374,8 @@ class kmeans_class:
         return labels, centroids
                         
 
-def kmeans_stepwise_manual(x, k, max_iter=100, initialCentroids=None, kmeans_threshold=0, is_print='no'):
-    results = kmeans_class(x, k, max_iter=100, initialCentroids=None, kmeans_threshold=0)
+def kmeans_stepwise_manual(x, k, max_iter=100, initialCentroids=None, kmeans_threshold=0, is_print='no', mode='fast'):
+    results = kmeans_class(x, k, max_iter=100, initialCentroids=None, kmeans_threshold=0, mode=mode)
     labels = results.labels
     centroids = results.centroids
     return labels, centroids
