@@ -94,7 +94,8 @@ class kmeans_class:
                 #    lowerBounds_Hamerly[i] = distances[0]
                 #else:
                 #    lowerBounds_Hamerly[i] = sorted(set(distances))[1]
-                lowerBounds_Hamerly[i] = sorted(distances)[1]
+                #lowerBounds_Hamerly[i] = sorted(distances)[1]
+                lowerBounds_Hamerly[i] = min([val for i,val in enumerate(distances) if i!=classification])
 
                 ## Upper bound distance between the point and assigned centroid
                 upperBounds[i] = min(distances)
@@ -139,7 +140,7 @@ class kmeans_class:
             for centroid in self.pointsClassif:
                 for i in list(range(data_x.shape[0])):
                     lowerBounds[i][centroid] -= centroidDistanceChange[centroid]
-                    if lowerBounds[i][centroid] < 0: lowerBounds[i][centroid] = 0
+                    #if lowerBounds[i][centroid] < 0: lowerBounds[i][centroid] = 0
                     
                 for i in self.pointsClassif[centroid]:
                     upperBounds[i] += centroidDistanceChange[centroid]
@@ -151,7 +152,8 @@ class kmeans_class:
                     #    lowerBounds_Hamerly[i] -= maxCentroidDistanceChange
             for centroid in self.pointsClassif:
                 for point in self.pointsClassif[centroid]:
-                    lowerBounds_Hamerly[point] = sorted([val for i,val in enumerate(lowerBounds[point]) if i!=centroid])[0]
+                    #lowerBounds_Hamerly[point] = sorted([val for i,val in enumerate(lowerBounds[point]) if i!=centroid])[0]
+                    lowerBounds_Hamerly[point] = min([val for i,val in enumerate(lowerBounds[point]) if i!=centroid])
                     
 
                     
@@ -278,7 +280,7 @@ class kmeans_class:
                 for centroid in self.pointsClassif:
                     for i in list(range(data_x.shape[0])):
                         lowerBounds[i][centroid] -= centroidDistanceChange[centroid]
-                        if lowerBounds[i][centroid] < 0: lowerBounds[i][centroid] = 0
+                        #if lowerBounds[i][centroid] < 0: lowerBounds[i][centroid] = 0
                     
                     for i in self.pointsClassif[centroid]:
                         upperBounds[i] += centroidDistanceChange[centroid]
@@ -290,7 +292,8 @@ class kmeans_class:
                         #    lowerBounds_Hamerly[i] -= maxCentroidDistanceChange
                 for centroid in self.pointsClassif:
                     for point in self.pointsClassif[centroid]:
-                        lowerBounds_Hamerly[point] = sorted([val for i,val in enumerate(lowerBounds[point]) if i!=centroid])[0]
+                        #lowerBounds_Hamerly[point] = sorted([val for i,val in enumerate(lowerBounds[point]) if i!=centroid])[0]
+                        lowerBounds_Hamerly[point] = min([val for i,val in enumerate(lowerBounds[point]) if i!=centroid])
 
         
         ## Update labels (cluster) for each point

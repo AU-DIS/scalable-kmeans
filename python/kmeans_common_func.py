@@ -13,7 +13,7 @@ def euclidean_distance_raw(p1, p2):
 
 def euclidean_distance(p1, p2, sq_p1=0, sq_p2=0, mode='fast'):
     #mode can be 'fast', 'manual', 'semi_optimized'
-    print('Distmode: ', mode)
+    #print('Distmode: ', mode)
     dist = 0
     if mode == 'manual': #Everything needs to be done manually
         for i in range(len(p1)):
