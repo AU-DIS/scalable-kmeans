@@ -6056,9 +6056,9 @@ void kmeans_v11(){
 
 
 
-// hamerly + step-wise + elkan Mohammad-style
+// hamerly + step-wise + elkan Mohammad-style, without ham_lb
 // copied from v9
-// TODO
+// TODO: DONE
 void kmeans_v12() {
     std::cout << "in kmeans_v12 ..." << std::endl;
     int folan = 0;
@@ -6182,6 +6182,291 @@ void kmeans_v12() {
                 for(filan = 0; filan < K; filan++){
                     elkan_lower_bounds[folan][filan] = lower_bounds[folan][filan];
                 }
+            }
+
+        }
+
+        std::cout << "set labels" << std::endl;
+
+
+
+
+        // calc new centroids
+        // make copy of old centroids
+        // apparently this also does not work, copies pointer somehow I think...
+        // memcpy(old_centroids, centroids, sizeof(double) * K * D);
+        for (folan = 0; folan < K; folan++) {
+            for (filan = 0; filan < D; filan++) {
+                old_centroids[folan][filan] = centroids[folan][filan];
+            }
+        }
+        std::cout << "copied centroids to old centroids" << std::endl;
+        // set centroids to 0
+        memset(cluster_counts, 0, sizeof(int) * K);
+        std::cout << "set cluster counts to 0" << std::endl;
+        for (folan = 0; folan < K; folan++) {
+            // just testing
+            // cluster_counts[folan] = 0;
+            for (filan = 0; filan < D; filan++) {
+                centroids[folan][filan] = 0.0;
+            }
+        }
+        // This doesn't work on doubles
+        // memset(centroids, 0, sizeof(double) * K * D);
+        std::cout << "after all the memcpys" << std::endl;
+
+        for (folan = 0; folan < N; folan++) {
+            cluster_counts[labels[folan]]++;
+            for (filan = 0; filan < D; filan++) {
+                centroids[labels[folan]][filan] += data_arr[folan][filan];
+            }
+        }
+        for (folan = 0; folan < K; folan++) {
+            // to deal with empty clusters
+            // if the cluster is empty, keep the old centroid
+            if(cluster_counts[folan] > 0){
+                for (filan = 0; filan < D; filan++) {
+                    centroids[folan][filan] /= cluster_counts[folan];
+                }
+            } else{
+                for (filan = 0; filan < D; filan++) {
+                    centroids[folan][filan] = old_centroids[folan][filan];
+                }
+            }
+        }
+        std::cout << "calculated new centroids" << std::endl;
+        calculate_centroids_square_sums();
+
+        // just to check
+        int sanity_check = 0;
+        std::cout << "cluster counts..." << std::endl;
+        for (folan = 0; folan < K; folan++) {
+            sanity_check += cluster_counts[folan];
+            std::cout << cluster_counts[folan] << " ";
+        }
+        std::cout << sanity_check << std::endl;
+
+        // calculating the movement of new to old cluster centers
+        furthest_moving_centroid = 0;
+        second_furthest_moving_centroid = 1;
+        if(centroid_movement[second_furthest_moving_centroid] > centroid_movement[furthest_moving_centroid]){
+            std::swap(furthest_moving_centroid, second_furthest_moving_centroid);
+        }
+        for (folan = 0; folan < K; folan++) {
+            tmp = 0.0;
+            for (filan = 0; filan < D; filan++) {
+                tmp += ((centroids[folan][filan] - old_centroids[folan][filan]) *
+                        (centroids[folan][filan] - old_centroids[folan][filan]));
+            }
+            if(tmp < 0.0) tmp = 0.0;
+            centroid_movement[folan] = sqrt(tmp);
+            if (centroid_movement[folan] > centroid_movement[furthest_moving_centroid]){
+                second_furthest_moving_centroid = furthest_moving_centroid;
+                furthest_moving_centroid = folan;
+            }
+            else if (centroid_movement[folan] >
+                     centroid_movement[second_furthest_moving_centroid])
+                second_furthest_moving_centroid = folan;
+        }
+        std::cout << "calculated centroid movements" << std::endl;
+
+        // update upper and lower hamerly bounds based on centroid movements
+        // for (folan = 0; folan < N; folan++) {
+        //     hamerly_upper_bounds[folan] += centroid_movement[labels[folan]];
+        //     if (labels[folan] == furthest_moving_centroid) {
+        //         hamerly_lower_bounds[folan] -= centroid_movement[second_furthest_moving_centroid];
+        //     } else {
+        //         hamerly_lower_bounds[folan] -= centroid_movement[furthest_moving_centroid];
+        //     }
+
+        //     for (filan = 0; filan < K; filan++) {
+        //         elkan_lower_bounds[folan][filan] -= centroid_movement[filan];
+        //     }
+        // }
+        // FROM MOHAMMAD'S PSEUDO
+        for (folan = 0; folan < N; folan++) {
+            hamerly_upper_bounds[folan] += centroid_movement[furthest_moving_centroid];
+            hamerly_lower_bounds[folan] -= centroid_movement[furthest_moving_centroid];
+            for (filan = 0; filan < K; filan++) {
+                elkan_lower_bounds[folan][filan] -= centroid_movement[furthest_moving_centroid];
+            }
+        }
+
+
+        // FATEMEH DEBUG
+        std::cout << "after updating the bounds, hamerly_ub[0] " << hamerly_upper_bounds[0] << " hamerly_lb[0] "
+             << hamerly_lower_bounds[0] << std::endl;
+        // FATEMEH DEBUG
+
+
+        // check convergence
+        // TODO: gonna do it in labels assignment, changed my mind will do it here, DONE
+        // has_converged = true;
+        // for (folan = 0; folan < K; folan++) {
+        //     for (filan = 0; filan < D; filan++) {
+        //         if (old_centroids[folan][filan] != centroids[folan][filan]) {
+        //             has_converged = false;
+        //             break;
+        //         }
+        //     }
+        // }
+        has_converged = (0.0 == centroid_movement[furthest_moving_centroid]);
+        std::cout << "checked convergence" << std::endl;
+
+        // end if converged
+        if (has_converged) break;
+    }
+
+    std::cout << "hamerly pruned " << hamerly_count << std::endl;
+}
+
+
+
+// hamerly + step-wise + elkan Mohammad-style, with ham_lb
+// copied from v12
+// TODO
+void kmeans_v121() {
+    std::cout << "in kmeans_v121 ..." << std::endl;
+    int folan = 0;
+    int filan = 0;
+    int ashghal = 0;// for loop usage
+    int furthest_moving_centroid, second_furthest_moving_centroid;
+    double smallest, second_smallest;
+    double tmp, hamerly_bound;
+    int hamerly_count = 0;
+    // set initial centroids
+
+    for(folan = 0; folan < K; folan++){
+        for(filan = 0; filan < D; filan++){
+            centroids[folan][filan] = data_arr[folan][filan];
+        }
+    }
+
+    // memcpy(centroids, data_arr, sizeof(double) * K * D);
+    calculate_centroids_square_sums();
+    std::cout << "copied init centroids" << std::endl;
+
+
+    bool has_converged = false;
+    int cluster_counts[K];
+    // V2 DIFF start
+    double centroid_squares[K];
+    // V2 DIFF end
+
+    // loop over max_iter
+    for (int iter = 0; iter < MAX_ITERATIONS; iter++) {
+        std::cout << "iteration " << iter << "..." << std::endl;
+
+        // calculate the square sum of centroids
+        // for (folan = 0; folan < K; folan++) {
+        //     centroid_squares[folan] = 0;
+        //     for (filan = 0; filan < D; filan++) {
+        //         centroid_squares[folan] += (centroids[folan][filan] * centroids[folan][filan]);
+        //     }
+        // }
+
+        // calculate closest centroid to each centroid
+        for (folan = 0; folan < K; folan++) {
+            smallest = DBL_MAX;
+            for (filan = folan; filan < K; filan++) {
+                tmp = centroids_ss[filan][0] + centroids_ss[folan][0];
+                for (ashghal = 0; ashghal < D; ashghal++) {
+                    tmp -= (2 * centroids[folan][ashghal] * centroids[filan][ashghal]);
+                }
+                if(tmp < 0.0) tmp = 0.0;
+                centroid_to_centroid_distances[folan][filan] = sqrt(tmp);
+                // THEY'RE THE SAME
+                centroid_to_centroid_distances[filan][folan] = centroid_to_centroid_distances[folan][filan];
+                if (centroid_to_centroid_distances[folan][filan] < smallest)
+                    smallest = centroid_to_centroid_distances[folan][filan];
+            }
+            closest_centroid_distance[folan] = smallest;
+        }
+        std::cout << "found closest distance to each centroid, and the centr-centr distances" << std::endl;
+
+
+        if (iter == 0) {
+            std::cout << "in if iter == 0" << std::endl;
+            
+            memset(assigned, 0, sizeof(int) * N);
+            // calculate_labels_with_sqrt_hamerly_elkan_integrated();
+            calculate_labels_with_sqrt();
+            std::cout << "calculated distances" << std::endl;
+            std::cout << "filled out hamerly ub and lb for first time" << std::endl;
+
+            // let's fill the ham_ub and elkan_lb
+            for(folan = 0; folan < N; folan++){
+                hamerly_upper_bounds[folan] = upper_bounds[folan][labels[folan]];
+                second_smallest = DBL_MAX;
+                for(filan = 0; filan < K; filan++){
+                    elkan_lower_bounds[folan][filan] = lower_bounds[folan][filan];
+                    // this will be the smallest of lbs besides the lb of the label, so it should be the second smallest lb overall
+                    if(elkan_lower_bounds[folan][filan] < second_smallest && filan != labels[folan]){
+                        second_smallest = elkan_lower_bounds[folan][filan];
+                    }
+                }
+                hamerly_lower_bounds[folan] = second_smallest;
+            }
+
+        } else {
+            std::cout << "iter was not 0" << std::endl;
+            // V9
+            // fill out mask
+            // set all to 1 first
+            for (folan = 0; folan < N; folan++) {
+                for (filan = 0; filan < K; filan++) {
+                    is_candidate[folan][filan] = true;
+                }
+            }
+
+            memset(assigned, 0, sizeof(int) * N);
+            // now let's do pruning based on TI
+            for (folan = 0; folan < N; folan++) {
+                // hamerly check
+                hamerly_bound = ((0.5 * closest_centroid_distance[labels[folan]]) > hamerly_lower_bounds[folan]) ? (
+                        0.5 * closest_centroid_distance[labels[folan]]) : hamerly_lower_bounds[folan];
+                if (hamerly_bound >= hamerly_upper_bounds[folan]) {
+                // if ((0.5 * closest_centroid_distance[labels[folan]]) >= hamerly_upper_bounds[folan]) {
+                    hamerly_count += K;
+                    // this one will not move, so none of them are candidates
+                    assigned[folan] = 1;
+                    continue;
+                } 
+                else  {
+                    for(filan = 0; filan < K; filan++){
+                        if (filan == labels[folan]) continue;
+                        if (hamerly_upper_bounds[folan] <= elkan_lower_bounds[folan][filan]
+                            || hamerly_upper_bounds[folan] <=
+                                (0.5 * centroid_to_centroid_distances[filan][labels[folan]])){
+                                    is_candidate[folan][filan] = false;
+                                }
+                    }
+                }
+            }
+            std::cout << "hamerly pruned " << hamerly_count << std::endl;
+            
+            // calculate_labels_with_sqrt_hamerly_elkan_integrated();
+            calculate_labels_with_sqrt();
+
+            // let's fill the ham_ub and elkan_lb
+            // for(folan = 0; folan < N; folan++){
+            //     hamerly_upper_bounds[folan] = upper_bounds[folan][labels[folan]];
+            //     for(filan = 0; filan < K; filan++){
+            //         elkan_lower_bounds[folan][filan] = lower_bounds[folan][filan];
+            //     }
+            // }
+
+            for(folan = 0; folan < N; folan++){
+                hamerly_upper_bounds[folan] = upper_bounds[folan][labels[folan]];
+                second_smallest = DBL_MAX;
+                for(filan = 0; filan < K; filan++){
+                    elkan_lower_bounds[folan][filan] = lower_bounds[folan][filan];
+                    // this will be the smallest of lbs besides the lb of the label, so it should be the second smallest lb overall
+                    if(elkan_lower_bounds[folan][filan] < second_smallest && filan != labels[folan]){
+                        second_smallest = elkan_lower_bounds[folan][filan];
+                    }
+                }
+                hamerly_lower_bounds[folan] = second_smallest;
             }
 
         }
@@ -6467,7 +6752,7 @@ int main(int argc, char **argv) {
     std::cout << "set labels to 0, calling kmeans..." << std::endl;
 
     // do the clustering
-    kmeans_v12();
+    kmeans_v121();
 
     // write labels to somewhere I guess...
     // TODO
