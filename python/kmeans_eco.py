@@ -312,6 +312,7 @@ class kmeans_class:
                 for i in list(range(data_x.shape[0])):
                     #lowerBounds[i][centroid] -= centroidDistanceChange[centroid]
                     lowerBounds[i][centroid] -= maxCentroidDistanceChange
+                    if lowerBounds[i][centroid] < 0: lowerBounds[i][centroid] = 0
                     
                 for i in self.pointsClassif[centroid]:
                     upperBounds[i] += maxCentroidDistanceChange
@@ -362,7 +363,7 @@ class kmeans_class:
                         
                         #Elkan Lemma1 
                         ## Check if upper bound lower than 1/2 of distance with closest centroid
-                        hamerly_bound = max(0.5*closestCentroidDistances[centroid], lowerBounds_Hamerly[i])
+                        #hamerly_bound = max(0.5*closestCentroidDistances[centroid], lowerBounds_Hamerly[i])
                         #if upperBounds[i] <= hamerly_bound: #For Elkan lemma1 and Hamerly
                         #if upperBounds[i] <= 0.5*closestCentroidDistances[centroid]: #for Elkan lemma1
                         #if upperBounds[i] > hamerly_bound: #For Elkan lemma1 and Hamerly
@@ -478,12 +479,13 @@ class kmeans_class:
                 ## Update lower and upper bound distances
                 for centroid in self.pointsClassif:
                     for i in list(range(data_x.shape[0])):
-                        #lowerBounds[i][centroid] -= centroidDistanceChange[centroid]
-                        lowerBounds[i][centroid] -= maxCentroidDistanceChange
+                        lowerBounds[i][centroid] -= centroidDistanceChange[centroid]
+                        if lowerBounds[i][centroid] < 0: lowerBounds[i][centroid] = 0
+                        #lowerBounds[i][centroid] -= maxCentroidDistanceChange
                     
                     for i in self.pointsClassif[centroid]:
-                        upperBounds[i] += maxCentroidDistanceChange
-                        #upperBounds[i] += centroidDistanceChange[centroid]
+                        #upperBounds[i] += maxCentroidDistanceChange
+                        upperBounds[i] += centroidDistanceChange[centroid]
                         #furthestMovingCentroid = max(centroidDistanceChange, key=centroidDistanceChange.get)
                         #if furthestMovingCentroid == centroid:
                         #    #lowerBounds_Hamerly[i] -= sorted(set(centroidDistanceChange.values()), reverse=True)[1]
