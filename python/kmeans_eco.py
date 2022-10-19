@@ -306,17 +306,17 @@ class kmeans_class:
                 i+=1
 
 
-            maxCentroidDistanceChange = max(centroidDistanceChange.values())
+            #maxCentroidDistanceChange = max(centroidDistanceChange.values())
             # Update lower and upper bound distances
             for centroid in self.pointsClassif:
                 for i in list(range(data_x.shape[0])):
-                    #lowerBounds[i][centroid] -= centroidDistanceChange[centroid]
-                    lowerBounds[i][centroid] -= maxCentroidDistanceChange
+                    lowerBounds[i][centroid] -= centroidDistanceChange[centroid]
+                    #lowerBounds[i][centroid] -= maxCentroidDistanceChange
                     if lowerBounds[i][centroid] < 0: lowerBounds[i][centroid] = 0
                     
                 for i in self.pointsClassif[centroid]:
-                    upperBounds[i] += maxCentroidDistanceChange
-                    #upperBounds[i] += centroidDistanceChange[centroid]
+                    #upperBounds[i] += maxCentroidDistanceChange
+                    upperBounds[i] += centroidDistanceChange[centroid]
                     #furthestMovingCentroid = max(centroidDistanceChange, key=centroidDistanceChange.get)
                     #if furthestMovingCentroid == centroid:
                     #    #lowerBounds_Hamerly[i] -= sorted(set(centroidDistanceChange.values()), reverse=True)[1]
@@ -475,7 +475,7 @@ class kmeans_class:
                     i+=1
 
 
-                maxCentroidDistanceChange = max(centroidDistanceChange.values())
+                #maxCentroidDistanceChange = max(centroidDistanceChange.values())
                 ## Update lower and upper bound distances
                 for centroid in self.pointsClassif:
                     for i in list(range(data_x.shape[0])):
