@@ -6123,9 +6123,18 @@ void kmeans_v12() {
             std::cout << "in if iter == 0" << std::endl;
             
             memset(assigned, 0, sizeof(int) * N);
-            calculate_labels_with_sqrt_hamerly_elkan_integrated();
+            // calculate_labels_with_sqrt_hamerly_elkan_integrated();
+            calculate_labels_with_sqrt();
             std::cout << "calculated distances" << std::endl;
             std::cout << "filled out hamerly ub and lb for first time" << std::endl;
+
+            // let's fill the ham_ub and elkan_lb
+            for(folan = 0; folan < N; folan++){
+                hamerly_upper_bounds[folan] = upper_bounds[folan][labels[folan]];
+                for(filan = 0; filan < K; filan++){
+                    elkan_lower_bounds[folan][filan] = lower_bounds[folan][filan];
+                }
+            }
 
         } else {
             std::cout << "iter was not 0" << std::endl;
@@ -6144,7 +6153,8 @@ void kmeans_v12() {
                 // hamerly check
                 hamerly_bound = ((0.5 * closest_centroid_distance[labels[folan]]) > hamerly_lower_bounds[folan]) ? (
                         0.5 * closest_centroid_distance[labels[folan]]) : hamerly_lower_bounds[folan];
-                if (hamerly_bound >= hamerly_upper_bounds[folan]) {
+                // if (hamerly_bound >= hamerly_upper_bounds[folan]) {
+                if ((0.5 * closest_centroid_distance[labels[folan]]) >= hamerly_upper_bounds[folan]) {
                     hamerly_count += K;
                     // this one will not move, so none of them are candidates
                     assigned[folan] = 1;
@@ -6163,7 +6173,16 @@ void kmeans_v12() {
             }
             std::cout << "hamerly pruned " << hamerly_count << std::endl;
             
-            calculate_labels_with_sqrt_hamerly_elkan_integrated();
+            // calculate_labels_with_sqrt_hamerly_elkan_integrated();
+            calculate_labels_with_sqrt();
+
+            // let's fill the ham_ub and elkan_lb
+            for(folan = 0; folan < N; folan++){
+                hamerly_upper_bounds[folan] = upper_bounds[folan][labels[folan]];
+                for(filan = 0; filan < K; filan++){
+                    elkan_lower_bounds[folan][filan] = lower_bounds[folan][filan];
+                }
+            }
 
         }
 
