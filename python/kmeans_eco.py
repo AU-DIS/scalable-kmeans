@@ -298,7 +298,7 @@ class kmeans_class:
                 #    lowerBounds_Hamerly[i] = lowerBounds[i][0]
                 #else:
                 #    lowerBounds_Hamerly[i] = sorted(set(lowerBounds[i]))[1]
-                lowerBounds_Hamerly[i] = sorted(lowerBounds[i])[1]
+                #lowerBounds_Hamerly[i] = sorted(lowerBounds[i])[1]
                 #lowerBounds_Hamerly[i] = sorted(set([item for item in lowerBounds[i] if item >= lowerBounds[i][labels[i]]]))[1]
 
                 ## Upper bound distance between the point and assigned centroid
@@ -316,15 +316,15 @@ class kmeans_class:
                 for i in self.pointsClassif[centroid]:
                     upperBounds[i] += maxCentroidDistanceChange
                     #upperBounds[i] += centroidDistanceChange[centroid]
-                    furthestMovingCentroid = max(centroidDistanceChange, key=centroidDistanceChange.get)
-                    if furthestMovingCentroid == centroid:
-                        #lowerBounds_Hamerly[i] -= sorted(set(centroidDistanceChange.values()), reverse=True)[1]
-                        lowerBounds_Hamerly[i] -= maxCentroidDistanceChange
-                    else:
-                        lowerBounds_Hamerly[i] -= maxCentroidDistanceChange
-            for centroid in self.pointsClassif:
-                for point in self.pointsClassif[centroid]:
-                    lowerBounds_Hamerly[point] = sorted([val for i,val in enumerate(lowerBounds[point]) if i!=centroid])[0]
+                    #furthestMovingCentroid = max(centroidDistanceChange, key=centroidDistanceChange.get)
+                    #if furthestMovingCentroid == centroid:
+                    #    #lowerBounds_Hamerly[i] -= sorted(set(centroidDistanceChange.values()), reverse=True)[1]
+                    #    lowerBounds_Hamerly[i] -= maxCentroidDistanceChange
+                    #else:
+                    #    lowerBounds_Hamerly[i] -= maxCentroidDistanceChange
+            #for centroid in self.pointsClassif:
+            #    for point in self.pointsClassif[centroid]:
+            #        lowerBounds_Hamerly[point] = sorted([val for i,val in enumerate(lowerBounds[point]) if i!=centroid])[0]
 
                     
             #For ecokmeans efficiency measure
@@ -466,7 +466,7 @@ class kmeans_class:
                     #    lowerBounds_Hamerly[i] = lowerBounds[i][0]
                     #else:
                     #    lowerBounds_Hamerly[i] = sorted(set(lowerBounds[i]))[1]
-                    lowerBounds_Hamerly[i] = sorted(set(lowerBounds[i]))[1]
+                    #lowerBounds_Hamerly[i] = sorted(set(lowerBounds[i]))[1]
                     #lowerBounds_Hamerly[i] = sorted(set([item for item in lowerBounds[i] if item >= lowerBounds[i][labels[i]]]))[1]
 
                     ## Upper bound distance between the point and assigned centroid
@@ -484,15 +484,15 @@ class kmeans_class:
                     for i in self.pointsClassif[centroid]:
                         upperBounds[i] += maxCentroidDistanceChange
                         #upperBounds[i] += centroidDistanceChange[centroid]
-                        furthestMovingCentroid = max(centroidDistanceChange, key=centroidDistanceChange.get)
-                        if furthestMovingCentroid == centroid:
-                            #lowerBounds_Hamerly[i] -= sorted(set(centroidDistanceChange.values()), reverse=True)[1]
-                            lowerBounds_Hamerly[i] -= maxCentroidDistanceChange
-                        else:
-                            lowerBounds_Hamerly[i] -= maxCentroidDistanceChange
-                for centroid in self.pointsClassif:
-                    for point in self.pointsClassif[centroid]:
-                        lowerBounds_Hamerly[point] = sorted([val for i,val in enumerate(lowerBounds[point]) if i!=centroid])[0]
+                        #furthestMovingCentroid = max(centroidDistanceChange, key=centroidDistanceChange.get)
+                        #if furthestMovingCentroid == centroid:
+                        #    #lowerBounds_Hamerly[i] -= sorted(set(centroidDistanceChange.values()), reverse=True)[1]
+                        #    lowerBounds_Hamerly[i] -= maxCentroidDistanceChange
+                        #else:
+                        #    lowerBounds_Hamerly[i] -= maxCentroidDistanceChange
+                #for centroid in self.pointsClassif:
+                #    for point in self.pointsClassif[centroid]:
+                #        lowerBounds_Hamerly[point] = sorted([val for i,val in enumerate(lowerBounds[point]) if i!=centroid])[0]
 
 
         
