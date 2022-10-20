@@ -83,6 +83,9 @@ int **last_level_calculated;
 double **old_centroids;
 int *assigned;
 
+// counter variable
+int features_accessed;
+
 
 
 // returns euc_dist of data[i] and centroid[j]
@@ -91,6 +94,8 @@ double euclidean_distance(int i, int j) {
     for (int index = 0; index < D; index++) {
         dist += ((data_arr[i][index] - centroids[j][index]) * (data_arr[i][index] - centroids[j][index]));
     }
+    // COUNT
+    features_accessed += D;
     return dist;
 }
 
@@ -507,12 +512,16 @@ void calculate_distances_till_level(int level) {
                     // amoodi ha
                     for(halghe = ashghal * d_sqrt + two_p_level_m1; halghe < ashghal * d_sqrt + two_p_level; halghe++){
                         incremental_dots[folan][filan] += (data_arr[folan][halghe] * centroids[filan][halghe]);
+                        // COUNT
+                        features_accessed++;
                     }
                 }
                 for(ashghal = 0; ashghal < std::min(two_p_level_m1, d_sqrt - two_p_level_m1); ashghal++){
                     // ofoghi ha
                     for(halghe = d_sqrt * (two_p_level_m1 + ashghal); halghe < d_sqrt * (two_p_level_m1 + ashghal) + two_p_level; halghe++){
                         incremental_dots[folan][filan] += (data_arr[folan][halghe] * centroids[filan][halghe]);
+                        // COUNT
+                        features_accessed++;
                     }
                 }
             }
@@ -1520,6 +1529,8 @@ void kmeans_v5() {
                     tmp -= (2 * centroids[folan][ashghal] * centroids[filan][ashghal]);
                 }
                 if (tmp < smallest) smallest = tmp;
+                // COUNT
+                features_accessed += D;
             }
             if(smallest < 0.0) smallest = 0.0;
             closest_centroid_distance[folan] = sqrt(smallest);
@@ -1539,7 +1550,8 @@ void kmeans_v5() {
                     for (ashghal = 0; ashghal < D; ashghal++) {
                         tmp -= (2 * data_arr[folan][ashghal] * centroids[filan][ashghal]);
                     }
-                    if(folan == 0 && filan == 0) std::cout << "dist tmp " << tmp << std::endl;
+                    // COUNT
+                    features_accessed += D;
                     if(tmp < 0.0) tmp = 0.0;
                     distances[folan][filan] = sqrt(tmp);
                     if (distances[folan][filan] < smallest) {
@@ -1595,6 +1607,8 @@ void kmeans_v5() {
                     for (ashghal = 0; ashghal < D; ashghal++) {
                             tmp -= (2 * data_arr[folan][ashghal] * centroids[labels[folan]][ashghal]);
                     }
+                    // COUNT
+                    features_accessed += D;
                     if(tmp < 0.0) tmp = 0.0;
                     distances[folan][labels[folan]] = sqrt(tmp);
                     hamerly_upper_bounds[folan] = distances[folan][labels[folan]]; 
@@ -1608,6 +1622,8 @@ void kmeans_v5() {
                             for (ashghal = 0; ashghal < D; ashghal++) {
                                 tmp -= (2 * data_arr[folan][ashghal] * centroids[filan][ashghal]);
                             }
+                            // COUNT
+                            features_accessed += D;
                             if(tmp < 0.0) tmp = 0.0;
                             distances[folan][filan] = sqrt(tmp);
                             if (distances[folan][filan] < distances[folan][labels[folan]]) {
@@ -1718,6 +1734,8 @@ void kmeans_v5() {
                 tmp += ((centroids[folan][filan] - old_centroids[folan][filan]) *
                         (centroids[folan][filan] - old_centroids[folan][filan]));
             }
+            // COUNT
+            features_accessed += D;
             if(tmp < 0.0) tmp = 0.0;
             centroid_movement[folan] = sqrt(tmp);
             if (centroid_movement[folan] > centroid_movement[furthest_moving_centroid]){
@@ -1839,6 +1857,8 @@ void kmeans_v6() {
                 for (ashghal = 0; ashghal < D; ashghal++) {
                     tmp -= (2 * centroids[folan][ashghal] * centroids[filan][ashghal]);
                 }
+                // COUNT
+                features_accessed += D;
                 if(tmp < 0.0) tmp = 0.0;
                 centroid_to_centroid_distances[folan][filan] = sqrt(tmp);
                 // THEY'RE THE SAME
@@ -1862,6 +1882,8 @@ void kmeans_v6() {
                     for (ashghal = 0; ashghal < D; ashghal++) {
                         tmp -= (2 * data_arr[folan][ashghal] * centroids[filan][ashghal]);
                     }
+                    // COUNT
+                    features_accessed += D;
                     if(tmp < 0.0) tmp = 0.0;
                     distances[folan][filan] = sqrt(tmp);
 
@@ -1922,6 +1944,8 @@ void kmeans_v6() {
                                 for (ashghal = 0; ashghal < D; ashghal++) {
                                     tmp -= (2 * data_arr[folan][ashghal] * centroids[labels[folan]][ashghal]);
                                 }
+                                // COUNT
+                                features_accessed += D;
                                 if(tmp < 0.0) tmp = 0.0;
                                 distances[folan][labels[folan]] = sqrt(tmp);
                                 // I'll do it once after the for
@@ -1929,25 +1953,19 @@ void kmeans_v6() {
                                 hamerly_upper_bounds[folan] = distances[folan][labels[folan]];
                                 elkan_lower_bounds[folan][labels[folan]] = hamerly_upper_bounds[folan];
                                 r = false;
-                                if (folan == 0) {
-                                    std::cout
-                                            << "ALSO CHANGED THE HAMERLY_UB to same thing, WHICH I HAD THOUGHT WAS HARMLESS, BUT MAYBE I SHOULDN'T "
-                                            << std::endl;
-                                    std::cout << "changing elkan_lb[0][" << labels[folan] << "] to "
-                                         << hamerly_upper_bounds[folan] << std::endl;
-                                }
+                                
                             }
 
                             tmp = centroid_squares[filan] + data_arr_ss[folan][0];
                             for (ashghal = 0; ashghal < D; ashghal++) {
                                 tmp -= (2 * data_arr[folan][ashghal] * centroids[filan][ashghal]);
                             }
+                            // COUNT
+                            features_accessed += D;
                             if(tmp < 0.0) tmp = 0.0;
                             distances[folan][filan] = sqrt(tmp);
                             elkan_lower_bounds[folan][filan] = distances[folan][filan];
-                            if (folan == 0) {
-                                std::cout << "changing elkan_lb[0][" << filan << "] to " << distances[folan][filan] << std::endl;
-                            }
+                            
 
                             if (distances[folan][filan] < distances[folan][labels[folan]]) {
                                 // keep the second smallest
@@ -1955,9 +1973,7 @@ void kmeans_v6() {
                                 labels[folan] = filan;
                                 // i am doing this under duress...
                                 hamerly_upper_bounds[folan] = distances[folan][labels[folan]];
-                                if (folan == 0) {
-                                    std::cout << "changing hamerly_ub[0] to " << distances[folan][labels[folan]] << std::endl;
-                                }
+                                
                             }
                             // else if(hamerly_lower_bounds[folan] > distances[folan][filan]){
                             //     hamerly_lower_bounds[folan] = distances[folan][filan];
@@ -2064,6 +2080,8 @@ void kmeans_v6() {
                 tmp += ((centroids[folan][filan] - old_centroids[folan][filan]) *
                         (centroids[folan][filan] - old_centroids[folan][filan]));
             }
+            // COUNT
+            features_accessed += D;
             if(tmp < 0.0) tmp = 0.0;
             centroid_movement[folan] = sqrt(tmp);
             if (centroid_movement[folan] > centroid_movement[furthest_moving_centroid]){
@@ -2802,6 +2820,8 @@ void kmeans_v85() {
                 for (ashghal = 0; ashghal < D; ashghal++) {
                     tmp -= (2 * centroids[folan][ashghal] * centroids[filan][ashghal]);
                 }
+                // COUNT
+                features_accessed += D;
                 if(tmp < 0.0) tmp = 0.0;
                 centroid_to_centroid_distances[folan][filan] = sqrt(tmp);
                 // THEY'RE THE SAME
@@ -2825,6 +2845,8 @@ void kmeans_v85() {
                     for (ashghal = 0; ashghal < D; ashghal++) {
                         tmp -= (2 * data_arr[folan][ashghal] * centroids[filan][ashghal]);
                     }
+                    // COUNT
+                    features_accessed += D;
                     if(tmp < 0.0) tmp = 0.0;
                     distances[folan][filan] = sqrt(tmp);
                     elkan_lower_bounds[folan][filan] = distances[folan][filan];
@@ -2854,24 +2876,21 @@ void kmeans_v85() {
                         0.5 * closest_centroid_distance[labels[folan]]) : hamerly_lower_bounds[folan];
                 // elkan lemma 1 and hamerly
                 if (hamerly_bound < hamerly_upper_bounds[folan]) {
-                    if(folan == 1){
-                        std::cout << "not pruned by ham_bound\n";
-                    }
+                    
 
                     tmp = centroid_squares[labels[folan]] + data_arr_ss[folan][0];
                     for (ashghal = 0; ashghal < D; ashghal++) {
                         tmp -= (2 * data_arr[folan][ashghal] * centroids[labels[folan]][ashghal]);
                     }
+                    // COUNT
+                    features_accessed += D;
                     if(tmp < 0.0) tmp = 0.0;
                     distances[folan][labels[folan]] = sqrt(tmp);
                     // I'll do it once after the for
                     // but I'm changing the elkan_lb too, so i'll do it here too
                     hamerly_upper_bounds[folan] = distances[folan][labels[folan]];
                     elkan_lower_bounds[folan][labels[folan]] = hamerly_upper_bounds[folan];
-                    if(folan == 1){
-                        std::cout << "1 changed ham_ub[" << folan << "] to " << hamerly_upper_bounds[folan];
-                        std::cout << " and elkan_lb[" << folan << "][" << labels[folan] << "] to " << elkan_lower_bounds[folan][labels[folan]] << std::endl;
-                    }
+                    
                     // if((0.5 * closest_centroid_distance[labels[folan]]) < hamerly_upper_bounds[folan]){
                     for (filan = 0; filan < K; filan++) {
                         if (filan == labels[folan]) continue;
@@ -2884,12 +2903,12 @@ void kmeans_v85() {
                             for (ashghal = 0; ashghal < D; ashghal++) {
                                 tmp -= (2 * data_arr[folan][ashghal] * centroids[filan][ashghal]);
                             }
+                            // COUNT
+                            features_accessed += D;
                             if(tmp < 0.0) tmp = 0.0;
                             distances[folan][filan] = sqrt(tmp);
                             elkan_lower_bounds[folan][filan] = distances[folan][filan];
-                            if(folan == 1){
-                                std::cout << "2 changed elkan_lb[" << folan << "][" << filan << "] to " << elkan_lower_bounds[folan][filan] << std::endl;
-                            }
+                            
 
 
                             if (distances[folan][filan] < distances[folan][labels[folan]]) {
@@ -2898,17 +2917,10 @@ void kmeans_v85() {
                                 labels[folan] = filan;
                                 // i am doing this under duress...
                                 hamerly_upper_bounds[folan] = distances[folan][labels[folan]];
-                                if(folan == 1){
-                                    std::cout << "1 changed ham_ub[" << folan << "] to " << hamerly_upper_bounds[folan];
-                                    std::cout << " and ham_lb[" << folan << "] to " << hamerly_lower_bounds[folan];
-                                    std::cout << "and labels[" << folan << "] to " << labels[folan] << std::endl;
-                                }
+                                
                             } else if (hamerly_lower_bounds[folan] > distances[folan][filan]) {
                                 hamerly_lower_bounds[folan] = distances[folan][filan];
-                                if(folan == 1){
-                                    std::cout << "1 changed ham_lb[" << folan << "] to " << hamerly_lower_bounds[folan] << std::endl;
-                                }
-
+                                
                             }
 
                         }
@@ -3012,6 +3024,8 @@ void kmeans_v85() {
                 tmp += ((centroids[folan][filan] - old_centroids[folan][filan]) *
                         (centroids[folan][filan] - old_centroids[folan][filan]));
             }
+            // COUNT
+            features_accessed += D;
             if(tmp < 0.0) tmp = 0.0;
             centroid_movement[folan] = sqrt(tmp);
             if (centroid_movement[folan] > centroid_movement[furthest_moving_centroid]){
@@ -5114,9 +5128,6 @@ void kmeans_v105(){
     } // for iter
 
 }
-
-
-
 
 
 
@@ -7307,8 +7318,12 @@ int main(int argc, char **argv) {
 
     std::cout << "set labels to 0, calling kmeans..." << std::endl;
 
+    // set counter to 0
+    features_accessed = 0;
     // do the clustering
-    kmeans_v106();
+    kmeans_v4();
+
+    std::cout << "TOTAL FEATURES ACCESSED: " << features_accessed << std::endl;
 
     // write labels to somewhere I guess...
     // TODO
