@@ -300,13 +300,14 @@ class kmeans_class:
                 #    lowerBounds_Hamerly[i] = sorted(set(lowerBounds[i]))[1]
                 #lowerBounds_Hamerly[i] = sorted(lowerBounds[i])[1]
                 #lowerBounds_Hamerly[i] = sorted(set([item for item in lowerBounds[i] if item >= lowerBounds[i][labels[i]]]))[1]
+                lowerBounds_Hamerly[i] = min(lb_dists[i][:labels[i]]+lb_dists[i][labels[i]+1:])
 
                 ## Upper bound distance between the point and assigned centroid
                 upperBounds[i] = ub_dists[i][labels[i]]                    
                 i+=1
 
 
-            #maxCentroidDistanceChange = max(centroidDistanceChange.values())
+            maxCentroidDistanceChange = max(centroidDistanceChange.values())
             # Update lower and upper bound distances
             for centroid in self.pointsClassif:
                 for i in list(range(data_x.shape[0])):
@@ -323,9 +324,10 @@ class kmeans_class:
                     #    lowerBounds_Hamerly[i] -= maxCentroidDistanceChange
                     #else:
                     #    lowerBounds_Hamerly[i] -= maxCentroidDistanceChange
-            #for centroid in self.pointsClassif:
-            #    for point in self.pointsClassif[centroid]:
-            #        lowerBounds_Hamerly[point] = sorted([val for i,val in enumerate(lowerBounds[point]) if i!=centroid])[0]
+            for centroid in self.pointsClassif:
+                for point in self.pointsClassif[centroid]:
+                    #lowerBounds_Hamerly[point] = sorted([val for i,val in enumerate(lowerBounds[point]) if i!=centroid])[0]
+                    lowerBounds_Hamerly[point] = min(np.concatenate((lowerBounds[point][:centroid],lowerBounds[point][centroid+1:])))
 
                     
             #For ecokmeans efficiency measure
@@ -363,20 +365,20 @@ class kmeans_class:
                         
                         #Elkan Lemma1 
                         ## Check if upper bound lower than 1/2 of distance with closest centroid
-                        #hamerly_bound = max(0.5*closestCentroidDistances[centroid], lowerBounds_Hamerly[i])
-                        #if upperBounds[i] <= hamerly_bound: #For Elkan lemma1 and Hamerly
+                        hamerly_bound = max(0.5*closestCentroidDistances[centroid], lowerBounds_Hamerly[i])
+                        if upperBounds[i] <= hamerly_bound: #For Elkan lemma1 and Hamerly
                         #if upperBounds[i] <= 0.5*closestCentroidDistances[centroid]: #for Elkan lemma1
                         #if upperBounds[i] > hamerly_bound: #For Elkan lemma1 and Hamerly
-                        if upperBounds[i] > 0.5*closestCentroidDistances[centroid]: #for Elkan lemma1
+                        #if upperBounds[i] > 0.5*closestCentroidDistances[centroid]: #for Elkan lemma1
                             ## If condition is met : said point keeps its centroid with no further computation needed
-                            #mask[i] = 0
-                            #mask[i][centroid] = 1
+                            mask[i] = 0
+                            mask[i][centroid] = 1
                             #this_itr_dist_discard += 1
                             #itr_discard_count_total += 1
                             pass
                         
                         #if 1:
-                        #else:
+                        else:
                             assigned_centroid = centroid
                             for c_prime in (listCentroids[:centroid]+listCentroids[centroid+1:]):
                                 #if (upperBounds[i] <= hamerly_bound) and (hamerly_bound < lowerBounds[i][c_prime]):
@@ -471,11 +473,12 @@ class kmeans_class:
                     #lowerBounds_Hamerly[i] = sorted(set([item for item in lowerBounds[i] if item >= lowerBounds[i][labels[i]]]))[1]
 
                     ## Upper bound distance between the point and assigned centroid
-                    upperBounds[i] = ub_dists[i][labels[i]]                    
+                    if sum(mask[i]) != 1:
+                        upperBounds[i] = ub_dists[i][labels[i]]                    
                     i+=1
 
 
-                #maxCentroidDistanceChange = max(centroidDistanceChange.values())
+                maxCentroidDistanceChange = max(centroidDistanceChange.values())
                 ## Update lower and upper bound distances
                 for centroid in self.pointsClassif:
                     for i in list(range(data_x.shape[0])):
@@ -492,9 +495,10 @@ class kmeans_class:
                         #    lowerBounds_Hamerly[i] -= maxCentroidDistanceChange
                         #else:
                         #    lowerBounds_Hamerly[i] -= maxCentroidDistanceChange
-                #for centroid in self.pointsClassif:
-                #    for point in self.pointsClassif[centroid]:
-                #        lowerBounds_Hamerly[point] = sorted([val for i,val in enumerate(lowerBounds[point]) if i!=centroid])[0]
+                for centroid in self.pointsClassif:
+                    for point in self.pointsClassif[centroid]:
+                        #lowerBounds_Hamerly[point] = sorted([val for i,val in enumerate(lowerBounds[point]) if i!=centroid])[0]
+                        lowerBounds_Hamerly[point] = min(np.concatenate((lowerBounds[point][:centroid],lowerBounds[point][centroid+1:])))
 
 
         
