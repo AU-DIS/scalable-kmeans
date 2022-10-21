@@ -4746,7 +4746,7 @@ void kmeans_v105(){
 
             for (folan = 0; folan < N; folan++) {
                 // TODO: check if sth goes wrong
-                smallest_ub[folan] = labels[folan];
+                // smallest_ub[folan] = labels[folan];
                 if (assigned[folan] > 0) continue;
                 r = true;
                 r_int = 0; fake_smallest_lb = DBL_MAX;
@@ -4879,9 +4879,14 @@ void kmeans_v105(){
                     // im gonna update smallest_ub here
                     // I think it should be fine
                     // cause after all the hassle, the ub and lb here should be valid
-                    if(upper_bounds[folan][filan] < upper_bounds[folan][smallest_ub[folan]]){ smallest_ub[folan] = filan; }
+                    // if(upper_bounds[folan][filan] < upper_bounds[folan][smallest_ub[folan]]){ smallest_ub[folan] = filan; }
                 } // for filan < K
                 // } // if ham_bound
+
+                // if(smallest_ub[folan] != labels[folan]){
+                //     std::cout << "SMALLEST UB !!!==== LABELS" << std::endl;
+                //     exit(3);
+                // }
                 
                 // TODO: now we have to do the pruning based off step-wise... I think...
                 // I'll move this to the start of the N loop
@@ -4898,15 +4903,16 @@ void kmeans_v105(){
                 candidates_exist = false;
                 // V9
                 if (level == int(log2(int(sqrt(D))) + 1)) {
-                    labels[folan] = smallest_ub[folan];
+                    // labels[folan] = smallest_ub[folan];
                     // V9
-                    hamerly_upper_bounds[folan] = upper_bounds[folan][smallest_ub[folan]];
+                    // hamerly_upper_bounds[folan] = upper_bounds[folan][smallest_ub[folan]];
                     assigned[folan] = 1;
                     // v9
 
                     // but we still need to update the ham_lb
                     for (filan = 0; filan < K; filan++) {
-                        if (filan == smallest_ub[folan]) continue;
+                        // if (filan == smallest_ub[folan]) continue;
+                        if (filan == labels[folan]) continue;
                         if (!is_candidate[folan][filan]) continue;
                         if(!candidates_exist){
                             candidates_exist = true;
@@ -4930,14 +4936,16 @@ void kmeans_v105(){
 
                 } else {
                     for (filan = 0; filan < K; filan++) {
-                        if (filan == smallest_ub[folan]) continue;
+                        // if (filan == smallest_ub[folan]) continue;
+                        if (filan == labels[folan]) continue;
                         if (!is_candidate[folan][filan]) continue;
                         // if(!candidates_exist){
                         //     candidates_exist = true;
                         //     // fake_smallest_lb = DBL_MAX;
                         //     hamerly_lower_bounds[folan] = DBL_MAX;
                         // }
-                        if (lower_bounds[folan][filan] >= upper_bounds[folan][smallest_ub[folan]]) {
+                        // if (lower_bounds[folan][filan] >= upper_bounds[folan][smallest_ub[folan]]) {
+                        if (lower_bounds[folan][filan] >= upper_bounds[folan][labels[folan]]) {
                             is_candidate[folan][filan] = false;
                             if(!candidates_exist){
                                 candidates_exist = true;
@@ -4980,9 +4988,9 @@ void kmeans_v105(){
                     }
                     // then the only one left is the one with the smallest_ub
                     if (alaki == 1) {
-                        labels[folan] = smallest_ub[folan];
+                        // labels[folan] = smallest_ub[folan];
                         // V9
-                        hamerly_upper_bounds[folan] = upper_bounds[folan][smallest_ub[folan]];
+                        // hamerly_upper_bounds[folan] = upper_bounds[folan][smallest_ub[folan]];
                         assigned[folan] = 1;
                         // v9
                         if(folan == 4){
@@ -7321,7 +7329,7 @@ int main(int argc, char **argv) {
     // set counter to 0
     features_accessed = 0;
     // do the clustering
-    kmeans_v4();
+    kmeans_v105();
 
     std::cout << "TOTAL FEATURES ACCESSED: " << features_accessed << std::endl;
 
