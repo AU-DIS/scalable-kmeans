@@ -82,7 +82,10 @@ class LloydKmeansStrategy : public KmeansStrategy {
                     }
                 }
 
-
+                for (int i = 0; i < k; i++) {      
+                std::cout << cluster_count[i] << " "; 
+                }
+                std::cout << std::endl;
                 
 
                 //Check convergence
@@ -98,10 +101,10 @@ class LloydKmeansStrategy : public KmeansStrategy {
                 }
             }
 
-            /*for (int i = 0; i < k; i++) {      
+            for (int i = 0; i < k; i++) {      
                 std::cout << cluster_count[i] << " "; 
             }
-            std::cout << std::endl;*/
+            std::cout << std::endl;
 
             return labels;
         };
