@@ -19,7 +19,7 @@ class LloydKmeansStrategy : public KmeansStrategy {
                 //Calculate all distances
                 for (int i = 0; i < n; i++) {
                     for (int j = 0; j < k; j++) {
-                        distances[i*k+j] = euclidian_distance(i, j, d, k, data_ptr, centroids);
+                        distances[i*k+j] = Euclidian_distance(i, j, d, k, data_ptr, centroids);
                         if (distances[i*k+j] < distances[i*k+labels[i]]) {
                             labels[i] = j;
                         }
