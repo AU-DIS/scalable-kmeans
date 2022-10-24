@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include <algorithm>
 #include <functional>
-#include <vector>
+#include <ector>
 #include <iostream>
 #include <utility>
 #include <queue>

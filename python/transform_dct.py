@@ -250,7 +250,7 @@ def main():
 
 
     #for dct_len in [8, 16, 32, 64, 128, 256]: #, 512, 1024]:
-    #    image_dct = cal_dct_features(dct_len, dataset)
+    #   image_dct = cal_dct_features(256, dataset)
     #    arr = np.array(image_dct)
     #    df = pd.DataFrame(data=arr)
     #    print(filename[:-3].replace("256",str(dct_len))+"_h5_dct.txt")
