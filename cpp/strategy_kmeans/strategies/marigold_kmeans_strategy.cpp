@@ -19,22 +19,7 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
             //calculate_data_squares(data_ptr, data_ss, n, d)
             Calculate_squared(d, n, data_ptr, data_ss);
 
-            /*for (int i = 0; i < k; i++) {
-                for (int j = i; j < k; j++) {
-                    double tmp = 0; //centroids_ss[i][0] + centroids_ss[j][0];
-                    for (int f = 0; f < d; f++) {
-                        //TODO: this does not use squares when it could
-                        tmp += ((centroids[i*d+f] - centroids[j*d+f]) *
-                            (centroids[i*d+f] - centroids[j*d+f]));
-                    }
-                    if(tmp < 0.0) tmp = 0.0;
-                    tmp = sqrt(tmp);
-                    //We can save distances for later use
-                    c_to_c[i][j] = sqrt(tmp);
-                    // THEY'RE THE SAME
-                    c_to_c[j][i] = c_to_c[i][j];
-                }
-            }*/
+           
 
             while ((iter < max_inter) && (!converged)) {
                 //calculate square centroids

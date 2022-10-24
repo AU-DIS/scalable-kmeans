@@ -25,7 +25,7 @@ double Euclidian_distance(int x, int c, int d, int k, double data[], double cent
 void Update_bounds(double data[], double centroids[], double* c_to_c[], double* centroids_ss[], double* l_elkan[], double u_elkan[], double l_hamerly[], int labels[], double div[], double near[], int n, int k, int d) {
     //For all x in X
     for (int i = 0; i < n; i++) { 
-        int smallest_id = labels[i] == 0 ? 1 : 0;
+        int smallest_id = labels[i] == 0 ? 1 : 0; //TODO: Legacy?
         //For all c in C
         for (int j = 0; j < k; j++) {
             //l_elkan(x, c) <-- max{0, l_elkan(x, c) - div[c]} 
@@ -130,11 +130,19 @@ bool Recalculate(double data[], double centroids[], double old_centroids[], doub
 std::tuple<double, double> DistToLevel(int x, int c, int d, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int l, int L, double &UB, double &LB) {
     //Calculate dots  
     //TODO: is this dot correct or should it loop to l instead?
-    dots[x][c] += data[x*d+l] * centroids[c*d+l];
+    dots[x][c] = 0;
+    int d_sqrt = sqrt(d);
+    for (int l_ = 0; l_ < pow(2,l); l_++) {
+        //TODO: min with d_sqrt in both loops
+        for (int l_2 = 0; l_2 < pow(2,l); l_2++) {
+            dots[x][c] += data[x*d+l_*d_sqrt+l_2]*centroids[c*d+l_*d_sqrt+l_2];
+        }
+    }
+    //dots[x][c] += data[x*d+l] * centroids[c*d+l];
     
     
     
-    double dist = data_ss[x][l] + centroid_ss[c][l] - 2*dots[x][c]; 
+    double dist = data_ss[x][L] + centroid_ss[c][L] - 2*dots[x][c]; 
 
     double margin = 2 * sqrt(data_ss[x][L]-data_ss[x][l]) * sqrt(centroid_ss[c][L]-centroid_ss[c][l]);
 
@@ -158,7 +166,7 @@ void MG_SetLabel(int x, int d, int k, double data[],  double centroids[], double
     while (l <= L && mask_sum > 1) {
         for (int j = 0; j < k; j++) {
             if (mask[j] != 1) continue;  
-            //if (j == labels[x]) continue; //TODO: how to treat the assigned point? is this correct?
+            if (j == labels[x]) continue; //TODO: how to treat the assigned point? is this correct?
             
             //Elkan prune
             double test = 0.5 * c_to_c[labels[x]][j];
@@ -214,7 +222,7 @@ void Calculate_squared(int d, int elements, double raw[], double* squared[]) {
     }
 }
 
-void Calculate_squared_v1(int d, int elements, double raw[], double* squared[]) {
+/*void Calculate_squared_v1(int d, int elements, double raw[], double* squared[]) {
     int L = log10(d)/log10(4);
     int d_sqrt = sqrt(d);
     int two_p_level_m1, two_p_level;
@@ -240,5 +248,5 @@ void Calculate_squared_v1(int d, int elements, double raw[], double* squared[]) 
         }
         squared[e][0] = squared[e][1] + (raw[e*d+0] * raw[e*d+0]);
     }
-}
+}*/
 #endif
