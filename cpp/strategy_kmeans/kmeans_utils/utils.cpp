@@ -144,7 +144,7 @@ std::tuple<double, double> DistToLevel(int x, int c, int d, double data[], doubl
     
     
     
-    double dist = data_ss[x][L] + centroid_ss[c][L] - 2*dots[x][c]; 
+    double dist = data_ss[x][l] + centroid_ss[c][l] - 2*dots[x][c]; 
 
     double margin = 2 * sqrt(data_ss[x][L]-data_ss[x][l]) * sqrt(centroid_ss[c][L]-centroid_ss[c][l]);
 
