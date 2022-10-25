@@ -242,12 +242,12 @@ class Kmeans_bench {
             //std::cout << "calculated new centroids" << std::endl;
             // just to check
             int sanity_check = 0;
-            //std::cout << "cluster counts..." << std::endl;
+            std::cout << "cluster counts..." << std::endl;
             for (folan = 0; folan < K; folan++) {
                 sanity_check += cluster_counts[folan];
-                //std::cout << cluster_counts[folan] << " ";
+                std::cout << cluster_counts[folan] << " ";
             }
-            //std::cout << sanity_check << std::endl;
+            std::cout << sanity_check << std::endl;
             // check convergence
             // TODO: gonna do it in labels assignment, changed my mind will do it here, DONE
             has_converged = true;
@@ -263,7 +263,7 @@ class Kmeans_bench {
 
             // end if converged
             if (has_converged) {
-                if (D >= 256*256) {
+                if (D >= 8*8) {
                     int sanity_check = 0;
                     for (folan = 0; folan < K; folan++) {
                         sanity_check += cluster_counts[folan];
@@ -8588,16 +8588,16 @@ int main(int argc, char **argv) {
 
     argv_ = argv;
     argc_ = argc;
-    int D = 1024*1024;
+    int D = 8*8;
     int N = 168;
     int K = 5; 
 
     const std::string VB = "../Data/steinn_14_jun/processed/misfit_VB_1024_h5_dct.txt";
     const std::string FLAKE = "../Data/steinn_14_jun/processed/gr_flake_256_h5_dct.txt";
     const std::string Se3d = "../Data/steinn_14_jun/processed/misfit_Se3d_1024_h5_dct.txt";
-    const std::string Bi5d = "../Data/steinn_14_jun/processed/misfit_Bi5d_1024_h5_dct.txt";
+    const std::string Bi5d = "../Data/steinn_14_jun/processed/misfit_Bi5d_8_h5_dct.txt";
 
-    data_load(Se3d, D, N, K);
+    data_load(Bi5d, D, N, K);
     //add_all_Bi5d(&BM_Load_Data_Bi5d, 1024, N, K);
     //add_all_Se3d(&BM_Load_Data_Se3d, 1024, N, K);
     //
@@ -8607,16 +8607,16 @@ int main(int argc, char **argv) {
     //data_load(FLAKE, D, N, K);
     //add_all_flake(&BM_Load_Data_flake, 256, N, K);
     BENCHMARK(BM_Kmeans)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
-    BENCHMARK(BM_Kmeans_elkan)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
-    BENCHMARK(BM_Kmeans_hamerly)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
-    BENCHMARK(BM_Kmeans_stepwise)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
-    BENCHMARK(BM_Kmeans_ElkanHamerly)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
-    BENCHMARK(BM_Kmeans_HamerlyStepwise)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
-    BENCHMARK(BM_Kmeans_MARIGOLD)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
-    BENCHMARK(BM_Kmeans_GOLDSWICH)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
-    BENCHMARK(BM_Kmeans_v106)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
-    BENCHMARK(BM_Kmeans_v12)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
-    BENCHMARK(BM_Kmeans_v121)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    //BENCHMARK(BM_Kmeans_elkan)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    //BENCHMARK(BM_Kmeans_hamerly)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    //BENCHMARK(BM_Kmeans_stepwise)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    //BENCHMARK(BM_Kmeans_ElkanHamerly)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    //BENCHMARK(BM_Kmeans_HamerlyStepwise)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    //BENCHMARK(BM_Kmeans_MARIGOLD)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    //BENCHMARK(BM_Kmeans_GOLDSWICH)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    //BENCHMARK(BM_Kmeans_v106)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    //BENCHMARK(BM_Kmeans_v12)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    //BENCHMARK(BM_Kmeans_v121)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
     
 
 

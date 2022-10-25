@@ -32,20 +32,18 @@ class LloydKmeansStrategy : public KmeansStrategy {
                 for (int i = 0; i < n; i++) {
                     for (int j = 0; j < k; j++) {
                         distances[i*k+j] = Euclidian_distance(i, j, d, k, data_ptr, centroids);
-                        if (distances[i*k+j] < distances[i*k+labels[i]]) {
-                            labels[i] = j;
-                        }
+                        
                     }
                 }
                 //Update labels
-                /*for (int i = 0; i < n; i++) {
+                for (int i = 0; i < n; i++) {
                     for (int j = 0; j < k; j++) {
                         //std::cout << distances[i*k+j] << " " << distances[i*k+labels[i]] << "\n"; 
                         if (distances[i*k+j] < distances[i*k+labels[i]]) {
                             labels[i] = j;
                         }
                     }
-                }*/
+                }
                 
                 converged = Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d);
 

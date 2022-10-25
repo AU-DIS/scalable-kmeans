@@ -132,11 +132,12 @@ bool Recalculate(double data[], double centroids[], double old_centroids[], doub
 std::tuple<double, double> DistToLevel(int x, int c, int d, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int l, int L, double &UB, double &LB) {
     //Calculate dots  
     //TODO: is this dot correct or should it loop to l instead?
+    //dots[x][c] = 0;
     dots[x][c] = 0;
     int d_sqrt = sqrt(d);
-    for (int l_ = 0; l_ < pow(2,l); l_++) {
+    for (int l_ = 0; l_ < std::min(d_sqrt,(int) pow(2,l)); l_++) {
         //TODO: min with d_sqrt in both loops
-        for (int l_2 = 0; l_2 < pow(2,l); l_2++) {
+        for (int l_2 = 0; l_2 < std::min(d_sqrt,(int) pow(2,l)); l_2++) {
             dots[x][c] += data[x*d+l_*d_sqrt+l_2]*centroids[c*d+l_*d_sqrt+l_2];
         }
     }
