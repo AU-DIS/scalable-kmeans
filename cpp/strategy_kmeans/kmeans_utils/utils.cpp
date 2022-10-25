@@ -20,7 +20,8 @@ double Euclidian_distance(int x, int c, int d, int k, double data[], double cent
         dist += (data[x*d+j]-centroids[c*d+j])*(data[x*d+j]-centroids[c*d+j]);
     };
     //std::cout << dist << std::endl;
-    return dist;
+    if(dist < 0.0) dist = 0.0;
+    return sqrt(dist);
 }
 
 void Update_bounds(double data[], double centroids[], double* c_to_c[], double* centroids_ss[], double* l_elkan[], double u_elkan[], double l_hamerly[], int labels[], double div[], double near[], int n, int k, int d) {
@@ -32,7 +33,7 @@ void Update_bounds(double data[], double centroids[], double* c_to_c[], double* 
             //l_elkan(x, c) <-- max{0, l_elkan(x, c) - div[c]} 
             double val = l_elkan[i][j]-div[j];  
             l_elkan[i][j] = 0 < val ? val : 0;
-            if ((labels[i] != j) && (l_elkan[i][j] < l_elkan[i][smallest_id])) {
+            if ((labels[i] != j) && (l_elkan[i][j] <= l_elkan[i][smallest_id])) {
                 smallest_id = j; 
             }  
         }
