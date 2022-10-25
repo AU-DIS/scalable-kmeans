@@ -35,19 +35,21 @@ class LloydKmeansStrategy : public KmeansStrategy {
                     }
                 }*/
                 
+                converged = Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d);
 
+                /*
                 //Save centroids for convergence test    
                 memcpy(old_centroids, centroids, sizeof(double)*k*d);
                 
                 //Wipe memory for new centroid calculations
                 memset(centroids, 0.0, sizeof(double)*k*d);
-                /*for(int i = 0; i < k; i++) {
-                    for (int j = 0; j < 10; j++) {
-                        std::cout << centroids[i*k+j] << " ";
-                    }
-                    std::cout << "\n";
-                }
-                std::cout << std::endl;*/
+                //for(int i = 0; i < k; i++) {
+                //    for (int j = 0; j < 10; j++) {
+                //        std::cout << centroids[i*k+j] << " ";
+                //    }
+                //    std::cout << "\n";
+                //}
+                //std::cout << std::endl;
 
                 //std::fill(centroids, centroids+k*d, 0);
                 
@@ -61,13 +63,13 @@ class LloydKmeansStrategy : public KmeansStrategy {
                     }
                 }
 
-                /*for(int i = 0; i < k; i++) {
-                    for (int j = 0; j < 10; j++) {
-                        std::cout << centroids[i*d+j] << " ";
-                    }
-                    std::cout << "\n";
-                }
-                std::cout << std::endl;*/
+                //for(int i = 0; i < k; i++) {
+                //    for (int j = 0; j < 10; j++) {
+                //        std::cout << centroids[i*d+j] << " ";
+                //    }
+                //    std::cout << "\n";
+                //}
+                //std::cout << std::endl;
 
                 //Calculate new centroid positions
                 for (int i = 0; i < k; i++) {  
@@ -98,7 +100,7 @@ class LloydKmeansStrategy : public KmeansStrategy {
                             break;
                         }
                     }
-                }
+                }*/
             }
 
             for (int i = 0; i < k; i++) {      
@@ -124,6 +126,8 @@ class LloydKmeansStrategy : public KmeansStrategy {
             //Init cluster_counts
             cluster_count = new double[k];
             
+
+            div = new double[k];
 
             //Init distances
             distances = new double[n*k];
@@ -155,6 +159,7 @@ class LloydKmeansStrategy : public KmeansStrategy {
         int n;
         int d;
         int k;
+        double* div;
         double* centroids;
         double* old_centroids;
         double* cluster_count;

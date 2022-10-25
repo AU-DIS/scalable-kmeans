@@ -4,6 +4,7 @@
 #include <cmath>
 #include <tuple>
 #include <algorithm>
+#include <iostream>
 //#include <memory>
 #include <cstring>
 
@@ -25,7 +26,7 @@ double Euclidian_distance(int x, int c, int d, int k, double data[], double cent
 void Update_bounds(double data[], double centroids[], double* c_to_c[], double* centroids_ss[], double* l_elkan[], double u_elkan[], double l_hamerly[], int labels[], double div[], double near[], int n, int k, int d) {
     //For all x in X
     for (int i = 0; i < n; i++) { 
-        int smallest_id = labels[i] == 0 ? 1 : 0; //TODO: Legacy?
+        int smallest_id = labels[i] == 0 ? 1 : 0; 
         //For all c in C
         for (int j = 0; j < k; j++) {
             //l_elkan(x, c) <-- max{0, l_elkan(x, c) - div[c]} 
@@ -64,7 +65,7 @@ void Update_bounds(double data[], double centroids[], double* c_to_c[], double* 
             if (i == j) continue;
             if (c_to_c[i][j] < smallest) {  
                 smallest = c_to_c[i][j];  
-                near[i] = smallest; 
+                near[i] = 0.5 * smallest; 
             }
         }
     }
@@ -166,7 +167,7 @@ void MG_SetLabel(int x, int d, int k, double data[],  double centroids[], double
     while (l <= L && mask_sum > 1) {
         for (int j = 0; j < k; j++) {
             if (mask[j] != 1) continue;  
-            if (j == labels[x]) continue; //TODO: how to treat the assigned point? is this correct?
+            //if (j == labels[x]) continue; //TODO: how to treat the assigned point? is this correct?
             
             //Elkan prune
             double test = 0.5 * c_to_c[labels[x]][j];
@@ -178,7 +179,9 @@ void MG_SetLabel(int x, int d, int k, double data[],  double centroids[], double
                 //DistToLevel params (int x, int c, int d, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int l, int L)
                 double UB, LB;
                 DistToLevel(x, j, d, data, centroids, data_ss, centroid_ss, dots, l, L, UB, LB);
-                
+                //auto val_ = Euclidian_distance(x,j,d,k,data,centroids);
+                //UB = val_;
+                //LB = val_;
                 if (LB > l_elkan[x][j]) {
                     l_elkan[x][j] = LB; //Keep maximum LB per c
                 }
@@ -198,6 +201,45 @@ void MG_SetLabel(int x, int d, int k, double data[],  double centroids[], double
 
     //TODO: free mask?
     //END: Updated labels, l_elkan[x][.], u_elkan[x]
+}
+
+int SetLabel(int x, int d, int k, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int L) {
+    int l = 0;
+    int a = -1;
+    double LB = 0;
+    double UB_min = std::numeric_limits<double>::max();
+    
+    int *mask = new int[k];
+    std::fill(mask, mask+k, 1);
+
+    int mask_sum = k;
+
+    while (l <= L && mask_sum > 1) {
+        for (int j = 0; j < k; j++) {
+            if (mask[j] != 1) continue; 
+
+            if (UB_min < LB) {
+                mask[j] = 0;
+            } else {
+                double UB;
+                //DistToLevel(int x, int c, int d, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int l, int L, double &UB, double &LB)
+                DistToLevel(x, j, d, data, centroids, data_ss, centroid_ss, dots, l, L, UB, LB);
+                //auto val_ = Euclidian_distance(x,j,d,k,data,centroids);
+                //UB = val_;
+                //LB = val_;
+                
+                if (UB < UB_min) {
+                    a = j;
+                    UB_min = UB;
+                }
+            }
+        }
+        l++;
+    }
+    if (a == -1) {
+        std::cout << "SetLabel did not set a for item " << x <<std::endl;  
+    }
+    return a;
 }
 
 /*void Calculate_squared(int d, int elements, double raw[], double* squared[]) {
