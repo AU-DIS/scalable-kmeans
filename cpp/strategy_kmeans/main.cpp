@@ -94,8 +94,8 @@ int main(int argc, char **argv) {
     BENCHMARK(BM_Kmeans_lloyd)->Iterations(1)->Unit(benchmark::kMillisecond);
     
     //BENCHMARK(BM_Kmeans_MARIGOLD)->Iterations(1)->Unit(benchmark::kMillisecond);
-    BENCHMARK(BM_Kmeans_StepWise)->Iterations(1)->Unit(benchmark::kMillisecond);
-    //BENCHMARK(BM_Kmeans_ElkHam)->Iterations(1)->Unit(benchmark::kMillisecond);
+    //BENCHMARK(BM_Kmeans_StepWise)->Iterations(1)->Unit(benchmark::kMillisecond);
+    BENCHMARK(BM_Kmeans_ElkHam)->Iterations(1)->Unit(benchmark::kMillisecond);
     benchmark::Initialize(&argc, argv);
     benchmark::RunSpecifiedBenchmarks();
     //Dataset data(n, d);

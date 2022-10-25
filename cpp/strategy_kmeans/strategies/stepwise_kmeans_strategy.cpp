@@ -36,18 +36,38 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
                     c_to_c[j][i] = c_to_c[i][j];
                 }
             }*/
+
+            
             
             while ((iter < max_inter) && (!converged)) {
                 //calculate square centroids
                 Calculate_squared(d, k, centroids, centroid_ss);
 
+                /*if (iter < 2) {
+                     for (int i = 0; i < k; i++) {
+                    for (int j = 0; j < d; j++) {
+                        std::cout << centroids[i*d+j] << " ";
+                    }       
+                    std::cout << "\n";
+                }
+                std::cout << std::endl;
+
+                }*/
+
                 //assign to centroids
                 for (int i = 0; i < n; i++) {
-                        //TODO: refactor placement of implementation to avoid bassillion arguments
-                        //params = (int x, int d, int k, double data[],  double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int L, int labels[], double* l_elkan[], double u_elkan[], double* c_to_c[])
-                        labels[i] = SetLabel(i, d, k, data_ptr, centroids, data_ss, centroid_ss, dots, L);                   
+                    //TODO: refactor placement of implementation to avoid bassillion arguments
+                    //params = (int x, int d, int k, double data[],  double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int L, int labels[], double* l_elkan[], double u_elkan[], double* c_to_c[])
+                    /*for (int j = 0; j < k; j++) {
+                        distances[i*k+j] = Euclidian_distance(i, j, d, k, data_ptr, centroids);
+                        if (distances[i*k+j] < distances[i*k+labels[i]]) {
+                            labels[i] = j;
+                        }
+                    }*/
+                    labels[i] = SetLabel(i, d, k, data_ptr, centroids, data_ss, centroid_ss, dots, L);                   
                 }
                 converged = Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d);
+                iter++;
             }   
 
             for (int j = 0; j < k; j++) {

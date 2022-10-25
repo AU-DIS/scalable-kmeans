@@ -14,7 +14,19 @@ class LloydKmeansStrategy : public KmeansStrategy {
             bool converged = false;
             
             while ((iter < max_inter) && (!converged)) {
-                iter++;
+                /*if (iter < 2) {
+                     for (int i = 0; i < k; i++) {
+                    for (int j = 0; j < d; j++) {
+                        std::cout << centroids[i*d+j] << " ";
+                    }       
+                    std::cout << "\n";
+                }
+                std::cout << std::endl;
+
+                }*/
+               
+
+                
                 //std::cout << iter << std::endl;
                 //Calculate all distances
                 for (int i = 0; i < n; i++) {
@@ -101,12 +113,14 @@ class LloydKmeansStrategy : public KmeansStrategy {
                         }
                     }
                 }*/
+                iter++;
             }
 
             for (int i = 0; i < k; i++) {      
                 std::cout << cluster_count[i] << " "; 
             }
             std::cout << std::endl;
+            std::cout << iter << std::endl;
 
             return labels;
         };

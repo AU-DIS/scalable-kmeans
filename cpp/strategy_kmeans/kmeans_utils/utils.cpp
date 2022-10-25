@@ -144,14 +144,14 @@ std::tuple<double, double> DistToLevel(int x, int c, int d, double data[], doubl
     
     
     
-    double dist = data_ss[x][l] + centroid_ss[c][l] - 2*dots[x][c]; 
+    double dist = data_ss[x][L] + centroid_ss[c][L] - 2*dots[x][c]; 
 
     double margin = 2 * sqrt(data_ss[x][L]-data_ss[x][l]) * sqrt(centroid_ss[c][L]-centroid_ss[c][l]);
 
 
     
     LB = sqrt(std::max(0.0,dist - margin));
-    UB = sqrt(std::max(0.0,dist - margin));
+    UB = sqrt(std::max(0.0,dist + margin));
 
     return {LB, UB};
 };
@@ -209,7 +209,8 @@ void MG_SetLabel(int x, int d, int k, double data[],  double centroids[], double
 int SetLabel(int x, int d, int k, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int L) {
     int l = 0;
     int a = -1;
-    double LB = 0;
+    double* LB = new double[k];
+    std::fill(LB, LB+k, 0.0);
     double UB_min = std::numeric_limits<double>::max();
     
     int *mask = new int[k];
@@ -219,17 +220,18 @@ int SetLabel(int x, int d, int k, double data[], double centroids[], double* dat
 
     while (l <= L && mask_sum > 1) {
         for (int j = 0; j < k; j++) {
-            if (mask[j] != 1) continue; 
+            if (mask[j] != 1) continue;
+            //if (a == j) continue; 
 
-            if (UB_min < LB) {
+            if (UB_min < LB[j]) {
                 mask[j] = 0;
             } else {
                 double UB;
                 //DistToLevel(int x, int c, int d, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int l, int L, double &UB, double &LB)
-                DistToLevel(x, j, d, data, centroids, data_ss, centroid_ss, dots, l, L, UB, LB);
+                DistToLevel(x, j, d, data, centroids, data_ss, centroid_ss, dots, l, L, UB, LB[j]);
                 //auto val_ = Euclidian_distance(x,j,d,k,data,centroids);
                 //UB = val_;
-                //LB = val_;
+                //LB[j] = val_;
                 
                 if (UB < UB_min) {
                     a = j;
@@ -237,10 +239,15 @@ int SetLabel(int x, int d, int k, double data[], double centroids[], double* dat
                 }
             }
         }
+        mask_sum = 0;
+        for (int j = 0; j < k; j++) {
+            mask_sum += mask[j];
+        }
         l++;
     }
     if (a == -1) {
-        std::cout << "SetLabel did not set a for item " << x <<std::endl;  
+        
+        std::cout << "SetLabel did not set a for item " << x << " " << mask_sum <<std::endl;  
     }
     return a;
 }
@@ -261,8 +268,12 @@ void Calculate_squared(int d, int elements, double raw[], double* squared[]) {
             for (int l_ = 0; l_ < pow(2,l); l_++) {
                 for (int l_2 = 0; l_2 < pow(2,l); l_2++) {
                     squared[e][l] += raw[e*d+l_*d_sqrt+l_2]*raw[e*d+l_*d_sqrt+l_2];
+                    //squared[0][0] = [e*d+0*d_sqrt+0]^2 (0,0)^2
+                    //squared[0][1] = [e*d+0*d_sqrt+1]^2 (0,1)^2
+                    //squared[1][0] = [e*d+1*d_sqrt+0]^2 (1,8)^2
+                    //squared[1][1] = [e*d+1*d_sqrt+1]^2 (1,9)^2
                 }
-            }
+            }// x_sq[e][(e*d,0)^2,(e*d,0)^2+(e*d,1)^2+(e*d+d_sqrt,0)^2+(d_sqrt,1)^2,....]
         } 
     }
 }
