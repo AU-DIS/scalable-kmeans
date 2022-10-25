@@ -148,8 +148,10 @@ std::tuple<double, double> DistToLevel(int x, int c, int d, double data[], doubl
 
     double margin = 2 * sqrt(data_ss[x][L]-data_ss[x][l]) * sqrt(centroid_ss[c][L]-centroid_ss[c][l]);
 
-    LB = dist - margin;
-    UB = dist + margin;
+
+    
+    LB = sqrt(std::max(0.0,dist - margin));
+    UB = sqrt(std::max(0.0,dist - margin));
 
     return {LB, UB};
 };
