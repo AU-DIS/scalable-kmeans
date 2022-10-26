@@ -1,7 +1,15 @@
 import numpy as np
+#Importing required modules
+import math
+
+import kmeans_common_func 
+#In case of need: Freshly reload the import modules
+import importlib
+importlib.reload(kmeans_common_func)
+
 
 class kmeans_class:
-    def __init__(self, data_points, k, max_iter=100, initialCentroids=None, kmeans_threshold=0, print='no'):
+    def __init__(self, data_points, k, max_iter=100, initialCentroids=None, kmeans_threshold=0, print='no', mode='fast'):
         # k: no. of clusters
         # data_points: data to cluster
         # max_iter: iteration before termination
@@ -12,6 +20,7 @@ class kmeans_class:
         self.max_iter = max_iter
         self.kmeans_threshold = kmeans_threshold
         self.method = 'Hamerly'
+        self.mode = mode #Based on distance mode
 
         if initialCentroids != None:
             self.centroids = dict(zip(list(range(self.k)),initialCentroids))
@@ -57,9 +66,16 @@ class kmeans_class:
                 self.classifications[i] = []
                 self.pointsClassif[i] = []
                 
+            x_sq_sum = np.zeros((data_x.shape[0]))
+            c_sq_sum = np.zeros((self.k))
+            if self.mode == 'semi_optimized': x_sq_sum = kmeans_common_func.squared_sum(data_x) #Based on distance mode
+            if self.mode == 'semi_optimized': c_sq_sum = kmeans_common_func.squared_sum(self.centroids)
+
             i=0
             for point in data_x:
-                distances = [np.linalg.norm(point-self.centroids[centroid]) for centroid in self.centroids]
+                #distances = [np.linalg.norm(point-self.centroids[centroid]) for centroid in self.centroids]
+                #distances = [kmeans_common_func.euclidean_distance_raw(point, self.centroids[centroid]) for centroid in self.centroids]
+                distances = [kmeans_common_func.euclidean_distance(point, self.centroids[centroid], x_sq_sum[i], c_sq_sum[centroid], mode=self.mode) for centroid in self.centroids]
                 classification = distances.index(min(distances))
                     
                 ## Centroid assigned to each point
@@ -73,8 +89,13 @@ class kmeans_class:
                 # For Hamerly's second lower bound
                 ## Second Lower bound distance between the point and the second closest center
                 ## Initialized as distance between the point and second closest initial centroid
-                lowerBounds_Hamerly[i] = sorted(set(distances))[1]
+                #if len(set(distances)) == 1:
+                #    lowerBounds_Hamerly[i] = distances[0]
+                #else:
+                #    lowerBounds_Hamerly[i] = sorted(distances)[1]
                 #second_nearest_cluster = distances.index(lowerBounds_Hamerly[i])
+                #lowerBounds_Hamerly[i] = sorted(distances)[1]
+                lowerBounds_Hamerly[i] = min([val for i,val in enumerate(distances) if i!=classification])
 
                 ## Upper bound distance between the point and assigned centroid
                 upperBounds[i] = min(distances)
@@ -100,6 +121,7 @@ class kmeans_class:
 #                original_centroid = prevCentroids[centroid]
 #                current_centroid = self.centroids[centroid]
 #                centroidDistanceChange[centroid] = np.linalg.norm(original_centroid-current_centroid)
+#                centroidDistanceChange[centroid] = kmeans_common_func.euclidean_distance(original_centroid, current_centroid)
                 
 #                if abs(np.sum((current_centroid-original_centroid)/original_centroid*100.0)) > self.kmeans_threshold :
 #                    optimized[centroid] = False
@@ -138,7 +160,8 @@ class kmeans_class:
                 for i in range(self.k):
                     self.classifications[i] = []
                     self.pointsClassif[i] = []
-                    centroidDistances[i] = [np.linalg.norm(self.centroids[i]-self.centroids[c_prime]) for c_prime in self.centroids]
+                    #centroidDistances[i] = [np.linalg.norm(self.centroids[i]-self.centroids[c_prime]) for c_prime in self.centroids]
+                    centroidDistances[i] = [kmeans_common_func.euclidean_distance(self.centroids[i], self.centroids[c_prime]) for c_prime in self.centroids]
                     closestCentroidDistances[i] = min(centroidDistances[i][:i]+centroidDistances[i][i+1:])
                 
                 for centroid in prevPointsClassif:
@@ -162,11 +185,13 @@ class kmeans_class:
                             ## If condition is met : said point keeps its centroid with no further computation needed
                             self.classifications[centroid].append(data_x[i])
                             self.pointsClassif[centroid].append(i)
-                            hamerly_count += 1
+                            hamerly_count += self.k
                         
                         else:
                             if r:
-                                distToCurrentCentroid = np.linalg.norm(data_x[i] - self.centroids[centroid])
+                                #distToCurrentCentroid = np.linalg.norm(data_x[i] - self.centroids[centroid])
+                                #distToCurrentCentroid = kmeans_common_func.euclidean_distance(data_x[i], self.centroids[centroid])
+                                distToCurrentCentroid = kmeans_common_func.euclidean_distance(data_x[i], self.centroids[centroid], x_sq_sum[i], c_sq_sum[centroid], mode=self.mode)
                                 #lowerBounds[i][centroid] = distToCurrentCentroid
                                 r = False
                             upperBounds[i] = distToCurrentCentroid #Tighten the upper bound
@@ -175,7 +200,7 @@ class kmeans_class:
                                 ## If condition is met : said point keeps its centroid with no further computation needed
                                 self.classifications[centroid].append(data_x[i])
                                 self.pointsClassif[centroid].append(i)
-                                hamerly_count += 1
+                                hamerly_count += (self.k - 1)
                                 
                             else:
                                 assigned_centroid = centroid
@@ -189,7 +214,9 @@ class kmeans_class:
                                         #    lowerBounds[i][centroid] = distToCurrentCentroid
                                         #    r = False
                                         
-                                        distToCPrime = np.linalg.norm(data_x[i]-self.centroids[c_prime])
+                                        #distToCPrime = np.linalg.norm(data_x[i]-self.centroids[c_prime])
+                                        #distToCPrime = kmeans_common_func.euclidean_distance(data_x[i], self.centroids[c_prime])
+                                        distToCPrime = kmeans_common_func.euclidean_distance(data_x[i], self.centroids[c_prime], x_sq_sum[i], c_sq_sum[c_prime], mode=self.mode)
                                         #lowerBounds[i][c_prime] = distToCPrime
                                         
                                         if distToCurrentCentroid > distToCPrime:
@@ -220,6 +247,7 @@ class kmeans_class:
 
                     else:
                         self.centroids[classification] = np.average(self.classifications[classification],axis=0)
+                if self.mode == 'semi_optimized': c_sq_sum = kmeans_common_func.squared_sum(self.centroids)
 
                 optimized = [True for centroid in self.centroids]
                 
@@ -228,7 +256,8 @@ class kmeans_class:
                 for centroid in self.centroids:
                     original_centroid = prevCentroids[centroid]
                     current_centroid = self.centroids[centroid]
-                    centroidDistanceChange[centroid] = np.linalg.norm(original_centroid-current_centroid)
+                    #centroidDistanceChange[centroid] = np.linalg.norm(original_centroid-current_centroid)
+                    centroidDistanceChange[centroid] = kmeans_common_func.euclidean_distance(original_centroid, current_centroid)
 
                     #if abs(np.sum((current_centroid-original_centroid)/original_centroid*100.0)) > self.kmeans_threshold :
                     if abs(np.sum(np.divide((current_centroid-original_centroid), original_centroid, out=np.zeros_like(current_centroid), where=original_centroid!=0)*100.0)) > self.kmeans_threshold :
@@ -238,7 +267,7 @@ class kmeans_class:
                     break
                     
                 ## Update of lower and upper bound distances
-                maxCentroidDistanceChange = max(centroidDistanceChange.values())
+                #maxCentroidDistanceChange = max(centroidDistanceChange.values())
                 for centroid in self.pointsClassif:
                     #for i in list(range(data_x.shape[0])):
                     #    lowerBounds[i][centroid] -= centroidDistanceChange[centroid]
@@ -246,11 +275,12 @@ class kmeans_class:
                     for i in self.pointsClassif[centroid]:
                         upperBounds[i] += centroidDistanceChange[centroid]
                         #lowerBounds_Hamerly[i] += centroidDistanceChange[second_nearest_cluster]
-                        furthestMovingCentroid = max(centroidDistanceChange, key=centroidDistanceChange.get)
-                        if furthestMovingCentroid == centroid:
-                            lowerBounds_Hamerly[i] -= sorted(set(centroidDistanceChange.values()), reverse=True)[1]
-                        else:
-                            lowerBounds_Hamerly[i] -= maxCentroidDistanceChange
+                        #furthestMovingCentroid = max(centroidDistanceChange, key=centroidDistanceChange.get)
+                        #if furthestMovingCentroid == centroid:
+                        #    lowerBounds_Hamerly[i] -= sorted(centroidDistanceChange.values(), reverse=True)[1]
+                        #else:
+                        #    lowerBounds_Hamerly[i] -= maxCentroidDistanceChange
+                        lowerBounds_Hamerly[i] -= max([val for i,val in enumerate(centroidDistanceChange.values()) if i!=centroid])
         
         ## Update labels (cluster) for each point
         for centroid in self.pointsClassif:
@@ -275,8 +305,8 @@ class kmeans_class:
         return labels, centroids
                         
 
-def kmeans_hamerly_manual(x, k, max_iter=100, initialCentroids=None, kmeans_threshold=0):
-    results = kmeans_class(x, k, max_iter=100, initialCentroids=None, kmeans_threshold=0)
+def kmeans_hamerly_manual(x, k, max_iter=100, initialCentroids=None, kmeans_threshold=0, mode='fast'):
+    results = kmeans_class(x, k, max_iter=100, initialCentroids=None, kmeans_threshold=0, mode=mode)
     labels = results.labels
     centroids = results.centroids
     return labels, centroids
