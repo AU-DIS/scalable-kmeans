@@ -13,6 +13,19 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
             //Write lloyd
             int iter = 0;
             bool converged = false;
+            int l;
+            int *mask = new int[k];
+
+            int pow_ll = pow(2,l-1);
+            int pow_l = pow(2,l);
+
+            double UB, LB;
+            int mask_sum;
+            int d_sqrt = sqrt(d);
+
+            double dist;
+            double margin;
+            double val_2;
 
 
             // calculate square data 
@@ -48,7 +61,76 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
                     if (u_elkan[i] > val) {
                         //TODO: refactor placement of implementation to avoid bassillion arguments
                         //params = (int x, int d, int k, double data[],  double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int L, int labels[], double* l_elkan[], double u_elkan[], double* c_to_c[])
-                        MG_SetLabel(i, d, k, data_ptr, centroids, data_ss, centroid_ss, dots, L, labels, l_elkan, u_elkan, c_to_c);
+                            l = 0;
+                            std::fill_n(mask, k, 1);
+                            /*for (int i = 0; i < k; i++) {
+                                mask[i] = 1;
+                            }*/
+                            
+                            mask_sum = k;
+
+                            while (l <= L && mask_sum > 1) {
+                                for (int j = 0; j < k; j++) {
+                                    if (mask[j] != 1) continue;  
+                                    
+                                    //Elkan prune
+                                    val_2 = std::max(l_elkan[i][j], 0.5 * c_to_c[labels[i]][j]);// l_elkan[x][j] < 0.5 * c_to_c[labels[x]][j] ? 0.5 * c_to_c[labels[x]][j] : l_elkan[x][j];  
+                                    if (u_elkan[i] < val_2) {     //Elkan check
+                                        mask[j] = 0;            //Mark as pruned centroid
+                                    } else {
+                                        //DistToLevel params (int x, int c, int d, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int l, int L)
+                                        
+                                        pow_ll = pow(2,l-1);
+                                        pow_l = pow(2,l);
+                                        
+                                        if (l==0) {
+                                            dots[i][j] = data_ptr[i*d+0]*centroids[j*d+0];
+                                        } else {
+                                            //dots saved from previous level, hence only add dots from this level.
+                                            //adding new cols from from known rows
+                                            for (int l_ = 0; l_ < pow_ll; l_++) {
+                                                for (int l_2 = pow_ll; l_2 < pow_l ; l_2++) {
+                                                    dots[i][j] += data_ptr[i*d+l_*d_sqrt+l_2]*centroids[j*d+l_*d_sqrt+l_2]; 
+                                                }
+                                            }
+                                            //TODO: sqrt stuff for d != 2^x
+                                            //add full new rows
+                                            for (int l_ = pow_ll; l_ < pow_l; l_++) {
+                                                for (int l_2 = 0; l_2 < pow_l; l_2++) {
+                                                    dots[i][j] += data_ptr[i*d+l_*d_sqrt+l_2]*centroids[j*d+l_*d_sqrt+l_2]; 
+                                                }
+                                            }
+                                        }
+                                        
+                                        
+                                        
+                                        dist = data_ss[i][L] + centroid_ss[j][L] - 2*dots[i][j]; 
+
+                                        margin = 2 * sqrt((data_ss[i][L]-data_ss[i][l])*(centroid_ss[j][L]-centroid_ss[j][l]));
+
+
+                                        
+                                        LB = sqrt(std::max(0.0,dist - margin));
+                                        UB = sqrt(std::max(0.0,dist + margin));
+                                        //auto val_ = Euclidian_distance(x,j,d,k,data,centroids);
+                                        //UB = val_;
+                                        //LB = val_;
+                                        if (LB > l_elkan[i][j]) {
+                                            l_elkan[i][j] = LB; //Keep maximum LB per c
+                                        }
+                                        if (UB < u_elkan[i]) {
+                                            labels[i] = j;
+                                            u_elkan[i] = UB; //Keep minimum UB across c
+                                        } 
+
+                                    } 
+                                }
+                                mask_sum = 0;
+                                for (int j = 0; j < k; j++) {
+                                    mask_sum += mask[j];
+                                }
+                                l++;
+                            }    
                     }
                 }
                 converged = Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d);
