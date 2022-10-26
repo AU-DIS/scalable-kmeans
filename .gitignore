@@ -1,6 +1,17 @@
+*
+
+!*.*
+
+!*/
 *.csv
 *.h5
 *.nxs
 *ncdf
 .vscode/
 *.out
+*.txt
+__pycache__/
+*.plist
+/.idea/
+*.svg
+*/benchmark/
