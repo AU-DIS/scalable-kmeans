@@ -15,7 +15,20 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
             int iter = 0;
             bool converged = false;
 
+            double* LB = new double[k];
+            double UB_min;// = std::numeric_limits<double>::max();
+            double UB;
+            int *mask = new int[k];
+            int l;
+            int a;
+            int mask_sum;
 
+            int pow_ll = pow(2,l-1);
+            int pow_l = pow(2,l);
+            int d_sqrt = sqrt(d);
+
+            double dist;
+            double margin;
             // calculate square data 
             //calculate_data_squares(data_ptr, data_ss, n, d)
             Calculate_squared(d, n, data_ptr, data_ss);
@@ -56,16 +69,86 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
 
                 //assign to centroids
                 for (int i = 0; i < n; i++) {
-                    //TODO: refactor placement of implementation to avoid bassillion arguments
-                    //params = (int x, int d, int k, double data[],  double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int L, int labels[], double* l_elkan[], double u_elkan[], double* c_to_c[])
-                    /*for (int j = 0; j < k; j++) {
-                        distances[i*k+j] = Euclidian_distance(i, j, d, k, data_ptr, centroids);
-                        if (distances[i*k+j] < distances[i*k+labels[i]]) {
-                            labels[i] = j;
+                    l = 0;
+                    a = -1;
+                    UB_min = std::numeric_limits<double>::max();
+                    std::fill(LB, LB+k, 0.0);
+                    std::fill(mask, mask+k, 1);
+
+                     
+                    mask_sum = k;
+
+                    while (l <= L && mask_sum > 1) {
+                        for (int j = 0; j < k; j++) {
+                            if (mask[j] != 1) continue;
+                            //if (a == j) continue; 
+
+                            if (UB_min < LB[j]) {
+                                mask[j] = 0;
+                            } else {
+                                
+                                //DistToLevel(int x, int c, int d, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int l, int L, double &UB, double &LB)
+                                    //Calculate dots  
+                                
+                                //L is an int of log4(d), hence rounded down. 
+                                //Hence when log4(d) is not in natural, d_sqrt will be bigger and the correct end for the final level instead of 2^l.
+
+                                /*dots[x][c] = 0;
+                                for (int l_ = 0; l_ < std::min(d_sqrt,(int) pow(2,l)); l_++) {
+                                    for (int l_2 = 0; l_2 < std::min(d_sqrt,(int) pow(2,l)); l_2++) {
+                                        dots[x][c] += data[x*d+l_*d_sqrt+l_2]*centroids[c*d+l_*d_sqrt+l_2];
+                                    }
+                                }*/
+                                pow_ll = pow(2,l-1);
+                                pow_l = pow(2,l);
+                                
+                                if (l==0) {
+                                    dots[i][j] = data_ptr[i*d+0]*centroids[j*d+0];
+                                } else {
+                                    //dots saved from previous level, hence only add dots from this level.
+                                    //adding new cols from from known rows
+                                    for (int l_ = 0; l_ < pow_ll; l_++) {
+                                        for (int l_2 = pow_ll; l_2 < pow_l ; l_2++) {
+                                            dots[i][j] += data_ptr[i*d+l_*d_sqrt+l_2]*centroids[j*d+l_*d_sqrt+l_2]; 
+                                        }
+                                    }
+                                    //TODO: sqrt stuff for d != 2^x
+                                    //add full new rows
+                                    for (int l_ = pow_ll; l_ < pow_l; l_++) {
+                                        for (int l_2 = 0; l_2 < pow_l; l_2++) {
+                                            dots[i][j] += data_ptr[i*d+l_*d_sqrt+l_2]*centroids[j*d+l_*d_sqrt+l_2]; 
+                                        }
+                                    }
+                                }
+                                
+                                
+                                
+                                dist = data_ss[i][L] + centroid_ss[j][L] - 2*dots[i][j]; 
+
+                                margin = 2 * sqrt((data_ss[i][L]-data_ss[i][l])*(centroid_ss[j][L]-centroid_ss[j][l]));
+
+
+                                
+                                LB[j] = sqrt(std::max(0.0,dist - margin));
+                                UB = sqrt(std::max(0.0,dist + margin));
+                                //auto val_ = Euclidian_distance(x,j,d,k,data,centroids);
+                                //UB = val_;
+                                //LB[j] = val_;
+                                
+                                if (UB < UB_min) {
+                                    a = j;
+                                    UB_min = UB;
+                                }
+                            }
                         }
-                    }*/
+                        mask_sum = 0;
+                        for (int j = 0; j < k; j++) {
+                            mask_sum += mask[j];
+                        }
+                        l++;
+                    }
                     
-                    labels[i] = SetLabel(i, d, k, data_ptr, centroids, data_ss, centroid_ss, dots, L);                   
+                    labels[i] = a;//SetLabel(i, d, k, data_ptr, centroids, data_ss, centroid_ss, dots, L);                   
                 }
                 converged = Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d);
                 iter++;
