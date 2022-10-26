@@ -64,6 +64,7 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
                             labels[i] = j;
                         }
                     }*/
+                    
                     labels[i] = SetLabel(i, d, k, data_ptr, centroids, data_ss, centroid_ss, dots, L);                   
                 }
                 converged = Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d);

@@ -55,9 +55,9 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
                 if (!converged) {
                     //TODO: refactor location of .. you know the drill 
                     //(double data[], double centroids[], double* c_to_c[], double* centroids_ss[], double* l_elkan[], double u_elkan[], double l_hamerly[], int labels[], double div[], double near[], int n, int k, int d) 
-                    Update_bounds(data_ptr, centroids, c_to_c, centroid_ss, l_elkan, u_elkan, l_hamerly, labels, div, near, n, k, d);
-                    iter++;
+                    Update_bounds(data_ptr, centroids, c_to_c, centroid_ss, l_elkan, u_elkan, l_hamerly, labels, div, near, n, k, d);                   
                 }
+                iter++;
             }   
 
             for (int j = 0; j < k; j++) {

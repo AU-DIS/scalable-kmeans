@@ -131,23 +131,43 @@ bool Recalculate(double data[], double centroids[], double old_centroids[], doub
 
 std::tuple<double, double> DistToLevel(int x, int c, int d, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int l, int L, double &UB, double &LB) {
     //Calculate dots  
-    //TODO: is this dot correct or should it loop to l instead?
-    //dots[x][c] = 0;
-    dots[x][c] = 0;
     int d_sqrt = sqrt(d);
+    //L is an int of log4(d), hence rounded down. 
+    //Hence when log4(d) is not in natural, d_sqrt will be bigger and the correct end for the final level instead of 2^l.
+
+    /*dots[x][c] = 0;
     for (int l_ = 0; l_ < std::min(d_sqrt,(int) pow(2,l)); l_++) {
-        //TODO: min with d_sqrt in both loops
         for (int l_2 = 0; l_2 < std::min(d_sqrt,(int) pow(2,l)); l_2++) {
             dots[x][c] += data[x*d+l_*d_sqrt+l_2]*centroids[c*d+l_*d_sqrt+l_2];
         }
+    }*/
+    int pow_ll = pow(2,l-1);
+    int pow_l = pow(2,l);
+    
+    if (l==0) {
+        dots[x][c] = data[x*d+0]*centroids[c*d+0];
+    } else {
+        //dots saved from previous level, hence only add dots from this level.
+        //adding new cols from from known rows
+        for (int l_ = 0; l_ < pow_ll; l_++) {
+            for (int l_2 = pow_ll; l_2 < pow_l ; l_2++) {
+                dots[x][c] += data[x*d+l_*d_sqrt+l_2]*centroids[c*d+l_*d_sqrt+l_2]; 
+            }
+        }
+        //TODO: sqrt stuff for d != 2^x
+        //add full new rows
+        for (int l_ = pow_ll; l_ < pow_l; l_++) {
+            for (int l_2 = 0; l_2 < pow_l; l_2++) {
+                dots[x][c] += data[x*d+l_*d_sqrt+l_2]*centroids[c*d+l_*d_sqrt+l_2]; 
+            }
+        }
     }
-    //dots[x][c] += data[x*d+l] * centroids[c*d+l];
     
     
     
     double dist = data_ss[x][L] + centroid_ss[c][L] - 2*dots[x][c]; 
 
-    double margin = 2 * sqrt(data_ss[x][L]-data_ss[x][l]) * sqrt(centroid_ss[c][L]-centroid_ss[c][l]);
+    double margin = 2 * sqrt((data_ss[x][L]-data_ss[x][l])*(centroid_ss[c][L]-centroid_ss[c][l]));
 
 
     
@@ -165,23 +185,21 @@ void MG_SetLabel(int x, int d, int k, double data[],  double centroids[], double
     /*for (int i = 0; i < k; i++) {
         mask[i] = 1;
     }*/
-
+    double val;
+    double UB, LB;
     int mask_sum = k;
 
     while (l <= L && mask_sum > 1) {
         for (int j = 0; j < k; j++) {
             if (mask[j] != 1) continue;  
-            //if (j == labels[x]) continue; //TODO: how to treat the assigned point? is this correct?
             
             //Elkan prune
-            double test = 0.5 * c_to_c[labels[x]][j];
-            double test2 = l_elkan[x][j];
-            double val = std::max(test2, test);// l_elkan[x][j] < 0.5 * c_to_c[labels[x]][j] ? 0.5 * c_to_c[labels[x]][j] : l_elkan[x][j];  
+            val = std::max(l_elkan[x][j], 0.5 * c_to_c[labels[x]][j]);// l_elkan[x][j] < 0.5 * c_to_c[labels[x]][j] ? 0.5 * c_to_c[labels[x]][j] : l_elkan[x][j];  
             if (u_elkan[x] < val) {     //Elkan check
                 mask[j] = 0;            //Mark as pruned centroid
             } else {
                 //DistToLevel params (int x, int c, int d, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int l, int L)
-                double UB, LB;
+                
                 DistToLevel(x, j, d, data, centroids, data_ss, centroid_ss, dots, l, L, UB, LB);
                 //auto val_ = Euclidian_distance(x,j,d,k,data,centroids);
                 //UB = val_;
@@ -213,7 +231,7 @@ int SetLabel(int x, int d, int k, double data[], double centroids[], double* dat
     double* LB = new double[k];
     std::fill(LB, LB+k, 0.0);
     double UB_min = std::numeric_limits<double>::max();
-    
+    double UB;
     int *mask = new int[k];
     std::fill(mask, mask+k, 1);
 
@@ -227,7 +245,7 @@ int SetLabel(int x, int d, int k, double data[], double centroids[], double* dat
             if (UB_min < LB[j]) {
                 mask[j] = 0;
             } else {
-                double UB;
+                
                 //DistToLevel(int x, int c, int d, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int l, int L, double &UB, double &LB)
                 DistToLevel(x, j, d, data, centroids, data_ss, centroid_ss, dots, l, L, UB, LB[j]);
                 //auto val_ = Euclidian_distance(x,j,d,k,data,centroids);
@@ -246,10 +264,8 @@ int SetLabel(int x, int d, int k, double data[], double centroids[], double* dat
         }
         l++;
     }
-    if (a == -1) {
-        
-        std::cout << "SetLabel did not set a for item " << x << " " << mask_sum <<std::endl;  
-    }
+    
+
     return a;
 }
 
@@ -264,8 +280,26 @@ void Calculate_squared(int d, int elements, double raw[], double* squared[]) {
 
     for (int e = 0; e < elements; e++) {
         squared[e][0] = raw[e*d+0] * raw[e*d+0];
+
         for (int l = 1; l <= L; l++){
-            squared[e][l] = 0;
+            squared[e][l] = squared[e][l-1];
+            //dots saved from previous level, hence only add dots from this level.
+            //adding new cols from from known rows
+            for (int l_ = 0; l_ < pow(2,l-1); l_++) {
+                for (int l_2 = pow(2,l-1); l_2 < pow(2, l); l_2++) {
+                    squared[e][l] += raw[e*d+l_*d_sqrt+l_2]*raw[e*d+l_*d_sqrt+l_2]; 
+                }
+            }
+            //TODO: sqrt stuff for d != 2^x
+            //add full new rows
+            for (int l_ = pow(2,l-1); l_ < pow(2,l); l_++) {
+                for (int l_2 = 0; l_2 < pow(2, l); l_2++) {
+                    squared[e][l] += raw[e*d+l_*d_sqrt+l_2]*raw[e*d+l_*d_sqrt+l_2]; 
+                }
+            }
+  
+            
+            /*squared[e][l] = 0;
             for (int l_ = 0; l_ < pow(2,l); l_++) {
                 for (int l_2 = 0; l_2 < pow(2,l); l_2++) {
                     squared[e][l] += raw[e*d+l_*d_sqrt+l_2]*raw[e*d+l_*d_sqrt+l_2];
@@ -274,7 +308,7 @@ void Calculate_squared(int d, int elements, double raw[], double* squared[]) {
                     //squared[1][0] = [e*d+1*d_sqrt+0]^2 (1,8)^2
                     //squared[1][1] = [e*d+1*d_sqrt+1]^2 (1,9)^2
                 }
-            }// x_sq[e][(e*d,0)^2,(e*d,0)^2+(e*d,1)^2+(e*d+d_sqrt,0)^2+(d_sqrt,1)^2,....]
+            }// x_sq[e][(e*d,0)^2,(e*d,0)^2+(e*d,1)^2+(e*d+d_sqrt,0)^2+(d_sqrt,1)^2,....]*/
         } 
     }
 }

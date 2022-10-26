@@ -51,7 +51,7 @@ class ElkHamKmeansStrategy : public KmeansStrategy {
                         double val2 = std::max(l_elkan[i][j], 0.5 * c_to_c[labels[i]][j]);
                         if (u_elkan[i] > val2) {
                             double distance2 = Euclidian_distance(i, j, d, k, data_ptr, centroids);  
-                            l_elkan[i][j] = distance;
+                            l_elkan[i][j] = distance2;
                             if (distance2 < u_elkan[i]) {
                                 labels[i] = j;
                                 u_elkan[i] = distance2;
