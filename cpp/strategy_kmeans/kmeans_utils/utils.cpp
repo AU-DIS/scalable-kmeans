@@ -10,7 +10,7 @@
 
 //TODO: In a pefect world this file does not exist and theese functions nicely exist within relevant strategies.
 
-double Euclidian_distance(int x, int c, int d, int k, double data[], double centroids[]) {
+double Euclidian_distance(int x, int c, int d, int k, double data[], double centroids[], long long &feature_cnt) {
     //x datapoint index
     //c centroid index
 
@@ -20,11 +20,14 @@ double Euclidian_distance(int x, int c, int d, int k, double data[], double cent
         dist += (data[x*d+j]-centroids[c*d+j])*(data[x*d+j]-centroids[c*d+j]);
     };
     //std::cout << dist << std::endl;
+    feature_cnt += d;
     if(dist < 0.0) dist = 0.0;
     return sqrt(dist);
 }
 
-void Update_bounds(double data[], double centroids[], double* c_to_c[], double* centroids_ss[], double* l_elkan[], double u_elkan[], double l_hamerly[], int labels[], double div[], double near[], int n, int k, int d) {
+
+                                                                        //TODO: This parsing is insane and can be cleaned clean up, by defining this and dist to level within a strategy scope.   
+void Update_bounds(double data[], double centroids[], double* c_to_c[], double* centroids_ss[], double* l_elkan[], double u_elkan[], double l_hamerly[], int labels[], double div[], double near[], int n, int k, int d, long long &feature_cnt) {
     //For all x in X
     for (int i = 0; i < n; i++) { 
         int smallest_id = labels[i] == 0 ? 1 : 0; 
@@ -44,38 +47,58 @@ void Update_bounds(double data[], double centroids[], double* c_to_c[], double* 
     }
     //Calculate centroid to centroid distances
     for (int i = 0; i < k; i++) {
-        for (int j = i; j < k; j++) {
+        c_to_c[i][i] = 0;
+        
+        for (int j = i+1; j < k; j++) {
             double tmp = 0; //centroids_ss[i][0] + centroids_ss[j][0];
             for (int f = 0; f < d; f++) {
-                //TODO: this does not use squares when it could
+                //TODO: this does not use squares when it could, ot could it?
                 tmp += ((centroids[i*d+f] - centroids[j*d+f]) *
                     (centroids[i*d+f] - centroids[j*d+f]));
             }
+            //feature_cnt += d;
             if(tmp < 0.0) tmp = 0.0;
             tmp = sqrt(tmp);
+
+            
             //We can save distances for later use
-            c_to_c[i][j] = sqrt(tmp);
+            c_to_c[i][j] = (tmp);
             // THEY'RE THE SAME
             c_to_c[j][i] = c_to_c[i][j];
         }
-    }
-    //Nearest other centroid
-    for (int i = 0; i < k; i++) {
         double smallest = DBL_MAX;
+        double near_id = -1 ;
         for (int j = 0; j < k; j++) {
-            if (i == j) continue;
-            if (c_to_c[i][j] < smallest) {  
+           if (i == j) continue;
+           if (c_to_c[i][j] < smallest) {  
                 smallest = c_to_c[i][j];  
-                near[i] = 0.5 * smallest; 
-            }
+                near[i] = 0.5 * smallest;
+                near_id = j;
+                //near[j] = 0.5 * smallest;
+            } 
         }
+        //std::cout << i << " is near " <<  near_id << "\n";
+    
     }
+    //std::cout << std::endl;
+    //Nearest other centroid
+    //THIS CANNOT BE DONE IN C_TO_C LOOP! IF SO IT IS ORDER DEPENDENT!
+    /*for (int i = 0; i < k; i++) {      
+        double smallest = DBL_MAX;     
+        for (int j = 0; j < k; j++) {
+           if (i == j) continue;
+           if (c_to_c[i][j] < smallest) {  
+                smallest = c_to_c[i][j];  
+                near[i] = 0.5 * smallest;
+            } 
+        }
+    }*/
 
     //END: Updated l_elkan, u_elkan, l_hamerly, near, c_to_c
 };
 
 
-bool Recalculate(double data[], double centroids[], double old_centroids[], double cluster_count[], int labels[], double div[], int n, int k, int d) {
+bool Recalculate(double data[], double centroids[], double old_centroids[], double cluster_count[], int labels[], double div[], int n, int k, int d, long long &feature_cnt) {
     bool converged = true;
     //With the power of clever indexing we can use memcpy, to save old centroids. (If we are even smarter we swap the pointers and save a pass)   
     memcpy(old_centroids, centroids, sizeof(double)*k*d);
@@ -117,6 +140,7 @@ bool Recalculate(double data[], double centroids[], double old_centroids[], doub
             tmp += ((centroids[j*d+f] - old_centroids[j*d+f]) *
                     (centroids[j*d+f] - old_centroids[j*d+f]));
         }
+        feature_cnt += d;
         if(tmp < 0.0) tmp = 0.0;
         div[j] = sqrt(tmp);
         if (div[j] > 0) { //This convergence check is slow and can possibly be done better using the old check
@@ -129,7 +153,7 @@ bool Recalculate(double data[], double centroids[], double old_centroids[], doub
 }
 
 
-std::tuple<double, double> DistToLevel(int x, int c, int d, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int l, int L, double &UB, double &LB) {
+std::tuple<double, double> DistToLevel(int x, int c, int d, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int l, int L, double &UB, double &LB, long long &feature_cnt) {
     //Calculate dots  
     int d_sqrt = sqrt(d);
     //L is an int of log4(d), hence rounded down. 
@@ -160,9 +184,9 @@ std::tuple<double, double> DistToLevel(int x, int c, int d, double data[], doubl
             for (int l_2 = 0; l_2 < pow_l; l_2++) {
                 dots[x][c] += data[x*d+l_*d_sqrt+l_2]*centroids[c*d+l_*d_sqrt+l_2]; 
             }
-        }
+        }   
     }
-    
+    feature_cnt += (2*pow_l)-(2*pow_ll);
     
     
     double dist = data_ss[x][L] + centroid_ss[c][L] - 2*dots[x][c]; 
@@ -171,14 +195,14 @@ std::tuple<double, double> DistToLevel(int x, int c, int d, double data[], doubl
 
 
     
-    LB = sqrt(std::max(0.0,dist - margin));
-    UB = sqrt(std::max(0.0,dist + margin));
+    LB = dist - margin;//sqrt(std::max(0.0,dist - margin));
+    UB = dist + margin;//sqrt(std::max(0.0,dist + margin));
 
     return {LB, UB};
 };
 
 //TODO: This parsing is insane can can be cleaned clean up, by defining this and dist to level within a strategy scope. 
-void MG_SetLabel(int x, int d, int k, double data[],  double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int L, int labels[], double* l_elkan[], double u_elkan[], double* c_to_c[]) {
+void MG_SetLabel(int x, int d, int k, double data[],  double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int L, int labels[], double* l_elkan[], double u_elkan[], double* c_to_c[], long long &feature_cnt) {
     int l = 0;
     int *mask = new int[k];
     std::fill_n(mask, k, 1);
@@ -187,31 +211,85 @@ void MG_SetLabel(int x, int d, int k, double data[],  double centroids[], double
     }*/
     double val;
     double UB, LB;
+    
     int mask_sum = k;
 
     while (l <= L && mask_sum > 1) {
         for (int j = 0; j < k; j++) {
             if (mask[j] != 1) continue;  
-            
+
             //Elkan prune
             val = std::max(l_elkan[x][j], 0.5 * c_to_c[labels[x]][j]);// l_elkan[x][j] < 0.5 * c_to_c[labels[x]][j] ? 0.5 * c_to_c[labels[x]][j] : l_elkan[x][j];  
             if (u_elkan[x] < val) {     //Elkan check
                 mask[j] = 0;            //Mark as pruned centroid
             } else {
                 //DistToLevel params (int x, int c, int d, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int l, int L)
-                
-                DistToLevel(x, j, d, data, centroids, data_ss, centroid_ss, dots, l, L, UB, LB);
-                //auto val_ = Euclidian_distance(x,j,d,k,data,centroids);
-                //UB = val_;
-                //LB = val_;
+                DistToLevel(x, j, d, data, centroids, data_ss, centroid_ss, dots, l, L, UB, LB, feature_cnt);
+                                    
                 if (LB > l_elkan[x][j]) {
-                    l_elkan[x][j] = LB; //Keep maximum LB per c
+                    LB = sqrt(std::max(0.0, LB));
+                    if (LB > l_elkan[x][j]) {
+                        l_elkan[x][j] = LB; //Keep maximum LB per c
+                    }   
                 }
+                
+                UB = sqrt(std::max(0.0, UB));
                 if (UB < u_elkan[x]) {
                     labels[x] = j;
                     u_elkan[x] = UB; //Keep minimum UB across c
-                } 
+                }       
+            } 
+        }
+        mask_sum = 0;
+        for (int j = 0; j < k; j++) {
+            mask_sum += mask[j];
+        }
+        l++;
+    }
+    //TODO: free mask?
+    //END: Updated labels, l_elkan[x][.], u_elkan[x]
+}
 
+void MG_SetLabel_test(int x, int d, int k, double data[],  double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int L, int labels[], double* l_elkan[], double u_elkan[], double l_hamerly[], double* c_to_c[], long long &feature_cnt) {
+    int l = 0;
+    int *mask = new int[k];
+    std::fill_n(mask, k, 1);
+    /*for (int i = 0; i < k; i++) {
+        mask[i] = 1;
+    }*/
+    double val;
+    double UB, LB;
+    //double* LB = new double[k];
+    //std::fill_n(LB, k, 0);
+    //double LB_min = ; 
+    double UB_min = std::numeric_limits<double>::max(); // ? std::numeric_limits<double>::max() : u_elkan[x]*u_elkan[x];
+    int mask_sum = k;
+
+    while (l <= L && mask_sum > 1) {
+        for (int j = 0; j < k; j++) {
+            if (mask[j] != 1) continue;  
+
+           
+            //Elkan prune
+            val = std::max(l_elkan[x][j], 0.5 * c_to_c[labels[x]][j]);// l_elkan[x][j] < 0.5 * c_to_c[labels[x]][j] ? 0.5 * c_to_c[labels[x]][j] : l_elkan[x][j];  
+            if (u_elkan[x] < val) {     //Elkan check
+                mask[j] = 0;            //Mark as pruned centroid
+            } else {
+                //DistToLevel params (int x, int c, int d, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int l, int L)
+                DistToLevel(x, j, d, data, centroids, data_ss, centroid_ss, dots, l, L, UB, LB, feature_cnt);
+                                    
+                if (LB > l_elkan[x][j]) {
+                    LB = sqrt(std::max(0.0, LB));
+                    if (LB > l_elkan[x][j]) {
+                        l_elkan[x][j] = LB; //Keep maximum LB per c
+                    }   
+                }
+                
+                UB = sqrt(std::max(0.0, UB));
+                if (UB < u_elkan[x]) {
+                    labels[x] = j;
+                    u_elkan[x] = UB; //Keep minimum UB across c
+                }       
             } 
         }
         mask_sum = 0;
@@ -225,7 +303,10 @@ void MG_SetLabel(int x, int d, int k, double data[],  double centroids[], double
     //END: Updated labels, l_elkan[x][.], u_elkan[x]
 }
 
-int SetLabel(int x, int d, int k, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int L) {
+
+
+
+int SetLabel(int x, int d, int k, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int L, long long &feature_cnt) {
     int l = 0;
     int a = -1;
     double* LB = new double[k];
@@ -247,7 +328,7 @@ int SetLabel(int x, int d, int k, double data[], double centroids[], double* dat
             } else {
                 
                 //DistToLevel(int x, int c, int d, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int l, int L, double &UB, double &LB)
-                DistToLevel(x, j, d, data, centroids, data_ss, centroid_ss, dots, l, L, UB, LB[j]);
+                DistToLevel(x, j, d, data, centroids, data_ss, centroid_ss, dots, l, L, UB, LB[j], feature_cnt);
                 //auto val_ = Euclidian_distance(x,j,d,k,data,centroids);
                 //UB = val_;
                 //LB[j] = val_;
@@ -297,47 +378,9 @@ void Calculate_squared(int d, int elements, double raw[], double* squared[]) {
                     squared[e][l] += raw[e*d+l_*d_sqrt+l_2]*raw[e*d+l_*d_sqrt+l_2]; 
                 }
             }
-  
-            
-            /*squared[e][l] = 0;
-            for (int l_ = 0; l_ < pow(2,l); l_++) {
-                for (int l_2 = 0; l_2 < pow(2,l); l_2++) {
-                    squared[e][l] += raw[e*d+l_*d_sqrt+l_2]*raw[e*d+l_*d_sqrt+l_2];
-                    //squared[0][0] = [e*d+0*d_sqrt+0]^2 (0,0)^2
-                    //squared[0][1] = [e*d+0*d_sqrt+1]^2 (0,1)^2
-                    //squared[1][0] = [e*d+1*d_sqrt+0]^2 (1,8)^2
-                    //squared[1][1] = [e*d+1*d_sqrt+1]^2 (1,9)^2
-                }
-            }// x_sq[e][(e*d,0)^2,(e*d,0)^2+(e*d,1)^2+(e*d+d_sqrt,0)^2+(d_sqrt,1)^2,....]*/
+      
         } 
     }
 }
 
-/*void Calculate_squared_v1(int d, int elements, double raw[], double* squared[]) {
-    int L = log10(d)/log10(4);
-    int d_sqrt = sqrt(d);
-    int two_p_level_m1, two_p_level;
-
-    
-    for (int e = 0; e < elements; e++){
-        squared[e][L+1] = 0;
-        
-        for (int l = L; l > 0; l--) {
-            squared[e][l] = squared[e][l+1];
-
-            two_p_level_m1 = int(pow(2, l - 1));
-            two_p_level = std::min(int(pow(2, l)), d_sqrt);
-
-            for (int i = 0; i < two_p_level_m1; i++) {
-                for (int j = i * d_sqrt + two_p_level_m1; j < i * d_sqrt + two_p_level; j++)
-                squared[e][l] += (raw[e*d+j] * raw[e*d+j]);
-            }
-            for (int i = 0; i < std::min(two_p_level_m1, d_sqrt - two_p_level_m1); i++) {
-                for (int j = d_sqrt * (two_p_level_m1+i); j < d_sqrt * (two_p_level_m1 + i) + two_p_level; j++)
-                squared[e][l] += (raw[e*d+j] * raw[e*d+j]);
-            }
-        }
-        squared[e][0] = squared[e][1] + (raw[e*d+0] * raw[e*d+0]);
-    }
-}*/
 #endif

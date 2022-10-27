@@ -43,14 +43,14 @@ class ElkHamKmeansStrategy : public KmeansStrategy {
                 for (int i = 0; i < n; i++) {
                     double val = near[labels[i]] < l_hamerly[i] ? l_hamerly[i] : near[labels[i]]; 
                     if (!(u_elkan[i] > val)) continue;
-                    double distance = Euclidian_distance(i, labels[i], d, k, data_ptr, centroids);  
+                    double distance = Euclidian_distance(i, labels[i], d, k, data_ptr, centroids, feature_cnt);  
                     l_elkan[i][labels[i]] = distance;
                     u_elkan[i] = distance;
                     for (int j = 0; j < k; j++) {
                         if (j == labels[i]) continue;
                         double val2 = std::max(l_elkan[i][j], 0.5 * c_to_c[labels[i]][j]);
                         if (u_elkan[i] > val2) {
-                            double distance2 = Euclidian_distance(i, j, d, k, data_ptr, centroids);  
+                            double distance2 = Euclidian_distance(i, j, d, k, data_ptr, centroids, feature_cnt);  
                             l_elkan[i][j] = distance2;
                             if (distance2 < u_elkan[i]) {
                                 labels[i] = j;
@@ -59,11 +59,11 @@ class ElkHamKmeansStrategy : public KmeansStrategy {
                         }
                     }
                 }
-                converged = Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d);
+                converged = Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d, feature_cnt);
                 if (!converged) {
                     //TODO: refactor location of .. you know the drill 
                     //(double data[], double centroids[], double* c_to_c[], double* centroids_ss[], double* l_elkan[], double u_elkan[], double l_hamerly[], int labels[], double div[], double near[], int n, int k, int d) 
-                    Update_bounds(data_ptr, centroids, c_to_c, centroid_ss, l_elkan, u_elkan, l_hamerly, labels, div, near, n, k, d);
+                    Update_bounds(data_ptr, centroids, c_to_c, centroid_ss, l_elkan, u_elkan, l_hamerly, labels, div, near, n, k, d, feature_cnt);
                     iter++;
                 }
             }   
@@ -72,7 +72,8 @@ class ElkHamKmeansStrategy : public KmeansStrategy {
                 std::cout << cluster_count[j] << " ";
             }
             std::cout << std::endl;
-            std::cout << iter << std::endl;
+            std::cout << "Iter:" << iter << " Feature_cnt: " << feature_cnt << std::endl;
+             
                 
 
             return labels;
@@ -85,6 +86,8 @@ class ElkHamKmeansStrategy : public KmeansStrategy {
             d = _d;
             k = _k;
             data_ptr = _data->get_data_pointer();
+
+            feature_cnt = 0;
 
             //stepwise levels
             L = log10(d)/log10(4);
@@ -181,6 +184,8 @@ class ElkHamKmeansStrategy : public KmeansStrategy {
         double* centroids;
         double* old_centroids;
         double* cluster_count;
+
+        long long feature_cnt;
 
         double** dots;
 

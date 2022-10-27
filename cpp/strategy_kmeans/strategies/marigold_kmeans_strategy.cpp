@@ -19,7 +19,8 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
             //calculate_data_squares(data_ptr, data_ss, n, d)
             Calculate_squared(d, n, data_ptr, data_ss);
 
-            for (int i = 0; i < k; i++) {
+            
+            /*for (int i = 0; i < k; i++) {
                 for (int j = i; j < k; j++) {
                     double tmp = 0; //centroids_ss[i][0] + centroids_ss[j][0];
                     for (int f = 0; f < d; f++) {
@@ -27,20 +28,21 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
                         tmp += ((centroids[i*d+f] - centroids[j*d+f]) *
                             (centroids[i*d+f] - centroids[j*d+f]));
                     }
+                    //feature_cnt += d;
                     if(tmp < 0.0) tmp = 0.0;
                     tmp = sqrt(tmp);
                     //We can save distances for later use
-                    c_to_c[i][j] = sqrt(tmp);
+                    c_to_c[i][j] = (tmp);
                     // THEY'RE THE SAME
                     c_to_c[j][i] = c_to_c[i][j];
                 }
-            }
+            }*/
             //Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d);
             //Update_bounds(data_ptr, centroids, c_to_c, centroid_ss, l_elkan, u_elkan, l_hamerly, labels, div, near, n, k, d);
-
+            
             while ((iter < max_inter) && (!converged)) {
                 //calculate square centroids
-                Calculate_squared(d, k, centroids, centroid_ss);
+                Calculate_squared(d, k, centroids, centroid_ss);    
 
                 //assign to centroids
                 for (int i = 0; i < n; i++) {
@@ -48,14 +50,25 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
                     if (u_elkan[i] > val) {
                         //TODO: refactor placement of implementation to avoid bassillion arguments
                         //params = (int x, int d, int k, double data[],  double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int L, int labels[], double* l_elkan[], double u_elkan[], double* c_to_c[])
-                        MG_SetLabel(i, d, k, data_ptr, centroids, data_ss, centroid_ss, dots, L, labels, l_elkan, u_elkan, c_to_c);
+                        //MG_SetLabel_loose(i, d, k, data_ptr, centroids, data_ss, centroid_ss, dots, L, labels, l_elkan, u_elkan, l_hamerly, c_to_c, feature_cnt);                       
+                        MG_SetLabel(i, d, k, data_ptr, centroids, data_ss, centroid_ss, dots, L, labels, l_elkan, u_elkan, l_hamerly, c_to_c, feature_cnt);                       
+                        
+                        /*double smallest = std::numeric_limits<double>::max();
+                        for (int j = 0; j < k; j++) {
+                            
+                            if (l_elkan[i][j] < smallest) {
+                                smallest = l_elkan[i][j];
+                            }
+                        }
+                        l_hamerly[i] = smallest; */
                     }
                 }
-                converged = Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d);
+                converged = Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d, feature_cnt);
                 if (!converged) {
                     //TODO: refactor location of .. you know the drill 
                     //(double data[], double centroids[], double* c_to_c[], double* centroids_ss[], double* l_elkan[], double u_elkan[], double l_hamerly[], int labels[], double div[], double near[], int n, int k, int d) 
-                    Update_bounds(data_ptr, centroids, c_to_c, centroid_ss, l_elkan, u_elkan, l_hamerly, labels, div, near, n, k, d);                   
+                    Update_bounds(data_ptr, centroids, c_to_c, centroid_ss, l_elkan, u_elkan, l_hamerly, labels, div, near, n, k, d, feature_cnt);                   
+                    
                 }
                 iter++;
             }   
@@ -64,7 +77,7 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
                 std::cout << cluster_count[j] << " ";
             }
             std::cout << std::endl;
-            std::cout << iter << std::endl;
+            std::cout << "Iter:" << iter << " Feature_cnt: " << feature_cnt << std::endl;
                 
 
             return labels;
@@ -77,6 +90,7 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
             d = _d;
             k = _k;
             data_ptr = _data->get_data_pointer();
+            feature_cnt = 0;
 
             //stepwise levels
             L = log10(d)/log10(4);
@@ -89,7 +103,7 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
             }
 
             l_hamerly = new double[n];
-            std::fill(l_hamerly, l_hamerly+n, 0.0);
+            std::fill(l_hamerly, l_hamerly+n, 0);
 
 
             u_elkan = new double[n];
@@ -112,9 +126,6 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
             }
 
             
-
-
-
 
             //squared
             data_ss = new double*[n];
@@ -176,6 +187,7 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
         double* centroids;
         double* old_centroids;
         double* cluster_count;
+        long long feature_cnt;
 
         double** dots;
 

@@ -31,7 +31,7 @@ class LloydKmeansStrategy : public KmeansStrategy {
                 //Calculate all distances
                 for (int i = 0; i < n; i++) {
                     for (int j = 0; j < k; j++) {
-                        distances[i*k+j] = Euclidian_distance(i, j, d, k, data_ptr, centroids);
+                        distances[i*k+j] = Euclidian_distance(i, j, d, k, data_ptr, centroids, feature_cnt);
                         
                     }
                 }
@@ -45,7 +45,7 @@ class LloydKmeansStrategy : public KmeansStrategy {
                     }
                 }
                 
-                converged = Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d);
+                converged = Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d, feature_cnt);
 
                 /*
                 //Save centroids for convergence test    
@@ -130,6 +130,7 @@ class LloydKmeansStrategy : public KmeansStrategy {
             d = _d;
             k = _k;
             data_ptr = _data->get_data_pointer();
+            feature_cnt = 0;
 
             //Init labels
             labels = new int[n];
@@ -175,6 +176,7 @@ class LloydKmeansStrategy : public KmeansStrategy {
         double* centroids;
         double* old_centroids;
         double* cluster_count;
+        long long feature_cnt;
 
         //x to c [x*k+c]
         double* distances;

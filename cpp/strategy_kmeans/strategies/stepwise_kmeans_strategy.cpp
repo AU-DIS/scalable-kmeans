@@ -65,9 +65,9 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
                         }
                     }*/
                     
-                    labels[i] = SetLabel(i, d, k, data_ptr, centroids, data_ss, centroid_ss, dots, L);                   
+                    labels[i] = SetLabel(i, d, k, data_ptr, centroids, data_ss, centroid_ss, dots, L, feature_cnt);                   
                 }
-                converged = Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d);
+                converged = Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d, feature_cnt);
                 iter++;
             }   
 
@@ -75,7 +75,8 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
                 std::cout << cluster_count[j] << " ";
             }
             std::cout << std::endl;
-            std::cout << iter << std::endl;
+            std::cout << "Iter:" << iter << " Feature_cnt: " << feature_cnt << std::endl;
+             
                 
 
             return labels;
@@ -88,6 +89,7 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
             d = _d;
             k = _k;
             data_ptr = _data->get_data_pointer();
+            feature_cnt = 0;
 
             //stepwise levels
             L = log10(d)/log10(4);
@@ -161,6 +163,8 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
         double* centroids;
         double* old_centroids;
         double* cluster_count;
+
+        long long feature_cnt;
 
         double** dots;
 
