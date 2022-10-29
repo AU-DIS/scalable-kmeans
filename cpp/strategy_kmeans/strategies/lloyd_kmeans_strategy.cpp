@@ -114,11 +114,11 @@ class LloydKmeansStrategy : public KmeansStrategy {
                 iter++;
             }
 
-            /*for (int i = 0; i < k; i++) {      
+            for (int i = 0; i < k; i++) {      
                 std::cout << cluster_count[i] << " "; 
             }
             std::cout << std::endl;
-            std::cout << iter << std::endl;*/
+            std::cout << iter << std::endl;
 
             return labels;
         };

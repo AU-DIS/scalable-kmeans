@@ -18,7 +18,7 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
 
             // calculate square data 
             //calculate_data_squares(data_ptr, data_ss, n, d)
-            Calculate_squared(d, n, data_ptr, data_ss);
+            Calculate_squared(d, n, data_ptr, data_ss, l_pow);
 
             /*for (int i = 0; i < k; i++) {
                 for (int j = i; j < k; j++) {
@@ -41,7 +41,7 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
             
             while ((iter < max_inter) && (!converged)) {
                 //calculate square centroids
-                Calculate_squared(d, k, centroids, centroid_ss);
+                Calculate_squared(d, k, centroids, centroid_ss, l_pow);
 
                 /*if (iter < 2) {
                      for (int i = 0; i < k; i++) {
@@ -147,6 +147,11 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
                 c_to_c[i] = new double[k];
             }
 
+            l_pow = new int[L+1];
+            for (int i = 0; i <= L; i++) {
+                l_pow[i] = int(pow(2,i));
+            }
+
             
             //squared
             data_ss = new double*[n];
@@ -212,6 +217,8 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
         long long feature_cnt;
 
         double** dots;
+
+        int* l_pow;
 
         double* div;
 

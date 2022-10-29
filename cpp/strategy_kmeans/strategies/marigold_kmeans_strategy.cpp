@@ -13,11 +13,12 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
             //Write lloyd
             int iter = 0;
             bool converged = false;
+           
 
 
             // calculate square data 
             //calculate_data_squares(data_ptr, data_ss, n, d)
-            Calculate_squared(d, n, data_ptr, data_ss);
+            Calculate_squared(d, n, data_ptr, data_ss, l_pow);
 
             
             /*for (int i = 0; i < k; i++) {
@@ -42,7 +43,7 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
             
             while ((iter < max_inter) && (!converged)) {
                 //calculate square centroids
-                Calculate_squared(d, k, centroids, centroid_ss);    
+                Calculate_squared(d, k, centroids, centroid_ss, l_pow);    
 
                 //assign to centroids
                 for (int i = 0; i < n; i++) {
@@ -229,7 +230,13 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
                 c_to_c[i] = new double[k];
             }
 
+            l_pow = new int[L+1];
+            for (int i = 0; i <= L; i++) {
+                l_pow[i] = int(pow(2,i));
+            }
             
+            
+                    
 
             //squared
             data_ss = new double*[n];
@@ -298,6 +305,9 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
         double** l_elkan;
         double* l_hamerly;
         double* u_elkan;
+
+
+        int* l_pow;
 
         double* near;
 

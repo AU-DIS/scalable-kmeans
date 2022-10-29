@@ -368,7 +368,39 @@ std::tuple<double, double> DistToLevel(const int x, const int c, const int d, co
 }*/
 
 
-void Calculate_squared(int d, int elements, double raw[], double* squared[]) {
+void Calculate_squared(const int d, const int elements, const double raw[], double* squared[], const int l_pow[]) {
+    int L = log10(d)/log10(4);
+    int d_sqrt = sqrt(d);
+    int two_p_level_m1, two_p_level;
+   
+    for (int e = 0; e < elements; e++) {
+        squared[e][0] = raw[e*d+0] * raw[e*d+0];
+
+        for (int l = 1; l <= L; l++){
+            two_p_level_m1 = l_pow[l-1];// pow(2,l-1);
+            two_p_level = l_pow[l];
+            squared[e][l] = squared[e][l-1];
+            //dots saved from previous level, hence only add dots from this level.
+            //adding new cols from from known rows
+            for (int l_ = 0; l_ < two_p_level_m1; l_++) {
+                for (int l_2 = two_p_level_m1; l_2 < two_p_level; l_2++) {
+                    squared[e][l] += raw[e*d+l_*d_sqrt+l_2]*raw[e*d+l_*d_sqrt+l_2]; 
+                }
+            }
+            //TODO: sqrt stuff for d != 2^x
+            //add full new rows
+            for (int l_ = two_p_level_m1; l_ < two_p_level; l_++) {
+                for (int l_2 = 0; l_2 < two_p_level; l_2++) {
+                    squared[e][l] += raw[e*d+l_*d_sqrt+l_2]*raw[e*d+l_*d_sqrt+l_2]; 
+                }
+            }
+      
+        } 
+    }
+}
+
+
+void Calculate_squared_botup(int d, int elements, double raw[], double* squared[]) {
     int L = log10(d)/log10(4);
     int d_sqrt = sqrt(d);
     int two_p_level_m1, two_p_level;
