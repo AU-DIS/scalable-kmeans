@@ -6,7 +6,7 @@
 
 //TODO: dissasemble in further strategies to encapsule params where they belong, using smart pointers to avoid ref loss.
 
-class ElkHamKmeansStrategy : public KmeansStrategy {
+class ElkanKmeansStrategy : public KmeansStrategy {
     public:
         int* run(Dataset* data) {
             //data->print_datasample();
@@ -41,7 +41,7 @@ class ElkHamKmeansStrategy : public KmeansStrategy {
 
                 //assign to centroids
                 for (int i = 0; i < n; i++) {
-                    double val = near[labels[i]] < l_hamerly[i] ? l_hamerly[i] : near[labels[i]]; 
+                    double val = near[labels[i]]; // < l_hamerly[i] ? l_hamerly[i] : near[labels[i]]; 
                     if (!(u_elkan[i] > val)) continue;
                     double distance = Euclidian_distance(i, labels[i], d, k, data_ptr, centroids, feature_cnt);  
                     l_elkan[i][labels[i]] = distance;
@@ -63,9 +63,9 @@ class ElkHamKmeansStrategy : public KmeansStrategy {
                 if (!converged) {
                     //TODO: refactor location of .. you know the drill 
                     //(double data[], double centroids[], double* c_to_c[], double* centroids_ss[], double* l_elkan[], double u_elkan[], double l_hamerly[], int labels[], double div[], double near[], int n, int k, int d) 
-                    Update_bounds(data_ptr, centroids, c_to_c, centroid_ss, l_elkan, u_elkan, l_hamerly, labels, div, near, n, k, d, feature_cnt);
-                    iter++;
+                    Update_bounds_elkan();//data_ptr, centroids, c_to_c, centroid_ss, l_elkan, u_elkan, l_hamerly, labels, div, near, n, k, d, feature_cnt);   
                 }
+                iter++;
             }   
 
             /*for (int j = 0; j < k; j++) {
@@ -78,6 +78,63 @@ class ElkHamKmeansStrategy : public KmeansStrategy {
 
             return labels;
         };
+
+        void Update_bounds_elkan() { //double data[], double centroids[], double* c_to_c[], double* centroids_ss[], double* l_elkan[], double u_elkan[], double l_hamerly[], int labels[], double div[], double near[], int n, int k, int d, long long &feature_cnt) {
+            //For all x in X
+            for (int i = 0; i < n; i++) { 
+                int smallest_id = labels[i] == 0 ? 1 : 0; 
+                //For all c in C
+                for (int j = 0; j < k; j++) {
+                    //l_elkan(x, c) <-- max{0, l_elkan(x, c) - div[c]} 
+                    double val = l_elkan[i][j]-div[j];  
+                    l_elkan[i][j] = 0 < val ? val : 0;
+                    if ((labels[i] != j) && (l_elkan[i][j] <= l_elkan[i][smallest_id])) {
+                        smallest_id = j; 
+                    }  
+                }
+                //u_elkan <- u_elkan + div[a[x]]
+                u_elkan[i] += div[labels[i]];
+                //l_hamerly <- min{l_elkan(x, c != a[x])}
+                //l_hamerly[i] = l_elkan[i][smallest_id];
+            }
+            //Calculate centroid to centroid distances
+            for (int i = 0; i < k; i++) {
+                c_to_c[i][i] = 0;
+                
+                for (int j = i+1; j < k; j++) {
+                    double tmp = 0; //centroids_ss[i][0] + centroids_ss[j][0];
+                    for (int f = 0; f < d; f++) {
+                        //TODO: this does not use squares when it could, ot could it?
+                        tmp += ((centroids[i*d+f] - centroids[j*d+f]) *
+                            (centroids[i*d+f] - centroids[j*d+f]));
+                    }
+                    //feature_cnt += d;
+                    if(tmp < 0.0) tmp = 0.0;
+                    tmp = sqrt(tmp);
+
+                    
+                    //We can save distances for later use
+                    c_to_c[i][j] = (tmp);
+                    // THEY'RE THE SAME
+                    c_to_c[j][i] = c_to_c[i][j];
+                }
+                double smallest = DBL_MAX;
+                double near_id = -1 ;
+                for (int j = 0; j < k; j++) {
+                if (i == j) continue;
+                if (c_to_c[i][j] < smallest) {  
+                        smallest = c_to_c[i][j];  
+                        near[i] = 0.5 * smallest;
+                        near_id = j;
+                        //near[j] = 0.5 * smallest;
+                    } 
+                }
+                //std::cout << i << " is near " <<  near_id << "\n";
+            
+            }
+        }
+
+
 
         void init(int _max_iter, int _n, int _d, int _k, Dataset* _data) {
             
@@ -99,8 +156,6 @@ class ElkHamKmeansStrategy : public KmeansStrategy {
                 std::fill(l_elkan[i], l_elkan[i]+k, 0.0);
             }
 
-            l_hamerly = new double[n];
-            std::fill(l_hamerly, l_hamerly+n, 0.0);
 
 
             u_elkan = new double[n];
@@ -190,7 +245,6 @@ class ElkHamKmeansStrategy : public KmeansStrategy {
         double** dots;
 
         double** l_elkan;
-        double* l_hamerly;
         double* u_elkan;
 
         double* near;

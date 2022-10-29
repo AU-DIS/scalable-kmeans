@@ -31,7 +31,7 @@ class LloydKmeansStrategy : public KmeansStrategy {
                 //Calculate all distances
                 for (int i = 0; i < n; i++) {
                     for (int j = 0; j < k; j++) {
-                        distances[i*k+j] = Euclidian_distance(i, j, d, k, data_ptr, centroids, feature_cnt);
+                        distances[i*k+j] = Squared_euclidian_distance(i, j, d, k, data_ptr, centroids, feature_cnt);
                         
                     }
                 }
@@ -114,11 +114,11 @@ class LloydKmeansStrategy : public KmeansStrategy {
                 iter++;
             }
 
-            for (int i = 0; i < k; i++) {      
+            /*for (int i = 0; i < k; i++) {      
                 std::cout << cluster_count[i] << " "; 
             }
             std::cout << std::endl;
-            std::cout << iter << std::endl;
+            std::cout << iter << std::endl;*/
 
             return labels;
         };

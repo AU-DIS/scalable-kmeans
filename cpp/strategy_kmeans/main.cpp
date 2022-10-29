@@ -5,21 +5,24 @@
 #include "strategies/marigold_kmeans_strategy.cpp"
 #include "strategies/stepwise_kmeans_strategy.cpp"
 #include "strategies/elkham_kmeans_strategy.cpp"
+#include "strategies/elkan_kmeans_strategy.cpp"
+//#include "strategies/hamerly_kmeans_strategy.cpp"
 #include "benchmark/benchmark.h"
 
 std::string data_file_name;
 int n;
 int d;
 int k;
+KmeansRunner runner(std::make_unique<LloydKmeansStrategy>());
 
 static void BM_Kmeans_lloyd(benchmark::State& state) { 
     //lloyd_strategy;
-    KmeansRunner runner(std::make_unique<LloydKmeansStrategy>());
+    runner.set_strategy(std::make_unique<LloydKmeansStrategy>());
 
-    runner.init_run(n,d,k,data_file_name);
 
     for (auto _ : state) { 
-        runner.run_kmeans(n,d,k);
+        runner.run_kmeans(state.range(0),state.range(1),state.range(2));
+    
         
     }
 }
@@ -27,12 +30,10 @@ static void BM_Kmeans_lloyd(benchmark::State& state) {
 static void BM_Kmeans_MARIGOLD(benchmark::State& state) { 
 
     //MARIGOLD_strategy;
-    KmeansRunner runner(std::make_unique<MARIGOLDKmeansStrategy>());
-    
-    runner.init_run(n,d,k,data_file_name);
-
+    //KmeansRunner runner(std::make_unique<MARIGOLDKmeansStrategy>());
+    runner.set_strategy(std::make_unique<MARIGOLDKmeansStrategy>());
     for (auto _ : state) { 
-        runner.run_kmeans(n,d,k);
+        runner.run_kmeans(state.range(0),state.range(1),state.range(2));
     }
 }
 
@@ -40,36 +41,67 @@ static void BM_Kmeans_StepWise(benchmark::State& state) {
 
 
     //StepWise_strategy;
-    KmeansRunner runner(std::make_unique<StepWiseKmeansStrategy>());
+    runner.set_strategy(std::make_unique<StepWiseKmeansStrategy>());
     
-    runner.init_run(n,d,k,data_file_name);
 
     for (auto _ : state) { 
-        runner.run_kmeans(n,d,k);
+        runner.run_kmeans(state.range(0),state.range(1),state.range(2));
     }
 }
 
 static void BM_Kmeans_ElkHam(benchmark::State& state) { 
     
-    //ElkHam_strategy;
-    KmeansRunner runner(std::make_unique<ElkHamKmeansStrategy>());
+
+    runner.set_strategy(std::make_unique<ElkHamKmeansStrategy>());
     
-    runner.init_run(n,d,k,data_file_name);
 
     for (auto _ : state) { 
-        runner.run_kmeans(n,d,k);
+        runner.run_kmeans(state.range(0),state.range(1),state.range(2));
     }
 }
  
+static void BM_Kmeans_Elkan(benchmark::State& state) { 
 
+    runner.set_strategy(std::make_unique<ElkanKmeansStrategy>());
+    
 
+    for (auto _ : state) { 
+        runner.run_kmeans(state.range(0),state.range(1),state.range(2));
+    }
+}
+
+static void BM_Kmeans_Hamerly(benchmark::State& state) { 
+    
+
+    runner.set_strategy(std::make_unique<HamerlyKmeansStrategy>());
+
+    for (auto _ : state) { 
+        runner.run_kmeans(state.range(0),state.range(1),state.range(2));
+    }
+}
+
+static void BM_load_data_flake(benchmark::State& state) { 
+    data_file_name = "/mnt/c/Users/kaspe/OneDrive/Skrivebord/Reps/scalable-kmeans/Data/steinn_14_jun/processed/gr_flake_"+std::to_string(int(sqrt(state.range(1))))+"_h5_dct.txt";
+    //std::cout << data_file_name;
+    for (auto _ : state) { 
+        runner.init_run(state.range(0),state.range(1),state.range(2),data_file_name);
+    }
+}
+
+static void BM_load_data_Bi5d(benchmark::State& state) { 
+    data_file_name = "/mnt/c/Users/kaspe/OneDrive/Skrivebord/Reps/scalable-kmeans/Data/steinn_14_jun/processed/misfit_Bi5d_"+std::to_string(int(sqrt(state.range(1))))+"_h5_dct.txt";
+    //std::cout << data_file_name;
+    for (auto _ : state) { 
+        runner.init_run(state.range(0),state.range(1),state.range(2),data_file_name);
+    }
+}
 
 
 int main(int argc, char **argv) { 
     data_file_name = "/mnt/c/Users/kaspe/OneDrive/Skrivebord/Reps/scalable-kmeans/Data/steinn_14_jun/processed/gr_flake_256_h5_dct.txt";
-    n = 1911;
-    d = 256*256;
-    k = 40;
+    n = 168;
+    d = 1024*1024;
+    k = 5;
 
     //; lloyd_strategy;
     /*KmeansRunner runner(std::make_unique<LloydKmeansStrategy>());
@@ -79,9 +111,15 @@ int main(int argc, char **argv) {
     runner.save_result(n,"/mnt/c/Users/kaspe/OneDrive/Skrivebord/Reps/scalable-kmeans/cpp/strategy_kmeans/result.txt");
     */
     //BENCHMARK(BM_Kmeans_lloyd)->Iterations(1)->Unit(benchmark::kMillisecond);
-    BENCHMARK(BM_Kmeans_MARIGOLD)->Iterations(1)->Unit(benchmark::kMillisecond);
-    BENCHMARK(BM_Kmeans_StepWise)->Iterations(1)->Unit(benchmark::kMillisecond);
-    BENCHMARK(BM_Kmeans_ElkHam)->Iterations(1)->Unit(benchmark::kMillisecond);
+    //BENCHMARK(BM_load_data_flake)->Args({n,d,k})->Repetitions(1)->Iterations(1)->Unit(benchmark::kMillisecond);
+    BENCHMARK(BM_load_data_Bi5d)->Args({n,d,k})->Repetitions(1)->Iterations(1)->Unit(benchmark::kMillisecond);
+    
+    BENCHMARK(BM_Kmeans_lloyd)->Args({n,d,5})->Args({n,d,10})->Args({n,d,15})->Args({n,d,20})->Args({n,d,25})->Args({n,d,30})->Args({n,d,35})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    BENCHMARK(BM_Kmeans_MARIGOLD)->Args({n,d,5})->Args({n,d,10})->Args({n,d,15})->Args({n,d,20})->Args({n,d,25})->Args({n,d,30})->Args({n,d,35})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    BENCHMARK(BM_Kmeans_StepWise)->Args({n,d,5})->Args({n,d,10})->Args({n,d,15})->Args({n,d,20})->Args({n,d,25})->Args({n,d,30})->Args({n,d,35})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);   
+    BENCHMARK(BM_Kmeans_ElkHam)->Args({n,d,5})->Args({n,d,10})->Args({n,d,15})->Args({n,d,20})->Args({n,d,25})->Args({n,d,30})->Args({n,d,35})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    //BENCHMARK(BM_Kmeans_Hamerly)->Iterations(1)->Unit(benchmark::kMillisecond);
+    BENCHMARK(BM_Kmeans_Elkan)->Args({n,d,5})->Args({n,d,10})->Args({n,d,15})->Args({n,d,20})->Args({n,d,25})->Args({n,d,30})->Args({n,d,35})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
     
     benchmark::Initialize(&argc, argv);
     benchmark::RunSpecifiedBenchmarks();

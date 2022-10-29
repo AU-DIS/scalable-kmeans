@@ -25,6 +25,21 @@ double Euclidian_distance(int x, int c, int d, int k, double data[], double cent
     return sqrt(dist);
 }
 
+double Squared_euclidian_distance(int x, int c, int d, int k, double data[], double centroids[], long long &feature_cnt) {
+    //x datapoint index
+    //c centroid index
+
+    //d features/dimension
+    double dist = 0;
+    for (int j = 0; j < d; j++) {
+        dist += (data[x*d+j]-centroids[c*d+j])*(data[x*d+j]-centroids[c*d+j]);
+    };
+    //std::cout << dist << std::endl;
+    feature_cnt += d;
+    if(dist < 0.0) dist = 0.0;
+    return dist;
+}
+
 
                                                                         //TODO: This parsing is insane and can be cleaned clean up, by defining this and dist to level within a strategy scope.   
 void Update_bounds(double data[], double centroids[], double* c_to_c[], double* centroids_ss[], double* l_elkan[], double u_elkan[], double l_hamerly[], int labels[], double div[], double near[], int n, int k, int d, long long &feature_cnt) {
@@ -128,10 +143,10 @@ bool Recalculate(double data[], double centroids[], double old_centroids[], doub
         }
     }
 
-    for (int i = 0; i < k; i++) {      
+    /*for (int i = 0; i < k; i++) {      
         std::cout << cluster_count[i] << " "; 
         }
-    std::cout << std::endl;
+    std::cout << std::endl;*/
 
     //calculate div
     for (int j = 0; j < k; j++) {
@@ -148,12 +163,14 @@ bool Recalculate(double data[], double centroids[], double old_centroids[], doub
         }
     }
 
+
+
     //END: div[.] updated
     return converged;
 }
 
 
-std::tuple<double, double> DistToLevel(int x, int c, int d, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int l, int L, double &UB, double &LB, long long &feature_cnt) {
+std::tuple<double, double> DistToLevel(const int x, const int c, const int d, const double data[], const double centroids[], const double *const data_ss[], const double *const centroid_ss[], const int l, const int L, double* dots[], double &UB, double &LB, long long &feature_cnt) {
     //Calculate dots  
     int d_sqrt = sqrt(d);
     //L is an int of log4(d), hence rounded down. 
@@ -202,13 +219,13 @@ std::tuple<double, double> DistToLevel(int x, int c, int d, double data[], doubl
 };
 
 //TODO: This parsing is insane can can be cleaned clean up, by defining this and dist to level within a strategy scope. 
-void MG_SetLabel(int x, int d, int k, double data[],  double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int L, int labels[], double* l_elkan[], double u_elkan[], double* c_to_c[], long long &feature_cnt) {
+/*void old_MG_SetLabel(int x, int d, int k, double data[],  double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int L, int labels[], double* l_elkan[], double u_elkan[], double* c_to_c[], long long &feature_cnt) {
     int l = 0;
     int *mask = new int[k];
     std::fill_n(mask, k, 1);
-    /*for (int i = 0; i < k; i++) {
-        mask[i] = 1;
-    }*/
+    //for (int i = 0; i < k; i++) {
+    //    mask[i] = 1;
+    //}
     double val;
     double UB, LB;
     
@@ -224,7 +241,7 @@ void MG_SetLabel(int x, int d, int k, double data[],  double centroids[], double
                 mask[j] = 0;            //Mark as pruned centroid
             } else {
                 //DistToLevel params (int x, int c, int d, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int l, int L)
-                DistToLevel(x, j, d, data, centroids, data_ss, centroid_ss, dots, l, L, UB, LB, feature_cnt);
+                DistToLevel(x, j, d, data, centroids, data_ss, centroid_ss, l, L, dots, UB, LB,  feature_cnt);
                                     
                 if (LB > l_elkan[x][j]) {
                     LB = sqrt(std::max(0.0, LB));
@@ -248,15 +265,15 @@ void MG_SetLabel(int x, int d, int k, double data[],  double centroids[], double
     }
     //TODO: free mask?
     //END: Updated labels, l_elkan[x][.], u_elkan[x]
-}
+}*/
 
-void MG_SetLabel_test(int x, int d, int k, double data[],  double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int L, int labels[], double* l_elkan[], double u_elkan[], double l_hamerly[], double* c_to_c[], long long &feature_cnt) {
+/*void old_MG_SetLabel_test(int x, int d, int k, double data[],  double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int L, int labels[], double* l_elkan[], double u_elkan[], double l_hamerly[], double* c_to_c[], long long &feature_cnt) {
     int l = 0;
     int *mask = new int[k];
     std::fill_n(mask, k, 1);
-    /*for (int i = 0; i < k; i++) {
-        mask[i] = 1;
-    }*/
+    //for (int i = 0; i < k; i++) {
+    //    mask[i] = 1;
+    //}
     double val;
     double UB, LB;
     //double* LB = new double[k];
@@ -276,7 +293,7 @@ void MG_SetLabel_test(int x, int d, int k, double data[],  double centroids[], d
                 mask[j] = 0;            //Mark as pruned centroid
             } else {
                 //DistToLevel params (int x, int c, int d, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int l, int L)
-                DistToLevel(x, j, d, data, centroids, data_ss, centroid_ss, dots, l, L, UB, LB, feature_cnt);
+                DistToLevel(x, j, d, data, centroids, data_ss, centroid_ss, l, L, dots, UB, LB, feature_cnt);
                                     
                 if (LB > l_elkan[x][j]) {
                     LB = sqrt(std::max(0.0, LB));
@@ -301,12 +318,12 @@ void MG_SetLabel_test(int x, int d, int k, double data[],  double centroids[], d
 
     //TODO: free mask?
     //END: Updated labels, l_elkan[x][.], u_elkan[x]
-}
+}*/
 
 
 
 
-int SetLabel(int x, int d, int k, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int L, long long &feature_cnt) {
+/*int old_SetLabel(int x, int d, int k, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int L, long long &feature_cnt) {
     int l = 0;
     int a = -1;
     double* LB = new double[k];
@@ -328,7 +345,7 @@ int SetLabel(int x, int d, int k, double data[], double centroids[], double* dat
             } else {
                 
                 //DistToLevel(int x, int c, int d, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int l, int L, double &UB, double &LB)
-                DistToLevel(x, j, d, data, centroids, data_ss, centroid_ss, dots, l, L, UB, LB[j], feature_cnt);
+                DistToLevel(x, j, d, data, centroids, data_ss, centroid_ss, l, L, dots, UB, LB[j], feature_cnt);
                 //auto val_ = Euclidian_distance(x,j,d,k,data,centroids);
                 //UB = val_;
                 //LB[j] = val_;
@@ -348,11 +365,8 @@ int SetLabel(int x, int d, int k, double data[], double centroids[], double* dat
     
 
     return a;
-}
-
-/*void Calculate_squared(int d, int elements, double raw[], double* squared[]) {
-
 }*/
+
 
 void Calculate_squared(int d, int elements, double raw[], double* squared[]) {
     int L = log10(d)/log10(4);

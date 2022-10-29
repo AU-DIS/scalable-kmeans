@@ -51,7 +51,7 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
                         //TODO: refactor placement of implementation to avoid bassillion arguments
                         //params = (int x, int d, int k, double data[],  double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int L, int labels[], double* l_elkan[], double u_elkan[], double* c_to_c[])
                         //MG_SetLabel_loose(i, d, k, data_ptr, centroids, data_ss, centroid_ss, dots, L, labels, l_elkan, u_elkan, l_hamerly, c_to_c, feature_cnt);                       
-                        MG_SetLabel(i, d, k, data_ptr, centroids, data_ss, centroid_ss, dots, L, labels, l_elkan, u_elkan, l_hamerly, c_to_c, feature_cnt);                       
+                        MG_SetLabel(i); //, d, k, data_ptr, centroids, data_ss, centroid_ss, dots, L, labels, l_elkan, u_elkan, l_hamerly, c_to_c, feature_cnt);                       
                         
                         /*double smallest = std::numeric_limits<double>::max();
                         for (int j = 0; j < k; j++) {
@@ -73,15 +73,119 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
                 iter++;
             }   
 
-            for (int j = 0; j < k; j++) {
+            /*for (int j = 0; j < k; j++) {
                 std::cout << cluster_count[j] << " ";
             }
             std::cout << std::endl;
             std::cout << "Iter:" << iter << " Feature_cnt: " << feature_cnt << std::endl;
-                
+            */    
 
             return labels;
         };
+
+        void MG_SetLabel(const int x) {
+            int l = 0;
+            int *mask = new int[k];
+            std::fill_n(mask, k, 1);
+            /*for (int i = 0; i < k; i++) {
+                mask[i] = 1;
+            }*/
+            double val;
+            double UB, LB;
+            
+            int mask_sum = k;
+
+            while (l <= L && mask_sum > 1) {
+                for (int j = 0; j < k; j++) {
+                    if (mask[j] != 1) continue;  
+
+                    //Elkan prune
+                    val = std::max(l_elkan[x][j], 0.5 * c_to_c[labels[x]][j]);// l_elkan[x][j] < 0.5 * c_to_c[labels[x]][j] ? 0.5 * c_to_c[labels[x]][j] : l_elkan[x][j];  
+                    if (u_elkan[x] < val) {     //Elkan check
+                        mask[j] = 0;            //Mark as pruned centroid
+                    } else {
+                        //DistToLevel params (int x, int c, int d, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int l, int L)
+                        DistToLevel(x, j, d, data_ptr, centroids, data_ss, centroid_ss, l, L, dots, UB, LB, feature_cnt);
+                                            
+                        if (LB > l_elkan[x][j]) {
+                            LB = sqrt(std::max(0.0, LB));
+                            if (LB > l_elkan[x][j]) {
+                                l_elkan[x][j] = LB; //Keep maximum LB per c
+                            }   
+                        }
+                        
+                        UB = sqrt(std::max(0.0, UB));
+                        if (UB < u_elkan[x]) {
+                            labels[x] = j;
+                            u_elkan[x] = UB; //Keep minimum UB across c
+                        }       
+                    } 
+                }
+                mask_sum = 0;
+                for (int j = 0; j < k; j++) {
+                    mask_sum += mask[j];
+                }
+                l++;
+            }
+            //TODO: free mask?
+            //END: Updated labels, l_elkan[x][.], u_elkan[x]
+        }
+
+        void MG_SetLabel_test(int x, int d, int k, double data[],  double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int L, int labels[], double* l_elkan[], double u_elkan[], double l_hamerly[], double* c_to_c[], long long &feature_cnt) {
+            int l = 0;
+            int *mask = new int[k];
+            std::fill_n(mask, k, 1);
+            /*for (int i = 0; i < k; i++) {
+                mask[i] = 1;
+            }*/
+            double val;
+            double UB, LB;
+            //double* LB = new double[k];
+            //std::fill_n(LB, k, 0);
+            //double LB_min = ; 
+            double UB_min = std::numeric_limits<double>::max(); // ? std::numeric_limits<double>::max() : u_elkan[x]*u_elkan[x];
+            int mask_sum = k;
+
+            while (l <= L && mask_sum > 1) {
+                for (int j = 0; j < k; j++) {
+                    if (mask[j] != 1) continue;  
+
+                
+                    //Elkan prune
+                    val = std::max(l_elkan[x][j], 0.5 * c_to_c[labels[x]][j]);// l_elkan[x][j] < 0.5 * c_to_c[labels[x]][j] ? 0.5 * c_to_c[labels[x]][j] : l_elkan[x][j];  
+                    if (u_elkan[x] < val) {     //Elkan check
+                        mask[j] = 0;            //Mark as pruned centroid
+                    } else {
+                        //DistToLevel params (int x, int c, int d, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int l, int L)
+                        DistToLevel(x, j, d, data, centroids, data_ss, centroid_ss, l, L, dots, UB, LB, feature_cnt);
+                                            
+                        if (LB > l_elkan[x][j]) {
+                            LB = sqrt(std::max(0.0, LB));
+                            if (LB > l_elkan[x][j]) {
+                                l_elkan[x][j] = LB; //Keep maximum LB per c
+                            }   
+                        }
+                        
+                        UB = sqrt(std::max(0.0, UB));
+                        if (UB < u_elkan[x]) {
+                            labels[x] = j;
+                            u_elkan[x] = UB; //Keep minimum UB across c
+                        }       
+                    } 
+                }
+                mask_sum = 0;
+                for (int j = 0; j < k; j++) {
+                    mask_sum += mask[j];
+                }
+                l++;
+            }
+
+            //TODO: free mask?
+            //END: Updated labels, l_elkan[x][.], u_elkan[x]
+        }
+
+
+
 
         void init(int _max_iter, int _n, int _d, int _k, Dataset* _data) {
             
