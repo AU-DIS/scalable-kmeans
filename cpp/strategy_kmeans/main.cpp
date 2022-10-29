@@ -70,7 +70,7 @@ static void BM_Kmeans_Elkan(benchmark::State& state) {
     }
 }
 
-static void BM_Kmeans_Hamerly(benchmark::State& state) { 
+/*static void BM_Kmeans_Hamerly(benchmark::State& state) { 
     
 
     runner.set_strategy(std::make_unique<HamerlyKmeansStrategy>());
@@ -78,7 +78,7 @@ static void BM_Kmeans_Hamerly(benchmark::State& state) {
     for (auto _ : state) { 
         runner.run_kmeans(state.range(0),state.range(1),state.range(2));
     }
-}
+}*/
 
 static void BM_load_data_flake(benchmark::State& state) { 
     data_file_name = "/mnt/c/Users/kaspe/OneDrive/Skrivebord/Reps/scalable-kmeans/Data/steinn_14_jun/processed/gr_flake_"+std::to_string(int(sqrt(state.range(1))))+"_h5_dct.txt";
