@@ -13,32 +13,17 @@ class LloydKmeansStrategy : public KmeansStrategy {
             int iter = 0;
             bool converged = false;
             
-            while ((iter < max_inter) && (!converged)) {
-                /*if (iter < 2) {
-                     for (int i = 0; i < k; i++) {
-                    for (int j = 0; j < d; j++) {
-                        std::cout << centroids[i*d+j] << " ";
-                    }       
-                    std::cout << "\n";
-                }
-                std::cout << std::endl;
-
-                }*/
-               
-
-                
+            while ((iter < max_inter) && (!converged)) {              
                 //std::cout << iter << std::endl;
                 //Calculate all distances
                 for (int i = 0; i < n; i++) {
                     for (int j = 0; j < k; j++) {
-                        distances[i*k+j] = Squared_euclidian_distance(i, j, d, k, data_ptr, centroids, feature_cnt);
-                        
+                        distances[i*k+j] = Squared_euclidian_distance(i, j, d, k, data_ptr, centroids, feature_cnt);    
                     }
                 }
                 //Update labels
                 for (int i = 0; i < n; i++) {
                     for (int j = 0; j < k; j++) {
-                        //std::cout << distances[i*k+j] << " " << distances[i*k+labels[i]] << "\n"; 
                         if (distances[i*k+j] < distances[i*k+labels[i]]) {
                             labels[i] = j;
                         }
@@ -46,71 +31,6 @@ class LloydKmeansStrategy : public KmeansStrategy {
                 }
                 
                 converged = Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d, feature_cnt);
-
-                /*
-                //Save centroids for convergence test    
-                memcpy(old_centroids, centroids, sizeof(double)*k*d);
-                
-                //Wipe memory for new centroid calculations
-                memset(centroids, 0.0, sizeof(double)*k*d);
-                //for(int i = 0; i < k; i++) {
-                //    for (int j = 0; j < 10; j++) {
-                //        std::cout << centroids[i*k+j] << " ";
-                //    }
-                //    std::cout << "\n";
-                //}
-                //std::cout << std::endl;
-
-                //std::fill(centroids, centroids+k*d, 0);
-                
-                //Count size of clusters and add pos to centroid
-                memset(cluster_count, 0, sizeof(double)*k);
-                //std::fill(cluster_count, cluster_count+k, 0);
-                for (int i = 0; i < n; i++) {
-                    cluster_count[labels[i]]++;
-                    for (int j = 0; j < d; j++) { 
-                        centroids[labels[i]*d+j] += data_ptr[i*d+j];
-                    }
-                }
-
-                //for(int i = 0; i < k; i++) {
-                //    for (int j = 0; j < 10; j++) {
-                //        std::cout << centroids[i*d+j] << " ";
-                //    }
-                //    std::cout << "\n";
-                //}
-                //std::cout << std::endl;
-
-                //Calculate new centroid positions
-                for (int i = 0; i < k; i++) {  
-                    if (cluster_count[i] > 0) {
-                        for (int j = 0; j < d; j++) {
-                            centroids[i*d+j] /= cluster_count[i]; 
-                        }
-                    } else {
-                        for (int j = 0; j < d; j++) {
-                            centroids[i*d+j] = old_centroids[i*d+j];
-                        }
-                    }
-                }
-
-                for (int i = 0; i < k; i++) {      
-                std::cout << cluster_count[i] << " "; 
-                }
-                std::cout << std::endl;
-                
-
-                //Check convergence
-                converged = true;
-                for (int i = 0; i < k; i++){
-                    for (int j = 0; j < d; j++) {
-                        double check_val = abs(old_centroids[i*d+j]-centroids[i*d+j]);
-                        if (!(check_val == 0)) {
-                            converged = false;
-                            break;
-                        }
-                    }
-                }*/
                 iter++;
             }
 
@@ -122,6 +42,19 @@ class LloydKmeansStrategy : public KmeansStrategy {
 
             return labels;
         };
+
+        void clear() {
+            delete div;        
+
+            delete labels;
+        
+            delete cluster_count;
+
+            delete distances; 
+           
+            delete centroids;
+            delete old_centroids;
+        }
 
         void init(int _max_iter, int _n, int _d, int _k, Dataset* _data) {
             

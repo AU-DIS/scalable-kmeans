@@ -17,7 +17,8 @@ class KmeansRunner {
 
         //Allow replacement of strategy
         void set_strategy(std::unique_ptr<KmeansStrategy> &&kmeans_strategy) {
-             kmeans_strategy_ = std::move(kmeans_strategy);
+            kmeans_strategy->clear(); 
+            kmeans_strategy_ = std::move(kmeans_strategy);
         };
 
         void init_run(int n, int d, int k, std::string data_file_name){
@@ -31,6 +32,7 @@ class KmeansRunner {
             // std::unique_ptr<Dataset>(new Dataset(n,d));
             kmeans_strategy_->init(100,n, d, k, data.get());
             result_labels = kmeans_strategy_->run(data.get());
+            kmeans_strategy_->clear();
         };
 
         void save_result(int n, std::string label_file_name) {

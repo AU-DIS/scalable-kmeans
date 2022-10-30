@@ -18,12 +18,12 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
 
             // calculate square data 
             //calculate_data_squares(data_ptr, data_ss, n, d)
-            Calculate_squared(d, n, data_ptr, data_ss, l_pow);
+            Calculate_squared_botup(d, n, data_ptr, data_ss, l_pow);
 
             
-            /*for (int i = 0; i < k; i++) {
+            for (int i = 0; i < k; i++) {
                 for (int j = i; j < k; j++) {
-                    double tmp = 0; //centroids_ss[i][0] + centroids_ss[j][0];
+                    /*double tmp = 0; //centroids_ss[i][0] + centroids_ss[j][0];
                     for (int f = 0; f < d; f++) {
                         //TODO: this does not use squares when it could
                         tmp += ((centroids[i*d+f] - centroids[j*d+f]) *
@@ -31,55 +31,42 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
                     }
                     //feature_cnt += d;
                     if(tmp < 0.0) tmp = 0.0;
-                    tmp = sqrt(tmp);
+                    tmp = sqrt(tmp);*/
                     //We can save distances for later use
-                    c_to_c[i][j] = (tmp);
+                    c_to_c[i][j] = 0; //(tmp);
                     // THEY'RE THE SAME
-                    c_to_c[j][i] = c_to_c[i][j];
+                    c_to_c[j][i] = 0; //c_to_c[i][j];
                 }
-            }*/
+            }
             //Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d);
             //Update_bounds(data_ptr, centroids, c_to_c, centroid_ss, l_elkan, u_elkan, l_hamerly, labels, div, near, n, k, d);
             
             while ((iter < max_inter) && (!converged)) {
                 //calculate square centroids
-                Calculate_squared(d, k, centroids, centroid_ss, l_pow);    
+                Calculate_squared_botup(d, k, centroids, centroid_ss, l_pow);    
 
                 //assign to centroids
                 for (int i = 0; i < n; i++) {
                     double val = near[labels[i]] < l_hamerly[i] ? l_hamerly[i] : near[labels[i]]; 
                     if (u_elkan[i] > val) {
-                        //TODO: refactor placement of implementation to avoid bassillion arguments
-                        //params = (int x, int d, int k, double data[],  double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int L, int labels[], double* l_elkan[], double u_elkan[], double* c_to_c[])
-                        //MG_SetLabel_loose(i, d, k, data_ptr, centroids, data_ss, centroid_ss, dots, L, labels, l_elkan, u_elkan, l_hamerly, c_to_c, feature_cnt);                       
-                        MG_SetLabel(i); //, d, k, data_ptr, centroids, data_ss, centroid_ss, dots, L, labels, l_elkan, u_elkan, l_hamerly, c_to_c, feature_cnt);                       
-                        
-                        /*double smallest = std::numeric_limits<double>::max();
-                        for (int j = 0; j < k; j++) {
-                            
-                            if (l_elkan[i][j] < smallest) {
-                                smallest = l_elkan[i][j];
-                            }
-                        }
-                        l_hamerly[i] = smallest; */
+                         MG_SetLabel(i); 
                     }
                 }
                 converged = Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d, feature_cnt);
                 if (!converged) {
                     //TODO: refactor location of .. you know the drill 
-                    //(double data[], double centroids[], double* c_to_c[], double* centroids_ss[], double* l_elkan[], double u_elkan[], double l_hamerly[], int labels[], double div[], double near[], int n, int k, int d) 
                     Update_bounds(data_ptr, centroids, c_to_c, centroid_ss, l_elkan, u_elkan, l_hamerly, labels, div, near, n, k, d, feature_cnt);                   
                     
                 }
                 iter++;
             }   
 
-            /*for (int j = 0; j < k; j++) {
+            for (int j = 0; j < k; j++) {
                 std::cout << cluster_count[j] << " ";
             }
             std::cout << std::endl;
             std::cout << "Iter:" << iter << " Feature_cnt: " << feature_cnt << std::endl;
-            */    
+                
 
             return labels;
         };
@@ -88,9 +75,13 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
             int l = 0;
             int *mask = new int[k];
             std::fill_n(mask, k, 1);
-            /*for (int i = 0; i < k; i++) {
-                mask[i] = 1;
-            }*/
+
+            double *dist = new double[k];
+            for (int j = 0; j < k; j++) {
+                dist[j] = data_ss[x][0]+centroid_ss[j][0];
+            }
+            
+            
             double val;
             double UB, LB;
             
@@ -106,62 +97,10 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
                         mask[j] = 0;            //Mark as pruned centroid
                     } else {
                         //DistToLevel params (int x, int c, int d, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int l, int L)
-                        DistToLevel(x, j, d, data_ptr, centroids, data_ss, centroid_ss, l, L, dots, UB, LB, feature_cnt);
-                                            
+                        DistToLevel_bot(x, j, d, data_ptr, centroids, data_ss, centroid_ss, l, L, dist[j], UB, LB, feature_cnt, l_pow);
+                        LB = sqrt(std::max(0.0, LB));                
                         if (LB > l_elkan[x][j]) {
-                            LB = sqrt(std::max(0.0, LB));
-                            if (LB > l_elkan[x][j]) {
-                                l_elkan[x][j] = LB; //Keep maximum LB per c
-                            }   
-                        }
-                        
-                        UB = sqrt(std::max(0.0, UB));
-                        if (UB < u_elkan[x]) {
-                            labels[x] = j;
-                            u_elkan[x] = UB; //Keep minimum UB across c
-                        }       
-                    } 
-                }
-                mask_sum = 0;
-                for (int j = 0; j < k; j++) {
-                    mask_sum += mask[j];
-                }
-                l++;
-            }
-            //TODO: free mask?
-            //END: Updated labels, l_elkan[x][.], u_elkan[x]
-        }
-
-        void MG_SetLabel_test(int x, int d, int k, double data[],  double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int L, int labels[], double* l_elkan[], double u_elkan[], double l_hamerly[], double* c_to_c[], long long &feature_cnt) {
-            int l = 0;
-            int *mask = new int[k];
-            std::fill_n(mask, k, 1);
-            /*for (int i = 0; i < k; i++) {
-                mask[i] = 1;
-            }*/
-            double val;
-            double UB, LB;
-            //double* LB = new double[k];
-            //std::fill_n(LB, k, 0);
-            //double LB_min = ; 
-            double UB_min = std::numeric_limits<double>::max(); // ? std::numeric_limits<double>::max() : u_elkan[x]*u_elkan[x];
-            int mask_sum = k;
-
-            while (l <= L && mask_sum > 1) {
-                for (int j = 0; j < k; j++) {
-                    if (mask[j] != 1) continue;  
-
-                
-                    //Elkan prune
-                    val = std::max(l_elkan[x][j], 0.5 * c_to_c[labels[x]][j]);// l_elkan[x][j] < 0.5 * c_to_c[labels[x]][j] ? 0.5 * c_to_c[labels[x]][j] : l_elkan[x][j];  
-                    if (u_elkan[x] < val) {     //Elkan check
-                        mask[j] = 0;            //Mark as pruned centroid
-                    } else {
-                        //DistToLevel params (int x, int c, int d, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int l, int L)
-                        DistToLevel(x, j, d, data, centroids, data_ss, centroid_ss, l, L, dots, UB, LB, feature_cnt);
-                                            
-                        if (LB > l_elkan[x][j]) {
-                            LB = sqrt(std::max(0.0, LB));
+                            
                             if (LB > l_elkan[x][j]) {
                                 l_elkan[x][j] = LB; //Keep maximum LB per c
                             }   
@@ -181,12 +120,64 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
                 l++;
             }
 
-            //TODO: free mask?
+            delete[] mask;
+            delete[] dist;
             //END: Updated labels, l_elkan[x][.], u_elkan[x]
         }
 
+        //void clear() {}
+        void clear() {
+            for (int i = 0; i < n; i++) {
+                delete[] l_elkan[i];
+            }
+            delete[] l_elkan;
 
+            delete[] l_hamerly;
+            
+            delete[] u_elkan;
 
+            delete[] near;
+
+            delete[] div;
+
+            
+            for (int i = 0; i < k; i++) {
+                delete[] c_to_c[i];
+            }
+            delete[] c_to_c; 
+
+            delete[] l_pow;
+
+            
+            for (int i = 0; i < n; i++) {
+                delete[] data_ss[i];
+            }
+            delete[] data_ss;
+
+            
+            for (int i = 0; i < k; i++) {
+                delete[] centroid_ss[i];
+            }
+            delete[] centroid_ss;
+
+            
+            for (int i = 0; i < n; i++) {
+                delete[] dots[i];
+            }
+            delete[] dots;
+
+            delete[] labels;
+
+           
+            delete[] cluster_count;
+            
+           
+            //Init centroids  
+            delete[] centroids;
+            delete[] old_centroids;
+            
+
+        }
 
         void init(int _max_iter, int _n, int _d, int _k, Dataset* _data) {
             
@@ -214,10 +205,6 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
             u_elkan = new double[n];
             std::fill(u_elkan, u_elkan+n, std::numeric_limits<double>::max());
 
-            /*for (int i = 0; i < n; i++) {
-                l_hamerly[i] = 0;
-                u_elkan[i] = std::numeric_limits<double>::max();
-            }*/
             
             near = new double[k];
             std::fill(near, near+k, 0);
@@ -230,10 +217,11 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
                 c_to_c[i] = new double[k];
             }
 
-            l_pow = new int[L+1];
+            l_pow = new int[L];
             for (int i = 0; i <= L; i++) {
                 l_pow[i] = int(pow(2,i));
             }
+
             
             
                     
@@ -241,12 +229,12 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
             //squared
             data_ss = new double*[n];
             for (int i = 0; i < n; i++) {
-                data_ss[i] = new double[L+2];
+                data_ss[i] = new double[L+1];
             }
 
             centroid_ss = new double*[k];
             for (int i = 0; i < k; i++) {
-                centroid_ss[i] = new double[L+2];
+                centroid_ss[i] = new double[L+1];
             }
 
             //dots
@@ -265,8 +253,8 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
             
 
             //Init distances
-            distances = new double[n*k];
-            std::fill(distances, distances+n*k, std::numeric_limits<double>::max());
+            //distances = new double[n*k];
+            //std::fill(distances, distances+n*k, std::numeric_limits<double>::max());
             //memset(distances, std::numeric_limits<double>::max(), sizeof(double)*n*k);
 
             //Init centroids  
@@ -318,7 +306,7 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
         double** centroid_ss;
 
         //x to c [x*k+c]
-        double* distances;
+        //double* distances;
         int* labels;
 
         double* data_ptr;// = data->get_data_pointer();

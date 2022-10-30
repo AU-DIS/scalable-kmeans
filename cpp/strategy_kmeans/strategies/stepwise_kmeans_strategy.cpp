@@ -18,7 +18,7 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
 
             // calculate square data 
             //calculate_data_squares(data_ptr, data_ss, n, d)
-            Calculate_squared(d, n, data_ptr, data_ss, l_pow);
+            Calculate_squared_botup(d, n, data_ptr, data_ss, l_pow);
 
             /*for (int i = 0; i < k; i++) {
                 for (int j = i; j < k; j++) {
@@ -41,7 +41,7 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
             
             while ((iter < max_inter) && (!converged)) {
                 //calculate square centroids
-                Calculate_squared(d, k, centroids, centroid_ss, l_pow);
+                Calculate_squared_botup(d, k, centroids, centroid_ss, l_pow);
 
                 /*if (iter < 2) {
                      for (int i = 0; i < k; i++) {
@@ -71,12 +71,12 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
                 iter++;
             }   
 
-            /*for (int j = 0; j < k; j++) {
+            for (int j = 0; j < k; j++) {
                 std::cout << cluster_count[j] << " ";
             }
             std::cout << std::endl;
             std::cout << "Iter:" << iter << " Feature_cnt: " << feature_cnt << std::endl;
-             */
+            
                 
 
             return labels;
@@ -92,6 +92,11 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
             int *mask = new int[k];
             std::fill(mask, mask+k, 1);
 
+            double *dist = new double[k];
+            for (int j = 0; j < k; j++) {
+                dist[j] = data_ss[x][0]+centroid_ss[j][0];
+            }
+
             int mask_sum = k;
 
             while (l <= L && mask_sum > 1) {
@@ -104,7 +109,7 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
                     } else {
                         
                         //DistToLevel(int x, int c, int d, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int l, int L, double &UB, double &LB)
-                        DistToLevel(x, j, d, data_ptr, centroids, data_ss, centroid_ss, l, L, dots, UB, LB[j], feature_cnt);
+                        DistToLevel_bot(x, j, d, data_ptr, centroids, data_ss, centroid_ss, l, L, dist[j], UB, LB[j], feature_cnt, l_pow);
                         //auto val_ = Euclidian_distance(x,j,d,k,data,centroids);
                         //UB = val_;
                         //LB[j] = val_;
@@ -121,9 +126,56 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
                 }
                 l++;
             }
-            
+            delete[] mask;
+            delete[] dist;
 
             return a;
+        }
+
+        void clear() {
+            
+
+            delete div;
+
+            
+            for (int i = 0; i < k; i++) {
+                delete c_to_c[i];
+            }
+            delete c_to_c; 
+
+            delete l_pow;
+
+            
+            for (int i = 0; i < n; i++) {
+                delete data_ss[i];
+            }
+            delete data_ss;
+
+            
+            for (int i = 0; i < k; i++) {
+                delete centroid_ss[i];
+            }
+            delete centroid_ss;
+
+            
+            for (int i = 0; i < n; i++) {
+                delete dots[i];
+            }
+            delete dots;
+
+            delete labels;
+
+           
+            delete cluster_count;
+            
+            //Init distances
+            delete distances; 
+           
+            //Init centroids  
+            delete centroids;
+            delete old_centroids;
+            
+
         }
 
 

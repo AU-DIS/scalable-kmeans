@@ -8,11 +8,8 @@ class KmeansStrategy {
       // pure virtual function
         virtual ~KmeansStrategy() = default;
         virtual int* run(Dataset* dataset) = 0;
+        virtual void clear() = 0;
         virtual void init(int max_iter, int n, int d, int k, Dataset* dataset) = 0;
-        //virtual int get_max_iter();
-        //virtual int get_data_dims();
-        //virtual int get_data_points();
-        //virtual int get_num_clusters();
       
     private:
 

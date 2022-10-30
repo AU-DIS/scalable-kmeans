@@ -16,22 +16,22 @@ class ElkanKmeansStrategy : public KmeansStrategy {
 
 
 
-            /*for (int i = 0; i < k; i++) {
+            for (int i = 0; i < k; i++) {
                 for (int j = i; j < k; j++) {
-                    double tmp = 0; //centroids_ss[i][0] + centroids_ss[j][0];
+                    /*double tmp = 0; //centroids_ss[i][0] + centroids_ss[j][0];
                     for (int f = 0; f < d; f++) {
                         //TODO: this does not use squares when it could
                         tmp += ((centroids[i*d+f] - centroids[j*d+f]) *
                             (centroids[i*d+f] - centroids[j*d+f]));
                     }
                     if(tmp < 0.0) tmp = 0.0;
-                    tmp = sqrt(tmp);
+                    tmp = sqrt(tmp);*/
                     //We can save distances for later use
-                    c_to_c[i][j] = sqrt(tmp);
+                    c_to_c[i][j] = 0;//sqrt(tmp);
                     // THEY'RE THE SAME
-                    c_to_c[j][i] = c_to_c[i][j];
+                    c_to_c[j][i] = 0;//c_to_c[i][j];
                 }
-            }*/
+            }
             //Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d);
             //Update_bounds(data_ptr, centroids, c_to_c, centroid_ss, l_elkan, u_elkan, l_hamerly, labels, div, near, n, k, d);
 
@@ -132,6 +132,56 @@ class ElkanKmeansStrategy : public KmeansStrategy {
                 //std::cout << i << " is near " <<  near_id << "\n";
             
             }
+        }
+
+        void clear() {
+            for (int i = 0; i < n; i++) {
+                delete l_elkan[i];
+            }
+            delete l_elkan;
+           
+            delete u_elkan;
+
+            delete near;
+
+            delete div;
+
+            
+            for (int i = 0; i < k; i++) {
+                delete c_to_c[i];
+            }
+            delete c_to_c; 
+            
+            for (int i = 0; i < n; i++) {
+                delete data_ss[i];
+            }
+            delete data_ss;
+
+            
+            for (int i = 0; i < k; i++) {
+                delete centroid_ss[i];
+            }
+            delete centroid_ss;
+
+            
+            for (int i = 0; i < n; i++) {
+                delete dots[i];
+            }
+            delete dots;
+
+            delete labels;
+
+           
+            delete cluster_count;
+            
+            //Init distances
+            delete distances; 
+           
+            //Init centroids  
+            delete centroids;
+            delete old_centroids;
+            
+
         }
 
 

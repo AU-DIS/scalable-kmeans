@@ -79,6 +79,59 @@ class ElkHamKmeansStrategy : public KmeansStrategy {
             return labels;
         };
 
+        void clear() {
+            for (int i = 0; i < n; i++) {
+                delete l_elkan[i];
+            }
+            delete l_elkan;
+
+            delete l_hamerly;
+            
+            delete u_elkan;
+
+            delete near;
+
+            delete div;
+
+            
+            for (int i = 0; i < k; i++) {
+                delete c_to_c[i];
+            }
+            delete c_to_c; 
+            
+            for (int i = 0; i < n; i++) {
+                delete data_ss[i];
+            }
+            delete data_ss;
+
+            
+            for (int i = 0; i < k; i++) {
+                delete centroid_ss[i];
+            }
+            delete centroid_ss;
+
+            
+            for (int i = 0; i < n; i++) {
+                delete dots[i];
+            }
+            delete dots;
+
+            delete labels;
+
+           
+            delete cluster_count;
+            
+            //Init distances
+            delete distances; 
+           
+            //Init centroids  
+            delete centroids;
+            delete old_centroids;
+            
+
+        }
+
+
         void init(int _max_iter, int _n, int _d, int _k, Dataset* _data) {
             
             max_inter = _max_iter;
