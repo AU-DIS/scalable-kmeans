@@ -121,10 +121,14 @@ int main(int argc, char **argv) {
     BENCHMARK(BM_load_data_Bi5d)->Args({n,d,k})->Repetitions(1)->Iterations(1)->Unit(benchmark::kMillisecond);
     //BENCHMARK(BM_load_data_Flickr)->Args({n,d,k})->Repetitions(1)->Iterations(1)->Unit(benchmark::kMillisecond);
     
-    //BENCHMARK(BM_Kmeans_lloyd)->Args({n,d,5})->Args({n,d,10})->Args({n,d,15})->Args({n,d,20})->Args({n,d,25})->Args({n,d,30})->Args({n,d,35})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
-    //BENCHMARK(BM_Kmeans_MARIGOLD)->Args({n,d,5})->Args({n,d,10})->Args({n,d,15})->Args({n,d,20})->Args({n,d,25})->Args({n,d,30})->Args({n,d,35})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
-    //BENCHMARK(BM_Kmeans_StepWise)->Args({n,d,5})->Args({n,d,10})->Args({n,d,15})->Args({n,d,20})->Args({n,d,25})->Args({n,d,30})->Args({n,d,35})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    BENCHMARK(BM_Kmeans_lloyd)->Args({n,d,5})->Args({n,d,10})->Args({n,d,15})->Args({n,d,20})->Args({n,d,25})->Args({n,d,30})->Args({n,d,35})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    BENCHMARK(BM_Kmeans_Elkan)->Args({n,d,5})->Args({n,d,10})->Args({n,d,15})->Args({n,d,20})->Args({n,d,25})->Args({n,d,30})->Args({n,d,35})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    BENCHMARK(BM_Kmeans_StepWise)->Args({n,d,5})->Args({n,d,10})->Args({n,d,15})->Args({n,d,20})->Args({n,d,25})->Args({n,d,30})->Args({n,d,35})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    BENCHMARK(BM_Kmeans_ElkHam)->Args({n,d,5})->Args({n,d,10})->Args({n,d,15})->Args({n,d,20})->Args({n,d,25})->Args({n,d,30})->Args({n,d,35})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    BENCHMARK(BM_Kmeans_MARIGOLD)->Args({n,d,5})->Args({n,d,10})->Args({n,d,15})->Args({n,d,20})->Args({n,d,25})->Args({n,d,30})->Args({n,d,35})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
     
+
+    /*
     BENCHMARK(BM_Kmeans_lloyd)->Args({n,d,5})->Unit(benchmark::kMillisecond)->Iterations(1);
     BENCHMARK(BM_Kmeans_lloyd)->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
     
@@ -139,7 +143,7 @@ int main(int argc, char **argv) {
     
     BENCHMARK(BM_Kmeans_MARIGOLD)->Args({n,d,5})->Unit(benchmark::kMillisecond)->Iterations(1);
     BENCHMARK(BM_Kmeans_MARIGOLD)->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
-
+    */
     
     //BENCHMARK(BM_Kmeans_StepWise)->Args({n,d,5})->Args({n,d,10})->Args({n,d,15})->Args({n,d,20})->Args({n,d,25})->Args({n,d,30})->Args({n,d,35})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);   
     //BENCHMARK(BM_Kmeans_ElkHam)->Args({n,d,5})->Args({n,d,10})->Args({n,d,15})->Args({n,d,20})->Args({n,d,25})->Args({n,d,30})->Args({n,d,35})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);

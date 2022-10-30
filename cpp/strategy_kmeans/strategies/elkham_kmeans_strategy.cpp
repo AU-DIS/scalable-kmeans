@@ -68,12 +68,12 @@ class ElkHamKmeansStrategy : public KmeansStrategy {
                 }
             }   
 
-            /*for (int j = 0; j < k; j++) {
+            for (int j = 0; j < k; j++) {
                 std::cout << cluster_count[j] << " ";
             }
             std::cout << std::endl;
             std::cout << "Iter:" << iter << " Feature_cnt: " << feature_cnt << std::endl;
-            */
+            
                 
 
             return labels;

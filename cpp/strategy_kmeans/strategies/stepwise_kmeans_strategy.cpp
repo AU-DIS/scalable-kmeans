@@ -18,53 +18,15 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
 
             // calculate square data 
             //calculate_data_squares(data_ptr, data_ss, n, d)
-            Calculate_squared_botup(d, n, data_ptr, data_ss, l_pow);
-
-            /*for (int i = 0; i < k; i++) {
-                for (int j = i; j < k; j++) {
-                    double tmp = 0; //centroids_ss[i][0] + centroids_ss[j][0];
-                    for (int f = 0; f < d; f++) {
-                        //TODO: this does not use squares when it could
-                        tmp += ((centroids[i*d+f] - centroids[j*d+f]) *
-                            (centroids[i*d+f] - centroids[j*d+f]));
-                    }
-                    if(tmp < 0.0) tmp = 0.0;
-                    tmp = sqrt(tmp);
-                    //We can save distances for later use
-                    c_to_c[i][j] = sqrt(tmp);
-                    // THEY'RE THE SAME
-                    c_to_c[j][i] = c_to_c[i][j];
-                }
-            }*/
-
-            
+            Calculate_squared_botup(d, n, data_ptr, data_ss, l_pow);    
             
             while ((iter < max_inter) && (!converged)) {
                 //calculate square centroids
                 Calculate_squared_botup(d, k, centroids, centroid_ss, l_pow);
 
-                /*if (iter < 2) {
-                     for (int i = 0; i < k; i++) {
-                    for (int j = 0; j < d; j++) {
-                        std::cout << centroids[i*d+j] << " ";
-                    }       
-                    std::cout << "\n";
-                }
-                std::cout << std::endl;
-
-                }*/
 
                 //assign to centroids
-                for (int i = 0; i < n; i++) {
-                    //TODO: refactor placement of implementation to avoid bassillion arguments
-                    //params = (int x, int d, int k, double data[],  double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int L, int labels[], double* l_elkan[], double u_elkan[], double* c_to_c[])
-                    /*for (int j = 0; j < k; j++) {
-                        distances[i*k+j] = Euclidian_distance(i, j, d, k, data_ptr, centroids);
-                        if (distances[i*k+j] < distances[i*k+labels[i]]) {
-                            labels[i] = j;
-                        }
-                    }*/
-                    
+                for (int i = 0; i < n; i++) {                  
                     labels[i] = SetLabel(i);//, d, k, data_ptr, centroids, data_ss, centroid_ss, dots, L, feature_cnt);                   
                 }
                 converged = Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d, feature_cnt);
@@ -75,9 +37,7 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
                 std::cout << cluster_count[j] << " ";
             }
             std::cout << std::endl;
-            std::cout << "Iter:" << iter << " Feature_cnt: " << feature_cnt << std::endl;
-            
-                
+            std::cout << "Iter:" << iter << " Feature_cnt: " << feature_cnt << std::endl;          
 
             return labels;
         };

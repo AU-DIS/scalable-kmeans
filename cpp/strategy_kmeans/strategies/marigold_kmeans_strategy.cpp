@@ -161,10 +161,10 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
             delete[] centroid_ss;
 
             
-            for (int i = 0; i < n; i++) {
+            /*for (int i = 0; i < n; i++) {
                 delete[] dots[i];
             }
-            delete[] dots;
+            delete[] dots;*/
 
             delete[] labels;
 
@@ -222,9 +222,7 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
                 l_pow[i] = int(pow(2,i));
             }
 
-            
-            
-                    
+         
 
             //squared
             data_ss = new double*[n];
@@ -238,11 +236,11 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
             }
 
             //dots
-            dots = new double*[n];
+            /*dots = new double*[n];
             for (int i = 0; i < n; i++) {
                 dots[i] = new double[k];
                 std::fill(dots[i], dots[i]+k, 0);
-            }
+            }*/
 
             //Init labels
             labels = new int[n];
@@ -251,30 +249,12 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
             //Init cluster_counts
             cluster_count = new double[k];
             
-
-            //Init distances
-            //distances = new double[n*k];
-            //std::fill(distances, distances+n*k, std::numeric_limits<double>::max());
-            //memset(distances, std::numeric_limits<double>::max(), sizeof(double)*n*k);
-
             //Init centroids  
             centroids = new double[k*d];
             old_centroids = new double[k*d];
-            //double* data_ptr = data_ptr->get_data_pointer();
-            /*for (int i = 0; i < k; i++) {
-                for (int j = 0; j < d; j++) {
-                    centroids[i*d+j] = data_ptr[i*d+j];
-                }
-            }*/
+            
             memcpy(centroids, data_ptr , sizeof(double)*k*d); //Initial dentroids
-            /*std::cout << "Printing centroids first 10 d\n";
-            for (int i = 0; i < k; i++) {
-                for (int j = 0; j < 10; j++) {
-                    std::cout << centroids[i*d+j] << " ";
-                }
-                std::cout << "\n";
-            }
-            std::cout << std::endl;*/
+            
         }
     private:
 
