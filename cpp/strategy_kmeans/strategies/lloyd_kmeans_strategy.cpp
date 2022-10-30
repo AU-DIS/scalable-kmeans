@@ -43,8 +43,8 @@ class LloydKmeansStrategy : public KmeansStrategy {
             return labels;
         };
 
-        void clear() {
-            delete div;        
+        void clear() { }
+        /*    delete div;        
 
             delete labels;
         
@@ -54,7 +54,7 @@ class LloydKmeansStrategy : public KmeansStrategy {
            
             delete centroids;
             delete old_centroids;
-        }
+        }*/
 
         void init(int _max_iter, int _n, int _d, int _k, Dataset* _data) {
             

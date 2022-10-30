@@ -17,7 +17,6 @@ class KmeansRunner {
 
         //Allow replacement of strategy
         void set_strategy(std::unique_ptr<KmeansStrategy> &&kmeans_strategy) {
-            kmeans_strategy->clear(); 
             kmeans_strategy_ = std::move(kmeans_strategy);
         };
 

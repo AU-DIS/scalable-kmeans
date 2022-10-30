@@ -92,7 +92,8 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
             return a;
         }
 
-        void clear() {
+        void clear() {}
+        /*void clear() {
             
 
             delete div;
@@ -106,16 +107,12 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
             delete l_pow;
 
             
-            for (int i = 0; i < n; i++) {
-                delete data_ss[i];
-            }
-            delete data_ss;
+            
+            //delete data_ss;
 
             
-            for (int i = 0; i < k; i++) {
-                delete centroid_ss[i];
-            }
-            delete centroid_ss;
+            
+            //delete centroid_ss;
 
             
             for (int i = 0; i < n; i++) {
@@ -136,7 +133,7 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
             delete old_centroids;
             
 
-        }
+        }*/
 
 
         void init(int _max_iter, int _n, int _d, int _k, Dataset* _data) {

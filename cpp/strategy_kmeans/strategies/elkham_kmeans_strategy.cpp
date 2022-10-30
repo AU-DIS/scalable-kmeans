@@ -79,8 +79,8 @@ class ElkHamKmeansStrategy : public KmeansStrategy {
             return labels;
         };
 
-        void clear() {
-            for (int i = 0; i < n; i++) {
+        void clear() { }
+        /*    for (int i = 0; i < n; i++) {
                 delete l_elkan[i];
             }
             delete l_elkan;
@@ -129,7 +129,7 @@ class ElkHamKmeansStrategy : public KmeansStrategy {
             delete old_centroids;
             
 
-        }
+        }*/
 
 
         void init(int _max_iter, int _n, int _d, int _k, Dataset* _data) {
