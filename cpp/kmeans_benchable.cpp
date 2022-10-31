@@ -8592,16 +8592,16 @@ int main(int argc, char **argv) {
 
     argv_ = argv;
     argc_ = argc;
-    int D = 8*8;
-    int N = 1911;
-    int K = 10; 
+    int D = 128*128;
+    int N = 168;
+    int K = 5; 
 
-    const std::string VB = "../Data/steinn_14_jun/processed/misfit_VB_8_h5_dct.txt";
-    const std::string FLAKE = "../Data/steinn_14_jun/processed/gr_flake_8_h5_dct.txt";
-    const std::string Se3d = "../Data/steinn_14_jun/processed/misfit_Se3d_8_h5_dct.txt";
-    const std::string Bi5d = "../Data/steinn_14_jun/processed/misfit_Bi5d_8_h5_dct.txt";
+    const std::string VB = "../Data/steinn_14_jun/processed/misfit_VB_128_h5_dct.txt";
+    const std::string FLAKE = "../Data/steinn_14_jun/processed/gr_flake_128_h5_dct.txt";
+    const std::string Se3d = "../Data/steinn_14_jun/processed/misfit_Se3d_128_h5_dct.txt";
+    const std::string Bi5d = "../Data/steinn_14_jun/processed/misfit_Bi5d_128_h5_dct.txt";
 
-    data_load(FLAKE, D, N, K);
+    data_load(VB, D, N, K);
     //add_all_Bi5d(&BM_Load_Data_Bi5d, 1024, N, K);
     //add_all_Se3d(&BM_Load_Data_Se3d, 1024, N, K);
     //
@@ -8609,10 +8609,10 @@ int main(int argc, char **argv) {
     
     //N = 1911;
     //data_load(FLAKE, D, N, K);
-    add_all_flake(&BM_Load_Data_flake, 256, N, K);
-    //BENCHMARK(BM_Kmeans)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    //add_all_flake(&BM_Load_Data_flake, 256, N, K);
+    BENCHMARK(BM_Kmeans)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
     //BENCHMARK(BM_Kmeans_elkan)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
-    //BENCHMARK(BM_Kmeans_hamerly)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    BENCHMARK(BM_Kmeans_hamerly)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
     //BENCHMARK(BM_Kmeans_stepwise)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
     //BENCHMARK(BM_Kmeans_ElkanHamerly)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);
     //BENCHMARK(BM_Kmeans_HamerlyStepwise)->Args({D, N, 5})->Args({D, N, 10})->Args({D, N, 15})->Args({D, N, 20})->Args({D, N, 25})->Args({D, N, 30})->Args({D, N, 35})->Args({D, N, 40})->Unit(benchmark::kMillisecond)->Iterations(1);

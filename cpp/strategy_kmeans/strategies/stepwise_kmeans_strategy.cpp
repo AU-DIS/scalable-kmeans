@@ -45,14 +45,13 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
         int SetLabel(const int x) {
             int l = 0;
             int a = -1;
-            double* LB = new double[k];
+            
             std::fill(LB, LB+k, 0.0);
-            double UB_min = std::numeric_limits<double>::max();
-            double UB;
-            int *mask = new int[k];
+            UB_min = std::numeric_limits<double>::max();
+            
             std::fill(mask, mask+k, 1);
 
-            double *dist = new double[k];
+            
             for (int j = 0; j < k; j++) {
                 dist[j] = data_ss[x][0]+centroid_ss[j][0];
             }
@@ -86,9 +85,7 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
                 }
                 l++;
             }
-            delete[] mask;
-            delete[] dist;
-
+        
             return a;
         }
 
@@ -147,8 +144,11 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
 
             //stepwise levels
             L = log10(d)/log10(4);
+            LB = new double[k];
 
             div = new double[k];
+            dist = new double[k];
+            mask = new int[k];
 
             //c_to_c
             c_to_c = new double*[k];//[new double[k]];
@@ -222,6 +222,12 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
         double* centroids;
         double* old_centroids;
         double* cluster_count;
+
+        double* LB;
+        double UB;
+        double UB_min;
+        double *dist;
+        int *mask;
 
         long long feature_cnt;
 
