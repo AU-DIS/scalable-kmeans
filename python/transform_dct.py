@@ -1,7 +1,6 @@
 ##DCT and iDCT transformation codes
 
 import torch
-from scipy.fftpack import dct as scidct
 import numpy as np
 from itertools import product
 import math
@@ -10,15 +9,9 @@ import math
 
 
 def dct(x, norm=None):
-    from scipy.fftpack import dct as scidct
-    x = x.detach().numpy()
-    a = scidct( x, axis=0, norm='ortho' )
-
-    return  scidct( a, axis=1, norm='ortho' )
 
     x_shape = x.shape
     N = x_shape[-1]
-    N
     x = x.contiguous().view(-1, N)
 
     v = torch.cat([x[:, ::2], x[:, 1::2].flip([1])], dim=1)
@@ -26,22 +19,17 @@ def dct(x, norm=None):
     # Vc = torch.rfft(v, 1, onesided=False)           # comment this line
     Vc = torch.view_as_real(torch.fft.fft(v, dim=1))  # add this line
 
-    k = torch.arange(N, dtype=x.dtype, device=x.device)[None, :] * np.pi / (N)
-    k_part = torch.arange(N, dtype=x.dtype, device=x.device)[None, :]
-    k_part[:,:] += 1/2
-    k = - (k*k_part)
+    k = - torch.arange(N, dtype=x.dtype, device=x.device)[None, :] * np.pi / (2 * N)
     W_r = torch.cos(k)
     W_i = torch.sin(k)
-    #V = torch.zeros_like(Vc[:, :, 0])
-    #print(V.shape)
+
     V = Vc[:, :, 0] * W_r - Vc[:, :, 1] * W_i
-    #print(V.shape)
 
     if norm == 'ortho':
-        V[:, 0] /= np.sqrt(2)
-        V[:, :] *= np.sqrt(2/ N)
+        V[:, 0] /= np.sqrt(N) * 2
+        V[:, 1:] /= np.sqrt(N / 2) * 2
 
-    V = V.view(*x_shape)
+    V = 2 * V.view(*x_shape)
 
     return V
 
@@ -146,7 +134,7 @@ def dct_truncated(x, trunc):
     return V[:trunc]
 
 
-def dct_2d_truncated_flattened(x, trunc, norm='ortho'):
+def dct_2d_truncated_flattened(x, trunc, norm=None):
     """
     2-dimentional Discrete Cosine Transform, Type II (a.k.a. the DCT)
     For the meaning of the parameter `norm`, see:
@@ -156,8 +144,8 @@ def dct_2d_truncated_flattened(x, trunc, norm='ortho'):
     :return: the DCT-II of the signal over the last 2 dimensions
     """
     X1 = dct(x, norm=norm)
-    #X2 = dct(X1.transpose(-1, -2), norm=norm)
-    return torch.tensor((X1.transpose(-1, -2))[:trunc, :trunc].flatten())
+    X2 = dct(X1.transpose(-1, -2), norm=norm)
+    return (X2.transpose(-1, -2))[:trunc, :trunc].flatten()
 
 
 def make2d(array, cols=None, dtype=None):
@@ -183,7 +171,6 @@ def make2d(array, cols=None, dtype=None):
 ##(Way1) calculate DCT features from raw dataset
 def cal_dct_features(dct_len, dataset, norm='ortho'):
     coordinate_grid = list(product(range(dataset.shape[0]),range(dataset.shape[1])))
-
     #print(len(coordinate_grid))
     if norm == 'ortho': 
         #print('Using ortho normality')
@@ -232,51 +219,3 @@ def get_square_squared_sums(data):
     res = np.array(res)
     print(res.shape)
     return res
-
-
-
-def main():
-    #Running DCT for c++ call
-    filename = sys.argv[1]
-    f = h5py.File(filename, 'r')
-    dataset = f['data']
-
-    #real = np.array(dataset)    
-    #val_0 = real[0,0,:,:].flatten()
-    #val_1 = real[0,1,:,:].flatten()
-
-    #print(val_0)
-    #print(val_1)
-    #print(np.linalg.norm(np.array(val_0) - np.array(val_1)))
-    arr = np.reshape(dataset, (1911, 256*256))
-    df = pd.DataFrame(data=arr)
-    df.to_csv(filename[:-3]+"_h5_no_dct.txt", header=False, index=False, sep=" ", line_terminator=" \n")
-
-
-    #for dct_len in [8, 16, 32, 64, 128, 256]: #, 512, 1024]:
-    #   image_dct = cal_dct_features(256, dataset)
-    #    arr = np.array(image_dct)
-    #    df = pd.DataFrame(data=arr)
-    #    print(filename[:-3].replace("256",str(dct_len))+"_h5_dct.txt")
-    #    df.to_csv(filename[:-3].replace("256",str(dct_len))+"_h5_dct.txt", header=False, index=False, sep=" ", line_terminator=" \n")
-
-    #image_dct = trunc_dct_features(_image_dct,512)
-
-    
-    #arr = np.array(image_dct)
-    #print(arr.shape)
-    #dct = np.linalg.norm(arr[0,:] - arr[1,:])
-    #print(dct)
-    #df = pd.DataFrame(data=arr)
-    #min_ = df.min().min()
-    #max_ = df.max().max()
-    #mean_ = df.mean().mean()
-    #df_norm = (df - min_) / (max_ - min_)
-
-    
-
-if __name__ == "__main__":
-    import sys
-    import h5py
-    import pandas as pd
-    main()

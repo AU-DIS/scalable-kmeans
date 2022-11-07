@@ -57,7 +57,6 @@ class kmeans_class:
             self.classifications = {} ## Points coordinates by centroid
             self.pointsClassif = {} ## Points indices by centroid
             
-            lowerBounds = np.zeros((data_x.shape[0],self.k)) ## Lower bounds matrix. Dimensions : (nb_points, nb_centroids)
             upperBounds = np.zeros((data_x.shape[0])) ## Upper bounds vector : Dimension : (nb_points)
             lowerBounds_Hamerly = np.zeros((data_x.shape[0])) ## Hamerly's lower bounds vector : Dimension : (nb_points)
 
@@ -82,20 +81,10 @@ class kmeans_class:
                 self.classifications[classification].append(point)
                 self.pointsClassif[classification].append(i)
                     
-                ## Lower bound distance between the point and each center
-                ## Initialized as distance between the point and each initial centroid
-                #lowerBounds[i] = distances
-                    
                 # For Hamerly's second lower bound
                 ## Second Lower bound distance between the point and the second closest center
                 ## Initialized as distance between the point and second closest initial centroid
-                #if len(set(distances)) == 1:
-                #    lowerBounds_Hamerly[i] = distances[0]
-                #else:
-                #    lowerBounds_Hamerly[i] = sorted(distances)[1]
-                #second_nearest_cluster = distances.index(lowerBounds_Hamerly[i])
-                #lowerBounds_Hamerly[i] = sorted(distances)[1]
-                lowerBounds_Hamerly[i] = min([val for i,val in enumerate(distances) if i!=classification])
+                lowerBounds_Hamerly[i] = min(distances[:classification]+distances[classification+1:])
 
                 ## Upper bound distance between the point and assigned centroid
                 upperBounds[i] = min(distances)
@@ -103,51 +92,12 @@ class kmeans_class:
                 i+=1
                 
             prevCentroids = dict(self.centroids.copy())
-            prevClassifications = dict(self.classifications.copy())
             prevPointsClassif = dict(self.pointsClassif.copy())
-
-#            for classification in self.classifications:
-#                if len(self.classifications[classification]) == 0:
-#                    pass
-
-#                else:
-#                    self.centroids[classification] = np.average(self.classifications[classification],axis=0)
-
-#            optimized = [True for centroid in self.centroids]
-            
-#           centroidDistanceChange = {}
-
-#            for centroid in self.centroids:
-#                original_centroid = prevCentroids[centroid]
-#                current_centroid = self.centroids[centroid]
-#                centroidDistanceChange[centroid] = np.linalg.norm(original_centroid-current_centroid)
-#                centroidDistanceChange[centroid] = kmeans_common_func.euclidean_distance(original_centroid, current_centroid)
-                
-#                if abs(np.sum((current_centroid-original_centroid)/original_centroid*100.0)) > self.kmeans_threshold :
-#                    optimized[centroid] = False
-
-#            if False not in optimized:
-                
-#                for centroid in self.pointsClassif:
-#                    for point in self.pointsClassif[centroid]:
-#                        self.labels[point] = centroid
-#                return
-            
-            ## Update lower and upper bound distances
-            #for centroid in self.pointsClassif:
-            #    for i in list(range(data_x.shape[0])):
-            #        lowerBounds[i][centroid] -= centroidDistanceChange[centroid]
-                    
-            #    for i in self.pointsClassif[centroid]:
-            #        upperBounds[i] += centroidDistanceChange[centroid]
-            #        #lowerBounds_Hamerly[i] += centroidDistanceChange[second_nearest_cluster]
-            #        lowerBounds_Hamerly[i] += max(centroidDistanceChange)
 
                     
             ## Repeat until convergence
-            elkan_count = 0  #Number of discarded distance calculations
             hamerly_count = 0  #Number of discarded distance calculations
-            for it in range(self.max_iter):
+            for _ in range(self.max_iter):
                 iter_count += 1
                 if print == 'yes': print('Current iteration: ', iter_count)
 
@@ -171,17 +121,8 @@ class kmeans_class:
                         r = True
                         distToCurrentCentroid = upperBounds[i]
                         
-                        #Elkan Lemma1 
-                        ## Check if upper bound lower than 1/2 of distance with closest centroid
-                        #if upperBounds[i] <= 0.5*closestCentroidDistances[centroid]:
-                        #    ## If condition is met : said point keeps its centroid with no further computation needed
-                        #    self.classifications[centroid].append(data_x[i])
-                        #    self.pointsClassif[centroid].append(i)
-                        #    elkan_count += 1
-
                         hamerly_bound = max(0.5*closestCentroidDistances[centroid], lowerBounds_Hamerly[i])
                         if upperBounds[i] <= hamerly_bound: #For Hamerly first check
-                        #elif upperBounds[i] <= lowerBounds_Hamerly[i]: #For Hamerly
                             ## If condition is met : said point keeps its centroid with no further computation needed
                             self.classifications[centroid].append(data_x[i])
                             self.pointsClassif[centroid].append(i)
@@ -192,11 +133,9 @@ class kmeans_class:
                                 #distToCurrentCentroid = np.linalg.norm(data_x[i] - self.centroids[centroid])
                                 #distToCurrentCentroid = kmeans_common_func.euclidean_distance(data_x[i], self.centroids[centroid])
                                 distToCurrentCentroid = kmeans_common_func.euclidean_distance(data_x[i], self.centroids[centroid], x_sq_sum[i], c_sq_sum[centroid], mode=self.mode)
-                                #lowerBounds[i][centroid] = distToCurrentCentroid
                                 r = False
                             upperBounds[i] = distToCurrentCentroid #Tighten the upper bound
                             if upperBounds[i] <= hamerly_bound: #For Hamerly second check
-                            #elif upperBounds[i] <= lowerBounds_Hamerly[i]: #For Hamerly
                                 ## If condition is met : said point keeps its centroid with no further computation needed
                                 self.classifications[centroid].append(data_x[i])
                                 self.pointsClassif[centroid].append(i)
@@ -205,23 +144,11 @@ class kmeans_class:
                             else:
                                 assigned_centroid = centroid
                                 for c_prime in (listCentroids[:centroid]+listCentroids[centroid+1:]):
-                                    #Elkan lemma2
-                                    ## Check if lower bound between point and c_prime < upper bound between point and its current centroid
-                                    ## AND if (0.5*distance between current centroid and c_prime) < upper bound between point and its current centroid
-                                    #if ((distToCurrentCentroid > lowerBounds[i][c_prime]) and (distToCurrentCentroid > 0.5*centroidDistances[centroid][c_prime])): 
-                                        #if r:
-                                        #    distToCurrentCentroid = np.linalg.norm(data_x[i] - self.centroids[centroid])
-                                        #    lowerBounds[i][centroid] = distToCurrentCentroid
-                                        #    r = False
-                                        
                                         #distToCPrime = np.linalg.norm(data_x[i]-self.centroids[c_prime])
                                         #distToCPrime = kmeans_common_func.euclidean_distance(data_x[i], self.centroids[c_prime])
                                         distToCPrime = kmeans_common_func.euclidean_distance(data_x[i], self.centroids[c_prime], x_sq_sum[i], c_sq_sum[c_prime], mode=self.mode)
-                                        #lowerBounds[i][c_prime] = distToCPrime
                                         
                                         if distToCurrentCentroid > distToCPrime:
-                                            #second_nearest_cluster = assigned_centroid
-                                            #lowerBounds_Hamerly[i] = distToCurrentCentroid
                                             assigned_centroid = c_prime 
                                             upperBounds[i] = distToCPrime
                                             lowerBounds_Hamerly[i] = distToCurrentCentroid
@@ -238,7 +165,6 @@ class kmeans_class:
                                 self.pointsClassif[assigned_centroid].append(i)
                                             
                 prevCentroids = dict(self.centroids.copy())
-                prevClassifications = dict(self.classifications.copy())
                 prevPointsClassif = dict(self.pointsClassif.copy())
                 
                 for classification in self.classifications:
@@ -267,19 +193,9 @@ class kmeans_class:
                     break
                     
                 ## Update of lower and upper bound distances
-                #maxCentroidDistanceChange = max(centroidDistanceChange.values())
                 for centroid in self.pointsClassif:
-                    #for i in list(range(data_x.shape[0])):
-                    #    lowerBounds[i][centroid] -= centroidDistanceChange[centroid]
-                    
                     for i in self.pointsClassif[centroid]:
                         upperBounds[i] += centroidDistanceChange[centroid]
-                        #lowerBounds_Hamerly[i] += centroidDistanceChange[second_nearest_cluster]
-                        #furthestMovingCentroid = max(centroidDistanceChange, key=centroidDistanceChange.get)
-                        #if furthestMovingCentroid == centroid:
-                        #    lowerBounds_Hamerly[i] -= sorted(centroidDistanceChange.values(), reverse=True)[1]
-                        #else:
-                        #    lowerBounds_Hamerly[i] -= maxCentroidDistanceChange
                         lowerBounds_Hamerly[i] -= max([val for i,val in enumerate(centroidDistanceChange.values()) if i!=centroid])
         
         ## Update labels (cluster) for each point
@@ -290,15 +206,12 @@ class kmeans_class:
         labels = self.labels
         centroids = self.centroids
         print('converged in ' + str(iter_count) + " iterations")
-        #print('Elkan dist calculation discarded: ', elkan_count)
         print('Hamerly dist calculation discarded: ', hamerly_count)
 
         datasize = data_x.shape[1]
         total_lloyd_dist_count = (data_x.shape[0] * self.k) * iter_count * datasize
-        #total_elkan_dist_count = total_lloyd_dist_count - (elkan_count * datasize)
         total_hamerly_dist_count = total_lloyd_dist_count - (hamerly_count * datasize)
         print('Total Lloyd dist features in calculation: ', total_lloyd_dist_count)
-        #print('Total Elkan dist features in calculation: ', total_elkan_dist_count)
         print('Total Hamerly dist features in calculation: ', total_hamerly_dist_count)
                 
 

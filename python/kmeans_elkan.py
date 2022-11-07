@@ -134,7 +134,7 @@ class kmeans_class:
                     
             ## Repeat until convergence
             elkan_count = 0  #Number of discarded distance calculations
-            for it in range(self.max_iter):
+            for _ in range(self.max_iter):
                 iter_count += 1
                 if print == 'yes': print('Current iteration: ', iter_count)
 
@@ -153,12 +153,10 @@ class kmeans_class:
                 
                 for centroid in prevPointsClassif:
                     for i in prevPointsClassif[centroid]:
-                    #for i in range(data_x.shape[0]):
                         
                         r = True
                         distToCurrentCentroid = upperBounds[i]
                         
-                        #Elkan Lemma1 
                         ## Check if upper bound lower than 1/2 of distance with closest centroid
                         if upperBounds[i] <= 0.5*closestCentroidDistances[centroid]:
                             ## If condition is met : said point keeps its centroid with no further computation needed
@@ -170,7 +168,6 @@ class kmeans_class:
                         else:
                             assigned_centroid = centroid
                             for c_prime in (listCentroids[:centroid]+listCentroids[centroid+1:]):
-                                #Elkan lemma2
                                 ## Check if lower bound between point and c_prime < upper bound between point and its current centroid
                                 ## AND if (0.5*distance between current centroid and c_prime) < upper bound between point and its current centroid
                                 if ((upperBounds[i] > lowerBounds[i][c_prime]) and (upperBounds[i] > 0.5*centroidDistances[assigned_centroid][c_prime])): 
@@ -249,7 +246,6 @@ class kmeans_class:
         total_elkan_dist_count = total_lloyd_dist_count - (elkan_count * datasize)
         print('Total Lloyd features in dist calculation: ', total_lloyd_dist_count)
         print('Total Elkan features  dist calculation: ', total_elkan_dist_count)
-                
 
         return labels, centroids
                         

@@ -80,7 +80,6 @@ class kmeans_class:
                 i+=1
                 
             prevCentroids = dict(self.centroids.copy())
-            prevClassifications = dict(self.classifications.copy())
             prevPointsClassif = dict(self.pointsClassif.copy())
 
             for classification in self.classifications:
@@ -114,7 +113,7 @@ class kmeans_class:
             
                     
             ## Repeat until convergence
-            for it in range(self.max_iter):
+            for _ in range(self.max_iter):
                 iter_count += 1
                 if print == 'yes': print('Current iteration: ', iter_count)
 
@@ -155,7 +154,6 @@ class kmeans_class:
                             self.pointsClassif[assigned_centroid].append(i)
                                             
                 prevCentroids = dict(self.centroids.copy())
-                prevClassifications = dict(self.classifications.copy())
                 prevPointsClassif = dict(self.pointsClassif.copy())
                 
                 for classification in self.classifications:
