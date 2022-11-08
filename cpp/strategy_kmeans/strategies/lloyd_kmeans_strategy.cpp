@@ -2,7 +2,6 @@
 #include "../kmeans_utils/utils.cpp"
 #include <cstring>
 #include <algorithm>
-//#include <limits>
 
 
 class LloydKmeansStrategy : public KmeansStrategy {
@@ -14,7 +13,6 @@ class LloydKmeansStrategy : public KmeansStrategy {
             bool converged = false;
             
             while ((iter < max_inter) && (!converged)) {              
-                //std::cout << iter << std::endl;
                 //Calculate all distances
                 for (int i = 0; i < n; i++) {
                     for (int j = 0; j < k; j++) {
@@ -43,18 +41,18 @@ class LloydKmeansStrategy : public KmeansStrategy {
             return labels;
         };
 
-        void clear() { }
-        /*    delete div;        
+        void clear() {
+            delete[] div;        
 
-            delete labels;
+            delete[] labels;
         
-            delete cluster_count;
+            delete[] cluster_count;
 
-            delete distances; 
+            delete[] distances; 
            
-            delete centroids;
-            delete old_centroids;
-        }*/
+            delete[] centroids;
+            delete[] old_centroids;
+        }
 
         void init(int _max_iter, int _n, int _d, int _k, Dataset* _data) {
             
@@ -78,26 +76,13 @@ class LloydKmeansStrategy : public KmeansStrategy {
             //Init distances
             distances = new double[n*k];
             std::fill(distances, distances+n*k, std::numeric_limits<double>::max());
-            //memset(distances, std::numeric_limits<double>::max(), sizeof(double)*n*k);
 
             //Init centroids  
             centroids = new double[k*d];
             old_centroids = new double[k*d];
-            //double* data_ptr = data_ptr->get_data_pointer();
-            /*for (int i = 0; i < k; i++) {
-                for (int j = 0; j < d; j++) {
-                    centroids[i*d+j] = data_ptr[i*d+j];
-                }
-            }*/
+
             memcpy(centroids, data_ptr , sizeof(double)*k*d);
-            /*std::cout << "Printing centroids first 10 d\n";
-            for (int i = 0; i < k; i++) {
-                for (int j = 0; j < 10; j++) {
-                    std::cout << centroids[i*d+j] << " ";
-                }
-                std::cout << "\n";
-            }
-            std::cout << std::endl;*/
+
         }
     private:
 
