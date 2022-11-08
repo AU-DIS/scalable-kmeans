@@ -130,10 +130,10 @@ bool Recalculate(const double data[], double centroids[], double old_centroids[]
         }
     }
 
-    /*for (int i = 0; i < k; i++) {      
+    for (int i = 0; i < k; i++) {      
         std::cout << cluster_count[i] << " "; 
         }
-    std::cout << std::endl;*/
+    std::cout << std::endl;
 
     //calculate div
     for (int j = 0; j < k; j++) {
