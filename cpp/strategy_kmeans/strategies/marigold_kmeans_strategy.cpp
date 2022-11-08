@@ -19,6 +19,9 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
             }
 
             while ((iter < max_inter) && (!converged)) {
+                //save old labels for fast c to c
+                memcpy(old_labels, labels, sizeof(int)*n);
+
                 //calculate square centroids
                 Calculate_squared_botup(d, k, centroids, centroid_ss, l_pow);    
 
@@ -29,11 +32,15 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
                          MG_SetLabel(i); 
                     }
                 }
-                converged = Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d, feature_cnt);
+                if (iter == 0) {
+                    converged = Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d, feature_cnt);
+                } else {
+                    converged = Recalculate_fast(data_ptr, centroids, old_centroids, cluster_count, old_labels, labels, div, n, k, d, feature_cnt);
+                }
+
                 if (!converged) {
                     //TODO: refactor location of .. you know the drill 
-                    Update_bounds(data_ptr, centroids, c_to_c, centroid_ss, l_elkan, u_elkan, l_hamerly, labels, div, near, n, k, d, feature_cnt);                   
-                    
+                    Update_bounds(data_ptr, centroids, c_to_c, centroid_ss, l_elkan, u_elkan, l_hamerly, labels, div, near, n, k, d, feature_cnt);                       
                 }
                 iter++;
             }   
@@ -137,6 +144,7 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
             delete[] centroid_ss;
 
             delete[] labels;
+            delete[] old_labels;
          
             delete[] cluster_count;
                
@@ -204,10 +212,15 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
 
             //Init labels
             labels = new int[n];
-            std::fill(labels, labels+n, 0); 
+            std::fill(labels, labels+n, 0);
+
+            old_labels = new int[n];
+            std::fill(old_labels, old_labels+n, 0);  
 
             //Init cluster_counts
             cluster_count = new double[k];
+            //std::fill(cluster_count, cluster_count+k, 0.0); 
+            //cluster_count[0] = double(n);
             
             //Init centroids  
             centroids = new double[k*d];
@@ -247,6 +260,7 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
 
         //x to c [x*k+c]
         int* labels;
+        int* old_labels;
 
         double* data_ptr;// = data->get_data_pointer();
 

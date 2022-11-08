@@ -16,15 +16,22 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
             Calculate_squared_botup(d, n, data_ptr, data_ss, l_pow);    
             
             while ((iter < max_inter) && (!converged)) {
+                //save old labels for fast c to c
+                memcpy(old_labels, labels, sizeof(int)*n);
+                
                 //calculate square centroids
                 Calculate_squared_botup(d, k, centroids, centroid_ss, l_pow);
-
 
                 //assign to centroids
                 for (int i = 0; i < n; i++) {                  
                     labels[i] = SetLabel(i);//, d, k, data_ptr, centroids, data_ss, centroid_ss, dots, L, feature_cnt);                   
                 }
-                converged = Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d, feature_cnt);
+
+                if (iter == 0) {
+                    converged = Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d, feature_cnt);
+                } else {
+                    converged = Recalculate_fast(data_ptr, centroids, old_centroids, cluster_count, old_labels, labels, div, n, k, d, feature_cnt);
+                }
                 iter++;
             }   
 
@@ -109,6 +116,7 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
             delete[] centroid_ss;
 
             delete[] labels;
+            delete[] old_labels;
 
            
             delete[] cluster_count;
@@ -166,6 +174,9 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
             labels = new int[n];
             std::fill(labels, labels+n, 0); 
 
+            old_labels = new int[n];
+            std::fill(old_labels, old_labels+n, 0); 
+
             //Init cluster_counts
             cluster_count = new double[k];
             
@@ -208,6 +219,7 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
         //x to c [x*k+c]
         //double* distances;
         int* labels;
+        int* old_labels;
 
         double* data_ptr;// = data->get_data_pointer();
 

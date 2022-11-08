@@ -8,8 +8,6 @@
 //#include <memory>
 #include <cstring>
 
-//TODO: In a pefect world this file does not exist and theese functions nicely exist within relevant strategies.
-
 double Euclidian_distance(int x, int c, int d, int k, double data[], double centroids[], long long &feature_cnt) {
     //x datapoint index
     //c centroid index
@@ -39,8 +37,6 @@ double Squared_euclidian_distance(int x, int c, int d, int k, double data[], dou
     if(dist < 0.0) dist = 0.0;
     return dist;
 }
-
-
                                                                         //TODO: This parsing is insane and can be cleaned clean up, by defining this and dist to level within a strategy scope.   
 void Update_bounds(double data[], double centroids[], double* c_to_c[], double* centroids_ss[], double* l_elkan[], double u_elkan[], double l_hamerly[], int labels[], double div[], double near[], int n, int k, int d, long long &feature_cnt) {
     //For all x in X
@@ -67,7 +63,6 @@ void Update_bounds(double data[], double centroids[], double* c_to_c[], double* 
         for (int j = i+1; j < k; j++) {
             double tmp = 0; //centroids_ss[i][0] + centroids_ss[j][0];
             for (int f = 0; f < d; f++) {
-                //TODO: this does not use squares when it could, ot could it?
                 tmp += ((centroids[i*d+f] - centroids[j*d+f]) *
                     (centroids[i*d+f] - centroids[j*d+f]));
             }
@@ -93,12 +88,10 @@ void Update_bounds(double data[], double centroids[], double* c_to_c[], double* 
             } 
         }
         //std::cout << i << " is near " <<  near_id << "\n";
-    
     }
 
     //END: Updated l_elkan, u_elkan, l_hamerly, near, c_to_c
 };
-
 
 bool Recalculate(const double data[], double centroids[], double old_centroids[], double cluster_count[], int labels[], double div[], const int n, const int k, const int d, long long &feature_cnt) {
     bool converged = true;
@@ -106,7 +99,7 @@ bool Recalculate(const double data[], double centroids[], double old_centroids[]
     memcpy(old_centroids, centroids, sizeof(double)*k*d);
     //Wipe memory for new centroid calculations
     memset(centroids, 0.0, sizeof(double)*k*d);
-
+        
     memset(cluster_count, 0, sizeof(double)*k);
     
     //Count size of clusters and add pos to centroid
@@ -153,19 +146,82 @@ bool Recalculate(const double data[], double centroids[], double old_centroids[]
     return converged;
 }
 
+bool Recalculate_fast(const double data[], double centroids[], double old_centroids[], double cluster_count[], int old_labels[], int labels[], double div[], const int n, const int k, const int d, long long &feature_cnt) {
+    bool converged = true;
+    //With the power of clever indexing we can use memcpy, to save old centroids. (If we are even smarter we swap the pointers and save a pass)   
+    memcpy(old_centroids, centroids, sizeof(double)*k*d);
+    
+    //Wipe memory for new centroid calculations
+    //memset(centroids, 0.0, sizeof(double)*k*d);
+    
+    double* ins = new double[k*d];
+    memset(ins, 0.0, sizeof(double)*k*d);
+
+    double* outs = new double[k*d];
+    memset(outs, 0.0, sizeof(double)*k*d);
+    
+    double* old_cluster_count = new double[k];
+    memcpy(old_cluster_count, cluster_count, sizeof(double)*k);
+
+    memset(cluster_count, 0, sizeof(double)*k);
+    
+    //Count size of clusters and add pos to centroid
+    for (int i = 0; i < n; i++) {
+        cluster_count[labels[i]]++;
+        if (labels[i] != old_labels[i]) {
+            for (int j = 0; j < d; j++) { 
+                ins[labels[i]*d+j] += data[i*d+j];
+                outs[old_labels[i]*d+j] += data[i*d+j];
+            }    
+        }
+    }
+    
+    //Calculate new centroid positions
+    for (int i = 0; i < k; i++) {  
+        if (cluster_count[i] > 0) {
+            for (int j = 0; j < d; j++) {
+                centroids[i*d+j] = (centroids[i*d+j]*old_cluster_count[i]-outs[i*d+j]+ins[i*d+j])/cluster_count[i]; 
+            }
+        } //else {
+        //    for (int j = 0; j < d; j++) {
+        //        centroids[i*d+j] = old_centroids[i*d+j];
+        //    }
+        //}
+        //Centroids are not reset in fast, hence no need to set them to old if count = 0
+    }
+
+    delete[] ins;
+    delete[] outs;
+    delete[] old_cluster_count;
+
+    for (int i = 0; i < k; i++) {      
+        std::cout << cluster_count[i] << " "; 
+        }
+    std::cout << std::endl;
+
+    //calculate div
+    for (int j = 0; j < k; j++) {
+        double tmp = 0.0;
+        for (int f = 0; f < d; f++) {
+            tmp += ((centroids[j*d+f] - old_centroids[j*d+f]) *
+                    (centroids[j*d+f] - old_centroids[j*d+f]));
+        }
+        feature_cnt += d;
+        if(tmp < 0.0) tmp = 0.0;
+        div[j] = sqrt(tmp);
+        if (div[j] > 0) { //This convergence check is slow and can possibly be done better using the old check
+            converged = false;
+        }
+    }
+    //END: div[.] updated
+    return converged;
+}
 
 std::tuple<double, double> DistToLevel(const int x, const int c, const int d, const double data[], const double centroids[], const double *const data_ss[], const double *const centroid_ss[], const int l, const int L, double* dots[], double &UB, double &LB, long long &feature_cnt) {
     //Calculate dots  
     int d_sqrt = sqrt(d);
     //L is an int of log4(d), hence rounded down. 
     //Hence when log4(d) is not in natural, d_sqrt will be bigger and the correct end for the final level instead of 2^l.
-
-    /*dots[x][c] = 0;
-    for (int l_ = 0; l_ < std::min(d_sqrt,(int) pow(2,l)); l_++) {
-        for (int l_2 = 0; l_2 < std::min(d_sqrt,(int) pow(2,l)); l_2++) {
-            dots[x][c] += data[x*d+l_*d_sqrt+l_2]*centroids[c*d+l_*d_sqrt+l_2];
-        }
-    }*/
     int pow_ll = pow(2,l-1);
     int pow_l = pow(2,l);
     
@@ -189,13 +245,10 @@ std::tuple<double, double> DistToLevel(const int x, const int c, const int d, co
     }
     feature_cnt += (2*pow_l)-(2*pow_ll);
     
-    
     double dist = data_ss[x][L] + centroid_ss[c][L] - 2*dots[x][c]; 
 
     double margin = 2 * sqrt((data_ss[x][L]-data_ss[x][l])*(centroid_ss[c][L]-centroid_ss[c][l]));
 
-
-    
     LB = dist - margin;//sqrt(std::max(0.0,dist - margin));
     UB = dist + margin;//sqrt(std::max(0.0,dist + margin));
 
@@ -203,25 +256,13 @@ std::tuple<double, double> DistToLevel(const int x, const int c, const int d, co
 };
 
 std::tuple<double, double> DistToLevel_bot(const int x, const int c, const int d, const double data[], const double centroids[], const double *const data_ss[], const double *const centroid_ss[], const int l, const int L, double &dist, double &UB, double &LB, long long &feature_cnt, const int l_pow[]) {
-    //Calculate dots  
+      
     int d_sqrt = sqrt(d);
-    //L is an int of log4(d), hence rounded down. 
-    //Hence when log4(d) is not in natural, d_sqrt will be bigger and the correct end for the final level instead of 2^l.
-
-    /*dots[x][c] = 0;
-    for (int l_ = 0; l_ < std::min(d_sqrt,(int) pow(2,l)); l_++) {
-        for (int l_2 = 0; l_2 < std::min(d_sqrt,(int) pow(2,l)); l_2++) {
-            dots[x][c] += data[x*d+l_*d_sqrt+l_2]*centroids[c*d+l_*d_sqrt+l_2];
-        }
-    }*/
-    //int pow_ll = pow(2,l-1);
-    //int pow_l = pow(2,l);
-    //l_pow[l]
     
+    //Calculate dots
     if (l==0) {
         dist -= 2*data[x*d+0]*centroids[c*d+0];
     } else {
-        //dots saved from previous level, hence only add dots from this level.
         //adding new cols from from known rows
         for (int l_ = 0; l_ < l_pow[l-1]; l_++) {
             for (int l_2 = l_pow[l-1]; l_2 < l_pow[l] ; l_2++) {
@@ -246,11 +287,6 @@ std::tuple<double, double> DistToLevel_bot(const int x, const int c, const int d
 
     return {LB, UB};
 };
-
-
-
-
-
 
 void Calculate_squared(const int d, const int elements, const double raw[], double* squared[], const int l_pow[]) {
     int L = log10(d)/log10(4);
