@@ -262,7 +262,7 @@ class kmeans_class:
 
         print('Total iterations taken to converge: ', iter_count)
         print('Total MARIGOLD feature count: ', cal_count_total)
-        print('Total MARIGOLD feature count final: ', cal_count_total + 0.5*(self.k-1)*self.k*iter_count*data_x.shape[1])
+        #print('Total MARIGOLD feature count final: ', cal_count_total + 0.5*(self.k-1)*self.k*iter_count*data_x.shape[1]) #When centroid to centroid distances added
         self.labels = labels
         self.centroids = centroids
         return labels, centroids        
