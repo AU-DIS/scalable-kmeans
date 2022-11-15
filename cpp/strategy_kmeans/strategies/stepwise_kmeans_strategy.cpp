@@ -3,15 +3,10 @@
 #include <cstring>
 #include <algorithm>
 
-//#include <limits>
-
-//TODO: dissasemble in further strategies to encapsule params where they belong, using smart pointers to avoid ref loss.
-
 class StepWiseKmeansStrategy : public KmeansStrategy {
     public:
         int* run(Dataset* data) {
-            //data->print_datasample();
-            //Write lloyd
+
             int iter = 0;
             bool converged = false;
 
@@ -61,7 +56,6 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
             while (l <= L && mask_sum > 1) {
                 for (int j = 0; j < k; j++) {
                     if (mask[j] != 1) continue;
-                    //if (a == j) continue; 
 
                     if (UB_min < LB[j]) {
                         mask[j] = 0;
@@ -69,9 +63,6 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
                         
                         //DistToLevel(int x, int c, int d, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int l, int L, double &UB, double &LB)
                         DistToLevel_bot(x, j, d, data_ptr, centroids, data_ss, centroid_ss, l, L, dist[j], UB, LB[j], feature_cnt, l_pow);
-                        //auto val_ = Euclidian_distance(x,j,d,k,data,centroids);
-                        //UB = val_;
-                        //LB[j] = val_;
                         
                         if (UB < UB_min) {
                             a = j;
@@ -89,48 +80,45 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
             return a;
         }
 
-        void clear() {}
-        /*void clear() {
+        //void clear() {}
+        void clear() {
             
-
-            delete div;
+            delete[] LB;
+            delete[] div;
+            delete[] dist;
+            delete[] mask;
 
             
             for (int i = 0; i < k; i++) {
-                delete c_to_c[i];
+                delete[] c_to_c[i];
             }
-            delete c_to_c; 
+            delete[] c_to_c; 
 
-            delete l_pow;
-
-            
-            
-            //delete data_ss;
-
-            
-            
-            //delete centroid_ss;
+            delete[] l_pow;
 
             
             for (int i = 0; i < n; i++) {
-                delete dots[i];
+                delete[] data_ss[i];
             }
-            delete dots;
+            delete[] data_ss;
 
-            delete labels;
+            
+            for (int i = 0; i < k; i++) {
+                delete[] centroid_ss[i];
+            }
+            delete[] centroid_ss;
+
+            delete[] labels;
 
            
-            delete cluster_count;
-            
-            //Init distances
-            delete distances; 
+            delete[] cluster_count;
            
             //Init centroids  
-            delete centroids;
-            delete old_centroids;
+            delete[] centroids;
+            delete[] old_centroids;
             
 
-        }*/
+        }
 
 
         void init(int _max_iter, int _n, int _d, int _k, Dataset* _data) {
@@ -173,12 +161,6 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
                 centroid_ss[i] = new double[L+2];
             }
 
-            //dots
-            dots = new double*[n];
-            for (int i = 0; i < n; i++) {
-                dots[i] = new double[k];
-                std::fill(dots[i], dots[i]+k, 0);
-            }
 
             //Init labels
             labels = new int[n];
@@ -187,30 +169,12 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
             //Init cluster_counts
             cluster_count = new double[k];
             
-
-            //Init distances
-            distances = new double[n*k];
-            std::fill(distances, distances+n*k, std::numeric_limits<double>::max());
-            //memset(distances, std::numeric_limits<double>::max(), sizeof(double)*n*k);
-
             //Init centroids  
             centroids = new double[k*d];
             old_centroids = new double[k*d];
-            //double* data_ptr = data_ptr->get_data_pointer();
-            /*for (int i = 0; i < k; i++) {
-                for (int j = 0; j < d; j++) {
-                    centroids[i*d+j] = data_ptr[i*d+j];
-                }
-            }*/
+ 
             memcpy(centroids, data_ptr , sizeof(double)*k*d); //Initial dentroids
-            /*std::cout << "Printing centroids first 10 d\n";
-            for (int i = 0; i < k; i++) {
-                for (int j = 0; j < 10; j++) {
-                    std::cout << centroids[i*d+j] << " ";
-                }
-                std::cout << "\n";
-            }
-            std::cout << std::endl;*/
+
         }
     private:
 
@@ -231,7 +195,7 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
 
         long long feature_cnt;
 
-        double** dots;
+        //double** dots;
 
         int* l_pow;
 
@@ -242,7 +206,7 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
         double** centroid_ss;
 
         //x to c [x*k+c]
-        double* distances;
+        //double* distances;
         int* labels;
 
         double* data_ptr;// = data->get_data_pointer();

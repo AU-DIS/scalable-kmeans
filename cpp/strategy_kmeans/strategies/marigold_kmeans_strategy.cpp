@@ -2,45 +2,22 @@
 #include "../kmeans_utils/utils.cpp"
 #include <cstring>
 #include <algorithm>
-//#include <limits>
-
-//TODO: dissasemble in further strategies to encapsule params where they belong, using smart pointers to avoid ref loss.
 
 class MARIGOLDKmeansStrategy : public KmeansStrategy {
     public:
         int* run(Dataset* data) {
-            //data->print_datasample();
-            //Write lloyd
             int iter = 0;
             bool converged = false;
            
-
-
-            // calculate square data 
-            //calculate_data_squares(data_ptr, data_ss, n, d)
             Calculate_squared_botup(d, n, data_ptr, data_ss, l_pow);
-
             
             for (int i = 0; i < k; i++) {
                 for (int j = i; j < k; j++) {
-                    /*double tmp = 0; //centroids_ss[i][0] + centroids_ss[j][0];
-                    for (int f = 0; f < d; f++) {
-                        //TODO: this does not use squares when it could
-                        tmp += ((centroids[i*d+f] - centroids[j*d+f]) *
-                            (centroids[i*d+f] - centroids[j*d+f]));
-                    }
-                    //feature_cnt += d;
-                    if(tmp < 0.0) tmp = 0.0;
-                    tmp = sqrt(tmp);*/
-                    //We can save distances for later use
-                    c_to_c[i][j] = 0; //(tmp);
-                    // THEY'RE THE SAME
-                    c_to_c[j][i] = 0; //c_to_c[i][j];
+                    c_to_c[i][j] = 0; 
+                    c_to_c[j][i] = 0;
                 }
             }
-            //Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d);
-            //Update_bounds(data_ptr, centroids, c_to_c, centroid_ss, l_elkan, u_elkan, l_hamerly, labels, div, near, n, k, d);
-            
+
             while ((iter < max_inter) && (!converged)) {
                 //calculate square centroids
                 Calculate_squared_botup(d, k, centroids, centroid_ss, l_pow);    
@@ -92,7 +69,7 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
                     if (mask[j] != 1) continue;  
 
                     //Elkan prune
-                    val = std::max(l_elkan[x][j], 0.5 * c_to_c[labels[x]][j]);// l_elkan[x][j] < 0.5 * c_to_c[labels[x]][j] ? 0.5 * c_to_c[labels[x]][j] : l_elkan[x][j];  
+                    val = std::max(l_elkan[x][j], 0.5 * c_to_c[labels[x]][j]);  
                     if (u_elkan[x] < val) {     //Elkan check
                         mask[j] = 0;            //Mark as pruned centroid
                     } else {
@@ -125,58 +102,50 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
             //END: Updated labels, l_elkan[x][.], u_elkan[x]
         }
 
-        void clear() {}
-        /*void clear() {
+        //void clear() {}
+        void clear() {
             for (int i = 0; i < n; i++) {
-                delete l_elkan[i];
+                delete[] l_elkan[i];
             }
-            delete l_elkan;
+            delete[] l_elkan;
 
-            delete l_hamerly;
+            delete[] l_hamerly;
             
-            delete u_elkan;
+            delete[] u_elkan;
 
-            delete near;
+            delete[] near;
 
-            delete div;
+            delete[] div;
 
             
             for (int i = 0; i < k; i++) {
-                delete c_to_c[i];
+                delete[] c_to_c[i];
             }
-            delete c_to_c; 
+            delete[] c_to_c; 
 
             
 
             
             for (int i = 0; i < n; i++) {
-                delete data_ss[i];
+                delete[] data_ss[i];
             }
-            delete data_ss;
+            delete[] data_ss;
 
             for (int i = 0; i < k; i++) {
-                delete centroid_ss[i];
+                delete[] centroid_ss[i];
             }
-            delete centroid_ss;
+            delete[] centroid_ss;
 
-            
-            //for (int i = 0; i < n; i++) {
-            //    delete[] dots[i];
-            //}
-            //delete[] dots;
-
-            delete labels;
-
-           
-            delete cluster_count;
-            
-           
+            delete[] labels;
+         
+            delete[] cluster_count;
+               
             //Init centroids  
-            delete centroids;
-            delete old_centroids;
+            delete[] centroids;
+            delete[] old_centroids;
             
-            delete l_pow;
-        }*/
+            delete[] l_pow;
+        }
 
         void init(int _max_iter, int _n, int _d, int _k, Dataset* _data) {
             
@@ -214,10 +183,7 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
             c_to_c = new double*[k];//[new double[k]];
             for (int i = 0; i < k; i++) {
                 c_to_c[i] = new double[k];
-            }
-
-        
-         
+            }       
 
             l_pow = new int[L+1];
             for (int i = 0; i <= L; i++) {
@@ -236,13 +202,6 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
                 centroid_ss[i] = new double[L+2];
             }
 
-            //dots
-            //dots = new double*[n];
-            //for (int i = 0; i < n; i++) {
-            //    dots[i] = new double[k];
-            //    std::fill(dots[i], dots[i]+k, 0);
-            //}
-
             //Init labels
             labels = new int[n];
             std::fill(labels, labels+n, 0); 
@@ -256,8 +215,6 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
             
             memcpy(centroids, data_ptr , sizeof(double)*k*d); //Initial dentroids
             
-            
-
         }
     private:
 
@@ -289,7 +246,6 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
         double** centroid_ss;
 
         //x to c [x*k+c]
-        //double* distances;
         int* labels;
 
         double* data_ptr;// = data->get_data_pointer();

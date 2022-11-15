@@ -1,6 +1,9 @@
 # scalable-kmeans
 KMeans. Includes different python and cpp implementations 
 
+# Description of python code
+Python code includes six algorithms (mentioned in [1]): Lloyed, Elkan, Hamerly, Elkan with Hamerly, Stepwise and MARIGOLD. The codes can be executed from the notebook. The data to execute the codes can be requested from the authors. 
+
 
 # Datasets
 Datafiles will be ignored so please take care of them on your own, or add a download script for others to use.
@@ -41,5 +44,4 @@ Where x,y,z,k is the coordinate and v is the value.
 > Keep in mind that .csv will be a lot bigger, so use with care.
 
 
-# Description of python code
-Python code includes six algorithms (mentioned in [1]): Lloyed, Elkan, Hamerly, Elkan with Hamerly, Stepwise and MARIGOLD. The codes can be executed from the notebook. The data to execute the codes can be requested from the authors. 
+
