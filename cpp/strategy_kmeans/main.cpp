@@ -6,7 +6,7 @@
 #include "strategies/stepwise_kmeans_strategy.cpp"
 #include "strategies/elkham_kmeans_strategy.cpp"
 #include "strategies/elkan_kmeans_strategy.cpp"
-//#include "strategies/hamerly_kmeans_strategy.cpp"
+#include "strategies/hamerly_kmeans_strategy.cpp"
 #include "benchmark/benchmark.h"
 
 std::string data_file_name;
@@ -70,7 +70,7 @@ static void BM_Kmeans_Elkan(benchmark::State& state) {
     }
 }
 
-/*static void BM_Kmeans_Hamerly(benchmark::State& state) { 
+static void BM_Kmeans_Hamerly(benchmark::State& state) { 
     
 
     runner.set_strategy(std::make_unique<HamerlyKmeansStrategy>());
@@ -78,7 +78,7 @@ static void BM_Kmeans_Elkan(benchmark::State& state) {
     for (auto _ : state) { 
         runner.run_kmeans(state.range(0),state.range(1),state.range(2));
     }
-}*/
+}
 
 static void BM_load_data_flake(benchmark::State& state) { 
     data_file_name = "/mnt/c/Users/kaspe/OneDrive/Skrivebord/Reps/scalable-kmeans/Data/steinn_14_jun/processed/gr_flake_"+std::to_string(int(sqrt(state.range(1))))+"_h5_dct.txt";
@@ -134,15 +134,18 @@ int main(int argc, char **argv) {
     */
     
     //BENCHMARK(BM_load_data_flake)->Args({n,d,k})->Repetitions(1)->Iterations(1)->Unit(benchmark::kMillisecond);
-    BENCHMARK(BM_load_data_Bi5d)->Args({n,d,k})->Repetitions(1)->Iterations(1)->Unit(benchmark::kMillisecond);
+    BENCHMARK(BM_load_data_VB)->Args({n,d,k})->Repetitions(1)->Iterations(1)->Unit(benchmark::kMillisecond);
     //BENCHMARK(BM_load_data_Flickr)->Args({n,d,k})->Repetitions(1)->Iterations(1)->Unit(benchmark::kMillisecond);
     
     BENCHMARK(BM_Kmeans_lloyd)->Args({n,d,5})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
-    BENCHMARK(BM_Kmeans_Elkan)->Args({n,d,5})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
-    BENCHMARK(BM_Kmeans_StepWise)->Args({n,d,5})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
-    BENCHMARK(BM_Kmeans_ElkHam)->Args({n,d,5})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    BENCHMARK(BM_Kmeans_Hamerly)->Args({n,d,5})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
     
-    BENCHMARK(BM_Kmeans_MARIGOLD)->Args({n,d,5})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    
+    //BENCHMARK(BM_Kmeans_Elkan)->Args({n,d,5})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    //BENCHMARK(BM_Kmeans_StepWise)->Args({n,d,5})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    //BENCHMARK(BM_Kmeans_ElkHam)->Args({n,d,5})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    
+    //BENCHMARK(BM_Kmeans_MARIGOLD)->Args({n,d,5})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
     
 
 
