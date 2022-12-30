@@ -2,6 +2,8 @@
 #include "../kmeans_utils/utils.cpp"
 #include <cstring>
 #include <algorithm>
+#include <set>
+#include <tuple>
 
 
 class GstarKmeansStrategy : public KmeansStrategy {
@@ -40,9 +42,7 @@ class GstarKmeansStrategy : public KmeansStrategy {
         void center_assign() {
             //Alg 3
             for (int j = 0; j < k; j++) {
-
-
-                for 
+ 
 
             }
         }
@@ -88,7 +88,7 @@ class GstarKmeansStrategy : public KmeansStrategy {
                 labels[p] = C_r ? pC_r < pD : D; 
 
                 //Init min to dist to label
-                double _min = pC_r ? pC_r < pD : PD;
+                double _min = pC_r ? pC_r < pD : pD;
 
                 //Init f to unassigned and declare the distance
                 int F = -1;
@@ -104,10 +104,10 @@ class GstarKmeansStrategy : public KmeansStrategy {
                         double theta = determine_thetha(pC_r, pD, pF, c_to_c[F][C_r], c_to_c[F][D], c_to_c[F][O], c_to_c[C_r][D], c_to_c[C_r][O], c_to_c[D][O]); 
                         
                         //Get 3D coord with alg 4
-                        std::vector<double, double, double> cords3d = get_3D_coordination(c_to_c[C_r][D], pC_r, pD, theta);
-                        double p3Dx = std::get<0>(cords);
-                        double p3Dy = std::get<1>(cords);
-                        double p3Dz = std::get<2>(cords);
+                        std::tuple<double, double, double> cords3d = get_3D_coordination(c_to_c[C_r][D], pC_r, pD, theta);
+                        double p3Dx = std::get<0>(cords3d);
+                        double p3Dy = std::get<1>(cords3d);
+                        double p3Dz = std::get<2>(cords3d);
 
                         //Calculate 3d distance as an lower bound
                         double LB; //TODO
@@ -123,7 +123,7 @@ class GstarKmeansStrategy : public KmeansStrategy {
                     //Set F if undefined
                     if (F = -1) {
                         F = O;
-                        pF = pO
+                        pF = pO;
                     } 
 
                     if (pO < _min) {
