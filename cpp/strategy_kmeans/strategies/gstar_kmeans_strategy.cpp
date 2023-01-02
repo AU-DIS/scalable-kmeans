@@ -85,7 +85,7 @@ class GstarKmeansStrategy : public KmeansStrategy {
 
                     std::tuple<double, double> cords2 = get_2D_coordinations(div[c], tmp ,c_to_c[i][c]);
                     centers_2d_deltac[c][i*2] = std::get<0>(cords2);
-                    centers_2d_cd[c][i*2+1] = std::get<1>(cords2);
+                    centers_2d_deltac[c][i*2+1] = std::get<1>(cords2);
                 }
                   
             }
@@ -122,9 +122,39 @@ class GstarKmeansStrategy : public KmeansStrategy {
 
                 std::tuple<double, double> cords_p_2D_deltac = get_2D_coordinations(div[labels[p]], pOldc, pD);
 
-                //TODO Near Neighbors search for candidates
+                //TODO Replace Near Neighbors search for candidates with KD tree
+                //NNS in linear 2D scan
+                //TODO: Move Set min into loop and see if we save time
+                double chosen = _min[p]
+                for (int j = 0; j < k; j++) {
+                    j_x_cd = centers_2d_cd[labels[p]][j*2]; 
+                    j_y_cd = centers_2d_cd[labels[p]][j*2+1];
+                    j_x_deltac = centers_2d_deltac[labels[p]][j*2]; 
+                    j_y_deltac = centers_2d_deltac[labels[p]][j*2+1];
 
-                //TODO Calculate dist to candidates and set label to closest and update _min
+                    if (sqrt((std::get<0>(cords_p_2D_cd)-j_x_cd)*(std::get<0>(cords_p_2D_cd)-j_x_cd)+(std::get<1>(cords_p_2D_cd)-j_y_cd)*(std::get<1>(cords_p_2D_cd)-j_y_cd)) < _min[p]) {
+                        if (sqrt((std::get<0>(cords_p_2D_deltac)-j_x_deltac)*(std::get<0>(cords_p_2D_deltac)-j_x_deltac)+(std::get<1>(cords_p_2D_deltac)-j_y_deltac)*(std::get<1>(cords_p_2D_deltac)-j_y_deltac)) < _min[p]) {
+                            //full distance comparison
+                            //calculate dist to div
+                    
+                        double tmp = 0;
+                        for (int f = 0; f < d; f++) {
+                            tmp += ((data_ptr[p*d+f] - centroids[j*d+f]) *
+                                (data_ptr[p*d+f] - centroids[j*d+f]));
+                        }
+                        //feature_cnt += d;
+                        if(tmp < 0.0) tmp = 0.0;
+                            tmp = sqrt(tmp);
+                        }
+
+                        if (chosen > tmp) {
+                            chosen = tmp;
+                            labels[p] = j;
+                        } 
+                    }
+                }
+                _min = chosen;
+  
             }
 
         }
