@@ -125,7 +125,8 @@ class GstarKmeansStrategy : public KmeansStrategy {
                 //NNS in linear 2D scan
                 //TODO: Move Set min into loop and see if we save time
                 double chosen = _min[p];
-                for (int j = 0; j < k; j++) {
+                for (int j = 0; j < k; j++) {   
+                    //if (j == labels[p] || j == D) continue; //NOTE: OWN ADDITION
                     double j_x_cd = centers_2d_cd[labels[p]][j*2]; 
                     double j_y_cd = centers_2d_cd[labels[p]][j*2+1];
                     double j_x_deltac = centers_2d_deltac[labels[p]][j*2]; 
@@ -243,10 +244,11 @@ class GstarKmeansStrategy : public KmeansStrategy {
                 //NOTE: In their code they loop all except C_r and D
 
                 //Init label to closest of C_r and D
-                labels[p] = C_r ? pC_r < pD : D; 
+                labels[p] = pC_r < pD ? C_r : D; 
 
                 //Init min to dist to label
-                _min[p] = pC_r ? pC_r < pD : pD;
+                _min[p] = pC_r < pD ? pC_r : pD;
+                //std::cout << _min[p] << "  " << pC_r << "  " << pD << std::endl;
 
                 //Init f to unassigned and declare the distance
                 int F = -1;
@@ -269,11 +271,11 @@ class GstarKmeansStrategy : public KmeansStrategy {
                         double p3Dz = std::get<2>(cords3d);
 
                         //Calculate 3d distance as an lower bound
-                        double LB = sqrt(((p3Dx-centroids_2D[O*2])*(p3Dx-centroids_2D[O*2]))+((p3Dy-centroids_2D[O*2+1])*(p3Dy-centroids_2D[O*2+1]))+((p3Dz-0)*(p3Dz-0))); //TODO
+                        double LB = sqrt(((p3Dx-centroids_2D[O*2])*(p3Dx-centroids_2D[O*2]))+((p3Dy-centroids_2D[O*2+1])*(p3Dy-centroids_2D[O*2+1]))+((p3Dz-0)*(p3Dz-0)));
 
                         if (LB > _min[p]) {
                             continue;
-                        }
+                        } 
                     }
 
                     //Calculate pO
