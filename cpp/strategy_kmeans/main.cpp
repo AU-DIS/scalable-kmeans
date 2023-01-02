@@ -149,8 +149,8 @@ int main(int argc, char **argv) {
     BENCHMARK(BM_load_data_VB)->Args({n,d,k})->Repetitions(1)->Iterations(1)->Unit(benchmark::kMillisecond);
     //BENCHMARK(BM_load_data_Flickr)->Args({n,d,k})->Repetitions(1)->Iterations(1)->Unit(benchmark::kMillisecond);
     
-    BENCHMARK(BM_Kmeans_lloyd)->Args({n,d,5})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
-    BENCHMARK(BM_Kmeans_gstar)->Args({n,d,5})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    BENCHMARK(BM_Kmeans_lloyd)->Args({n,d,5})->Unit(benchmark::kMillisecond)->Iterations(1);
+    BENCHMARK(BM_Kmeans_gstar)->Args({n,d,5})->Unit(benchmark::kMillisecond)->Iterations(1);
     
     //BENCHMARK(BM_Kmeans_Hamerly)->Args({n,d,5})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
     

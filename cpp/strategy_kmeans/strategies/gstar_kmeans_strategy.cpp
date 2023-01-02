@@ -44,6 +44,30 @@ class GstarKmeansStrategy : public KmeansStrategy {
 
         void center_assign() {
             //Alg 3
+            //update c_to_c
+            //calculate c_to_c
+            for (int i = 0; i < k; i++) {
+                c_to_c[i][i] = 0;
+                
+                for (int j = i+1; j < k; j++) {
+                    double tmp = 0;
+                    for (int f = 0; f < d; f++) {
+                        tmp += ((centroids[i*d+f] - centroids[j*d+f]) *
+                            (centroids[i*d+f] - centroids[j*d+f]));
+                    }
+                    //feature_cnt += d;
+                    if(tmp < 0.0) tmp = 0.0;
+                    tmp = sqrt(tmp);
+
+                    
+                    //We can save distances for later use
+                    c_to_c[i][j] = (tmp);
+                    // THEY'RE THE SAME
+                    c_to_c[j][i] = c_to_c[i][j];
+                }
+            }
+
+
             //For all centroids C, sort other O by distance to C
             for (int c = 0; c < k; c++) {
                 std::vector<std::pair<double, int>> list_of_c;
@@ -62,8 +86,7 @@ class GstarKmeansStrategy : public KmeansStrategy {
             //Main assign loop
             //for each cluster center C
             for (int c = 0; c < k; c++) {
-                int D = sorted_to_c[c][k/2];
-
+                int D = sorted_to_c[c][(k/2-1)];
 
                 //2d coordinations
                 for (int i = 0; i < k; i++) {
@@ -72,7 +95,7 @@ class GstarKmeansStrategy : public KmeansStrategy {
                     centers_2d_cd[c][i*2] = std::get<0>(cords);
                     centers_2d_cd[c][i*2+1] = std::get<1>(cords);
                     
-                    //calculate dist to div
+                    //calculate dist to old c from all i 
                     double tmp = 0;
                     for (int f = 0; f < d; f++) {
                         tmp += ((old_centroids[c*d+f] - centroids[i*d+f]) *
@@ -95,7 +118,7 @@ class GstarKmeansStrategy : public KmeansStrategy {
             //for each point p assigned C
             for (int p = 0; p < n; p++) {
                 
-                int D = sorted_to_c[labels[p]][k/2];
+                int D = sorted_to_c[labels[p]][(k/2-1)];
                 
                 //calculate p to D
                 double pD = 0;
@@ -107,36 +130,46 @@ class GstarKmeansStrategy : public KmeansStrategy {
                 if(pD < 0.0) pD = 0.0;
                 pD = sqrt(pD);
 
-                std::tuple<double, double> cords_p_2D_cd = get_2D_coordinations(c_to_c[labels[p]][D], _min[p], pD);
-                
-                //calculate pOldc
-                double pOldc = 0;
+                //calculate pC (We have to oldc . That is min[p])
+                double pC = 0;
                 for (int f = 0; f < d; f++) {
-                    pOldc += ((data_ptr[p*d+f] - old_centroids[labels[p]*d+f]) *
-                        (data_ptr[p*d+f] - old_centroids[labels[p]*d+f]));
+                    pC += ((data_ptr[p*d+f] - centroids[labels[p]*d+f]) *
+                        (data_ptr[p*d+f] - centroids[labels[p]*d+f]));
                 }
                 //feature_cnt += d;
-                if(pOldc < 0.0) pOldc  = 0.0;
-                pOldc  = sqrt(pOldc );
+                if(pC < 0.0) pC  = 0.0;
+                pC  = sqrt(pC);
 
-                std::tuple<double, double> cords_p_2D_deltac = get_2D_coordinations(div[labels[p]], pOldc, pD);
+                std::tuple<double, double> cords_p_2D_cd = get_2D_coordinations(c_to_c[labels[p]][D], pC, pD);
+                
+                
+
+                std::tuple<double, double> cords_p_2D_deltac = get_2D_coordinations(div[labels[p]], _min[p], pC);
 
                 //TODO Replace Near Neighbors search for candidates with KD tree
                 //NNS in linear 2D scan
                 //TODO: Move Set min into loop and see if we save time
-                double chosen = _min[p];
+
+                //double lim = std::numeric_limits<double>::max();
+                //std::cout << lim << "  " << _min[p] << std::endl;
+                double lim = pC; // < lim ? lim : _min[p];
+                double chosen = lim; //
+                int old_label = labels[p];
                 for (int j = 0; j < k; j++) {   
-                    //if (j == labels[p] || j == D) continue; //NOTE: OWN ADDITION
+                    if (j == old_label) continue; //NOTE: OWN ADDITION
                     double j_x_cd = centers_2d_cd[labels[p]][j*2]; 
                     double j_y_cd = centers_2d_cd[labels[p]][j*2+1];
                     double j_x_deltac = centers_2d_deltac[labels[p]][j*2]; 
                     double j_y_deltac = centers_2d_deltac[labels[p]][j*2+1];
-
-                    if (sqrt((std::get<0>(cords_p_2D_cd)-j_x_cd)*(std::get<0>(cords_p_2D_cd)-j_x_cd)+(std::get<1>(cords_p_2D_cd)-j_y_cd)*(std::get<1>(cords_p_2D_cd)-j_y_cd)) < _min[p]) {
-                        if (sqrt((std::get<0>(cords_p_2D_deltac)-j_x_deltac)*(std::get<0>(cords_p_2D_deltac)-j_x_deltac)+(std::get<1>(cords_p_2D_deltac)-j_y_deltac)*(std::get<1>(cords_p_2D_deltac)-j_y_deltac)) < _min[p]) {
+                    //std::cout << std::get<1>(cords_p_2D_cd) << "  " << j_y_cd << std::endl;
+                    //std::cout << sqrt((std::get<0>(cords_p_2D_cd)-j_x_cd)*(std::get<0>(cords_p_2D_cd)-j_x_cd)+(std::get<1>(cords_p_2D_cd)-j_y_cd)*(std::get<1>(cords_p_2D_cd)-j_y_cd)) << "  " << sqrt((std::get<0>(cords_p_2D_deltac)-j_x_deltac)*(std::get<0>(cords_p_2D_deltac)-j_x_deltac)+(std::get<1>(cords_p_2D_deltac)-j_y_deltac)*(std::get<1>(cords_p_2D_deltac)-j_y_deltac)) << "  " << _min[p] << std::endl;
+                    //if ((std::get<0>(cords_p_2D_cd)-j_x_cd)*(std::get<0>(cords_p_2D_cd)-j_x_cd) < 0)
+                    //if (sqrt((std::get<0>(cords_p_2D_cd)-j_x_cd)*(std::get<0>(cords_p_2D_cd)-j_x_cd)+(std::get<1>(cords_p_2D_cd)-j_y_cd)*(std::get<1>(cords_p_2D_cd)-j_y_cd)) < lim) {
+                        //std::cout << sqrt((std::get<0>(cords_p_2D_deltac)-j_x_deltac)*(std::get<0>(cords_p_2D_deltac)-j_x_deltac)+(std::get<1>(cords_p_2D_deltac)-j_y_deltac)*(std::get<1>(cords_p_2D_deltac)-j_y_deltac)) << std::endl;
+                        if (sqrt((std::get<0>(cords_p_2D_deltac)-j_x_deltac)*(std::get<0>(cords_p_2D_deltac)-j_x_deltac)+(std::get<1>(cords_p_2D_deltac)-j_y_deltac)*(std::get<1>(cords_p_2D_deltac)-j_y_deltac)) < chosen) {
                             //full distance comparison
                             //calculate dist to div
-                    
+                            
                             double tmp = 0;
                             for (int f = 0; f < d; f++) {
                                 tmp += ((data_ptr[p*d+f] - centroids[j*d+f]) *
@@ -152,7 +185,7 @@ class GstarKmeansStrategy : public KmeansStrategy {
                             } 
 
                         } 
-                    }
+                    //}
                 }
                 _min[p] = chosen;
   
@@ -306,10 +339,42 @@ class GstarKmeansStrategy : public KmeansStrategy {
 
         std::tuple<double, double> get_2D_coordinations(double M_N, double q_M, double q_N) {
             //Alg 1
-            
+            double x;
+            double y;
+            //if (M_N == 0) std::cout << "MN is zero" << std::endl; 
+            if (q_N == 0) {
+                x = M_N;
+                y = 0;
+                return {x, y};
+            }
+            if (q_M == 0) {
+                x = 0;
+                y = 0;
+                return {x, y};
+            }
+
             double cosine = ((q_N*q_N)+(q_M*q_M)-(M_N*M_N)) / 2*q_N*q_M;
-            double x = cosine*q_M;
-            double y = sqrt( (M_N*M_N) - (x*x));
+            
+            //clamb the value for float errors
+            if (cosine > 1) cosine = 1;
+            else if (cosine < -1) cosine = -1;
+            
+            if (!(cosine > 0 || cosine <= 0)) {
+                y = 0;
+                if (q_M > q_N || (q_M < M_N && q_N < M_N )) {
+                    x = q_M;
+                } else {
+                    x = -q_M;
+                }  
+            } else {
+                x = cosine*q_M;
+                double tmp = (M_N*M_N) - (x*x);
+                //std::cout << (M_N*M_N) - (x*x) << std::endl;
+                if(tmp < 0.0) tmp = 0.0;
+                y = sqrt(tmp);
+
+            }
+
 
             return {x, y};
         }
@@ -318,9 +383,17 @@ class GstarKmeansStrategy : public KmeansStrategy {
             //Alg 4
             
             double cosine = ((q_N*q_N)+(q_M*q_M)-(M_N*M_N)) / 2*q_N*q_M;
+
+            //clamb the value for float errors
+            if (cosine > 1) cosine = 1;
+            else if (cosine < -1) cosine = -1;
+
             double x = cosine*q_M;
-            double y = sqrt( (M_N*M_N) - (x*x)) * sin(theta);
-            double z = sqrt( (M_N*M_N) - (x*x)) - (sqrt( (M_N*M_N) - (x*x)) * sin(theta)) ;
+            double tmp = (M_N*M_N) - (x*x);
+                //std::cout << (M_N*M_N) - (x*x) << std::endl;
+            if(tmp < 0.0) tmp = 0.0;
+            double y = sqrt(tmp) * sin(theta);
+            double z = sqrt(tmp) - (sqrt(tmp) * sin(theta)) ;
 
             return {x, y, z};
         }
@@ -334,7 +407,7 @@ class GstarKmeansStrategy : public KmeansStrategy {
             double FP_map = sqrt((pF*pF)-(HpHF*HpHF));
 
             //Find angle1
-            double angle1 = acos(((std::get<1>(F_2d)*std::get<1>(F_2d))+(std::get<1>(p_2d)*std::get<1>(p_2d))-(FP_map*FP_map)) / 2*std::get<1>(p_2d)*std::get<1>(F_2d));            
+            double angle1 = acos(((std::get<1>(F_2d)*std::get<1>(F_2d))+(std::get<1>(p_2d)*std::get<1>(p_2d))-(FP_map*FP_map)) / 2*std::get<1>(F_2d)*std::get<1>(p_2d));            
 
             //Find angle2
             std::tuple<double, double> O_2d = get_2D_coordinations(MN, MO, NO);
