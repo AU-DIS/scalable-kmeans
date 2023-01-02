@@ -237,11 +237,26 @@ class GstarKmeansStrategy : public KmeansStrategy {
             return {x, y, z};
         }
 
-        double determine_thetha(double pC_r, double pD, double pF, double FC_r, double FD, double FO, double C_rD, double C_rO, double DO) {
+        double determine_thetha(double pM, double pN, double pF, double FM, double FN, double FO, double MN, double MO, double NO) {
             //Algorithm 5
-            double theta;
+            //Find FP_map
+            std::tuple<double, double> p_2d = get_2D_coordinations(MN, pM, pN);
+            std::tuple<double, double> F_2d = get_2D_coordinations(MN, FM, FN);
+            double HpHF = abs(std::get<0>(p_2d)-std::get<0>(F_2d));
+            double FP_map = sqrt((pF*pF)-(HpHF*HpHF));
 
-            //TODO
+            //Find angle1
+            double angle1 = acos(((std::get<1>(F_2d)*std::get<1>(F_2d))+(std::get<1>(p_2d)*std::get<1>(p_2d))-(FP_map*FP_map)) / 2*std::get<1>(p_2d)*std::get<1>(F_2d))            
+
+            //Find angle2
+            std::tuple<double, double> O_2d = get_2D_coordinations(MN, MO, NO);
+            double HOHF = abs(std::get<0>(O_2d)-std::get<0>(F_2d));
+            OF_map = sqrt((FO*FO)-(HOHF*HOHF));
+            double angle2 = acos((std::get<1>(F_2d)*std::get<1>(F_2d))+(std::get<1>(O_2d)*std::get<1>(O_2d))-(OF_map*OF_map)/ 2*std::get<1>(F_2d)*std::get<1>(O_2d) )
+
+            //Find theta
+            double theta = abs(angle1-angle2);
+            
             return theta;
         }
 
