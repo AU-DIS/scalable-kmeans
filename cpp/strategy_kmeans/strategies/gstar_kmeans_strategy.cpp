@@ -192,16 +192,16 @@ class GstarKmeansStrategy : public KmeansStrategy {
                 
 
                 //Compute |p, D|
-                double tmp = 0;
+                double tmp2 = 0;
                 for (int f = 0; f < d; f++) {
-                    tmp += ((data_ptr[p*d+f] - centroids[D*d+f]) *
+                    tmp2 += ((data_ptr[p*d+f] - centroids[D*d+f]) *
                         (data_ptr[p*d+f] - centroids[D*d+f]));
                 }
                 //feature_cnt += d;
-                if(tmp < 0.0) tmp = 0.0;
-                tmp = sqrt(tmp);
+                if(tmp2 < 0.0) tmp2 = 0.0;
+                tmp2 = sqrt(tmp2);
 
-                double pD = tmp;
+                double pD = tmp2;
 
                 //Get 2d cords
                 std::tuple<double, double> cords = get_2D_coordinations(c_to_c[C_r][D], pC_r, pD); 
@@ -210,7 +210,7 @@ class GstarKmeansStrategy : public KmeansStrategy {
 
                 //Find candidates with 2D nearest neighbor search to centroids
                 std::set<int> candidates;
-                //TODO: Check their code 
+                //TODO: Check their code for NNS
 
                 //Init label to closest of C_r and D
                 labels[p] = C_r ? pC_r < pD : D; 
@@ -407,7 +407,7 @@ class GstarKmeansStrategy : public KmeansStrategy {
                 centers_2d_deltac[i] = new double[k*2];
             }
 
-            _min = new double*[n];
+            _min = new double[n];
 
         }
     private:
