@@ -16,21 +16,20 @@ class GstarKmeansStrategy : public KmeansStrategy {
             int iter = 0;
             bool converged = false;
             
-            //TODO: Init old centers (done in init function?)
+            //Init old centers done in recalculate
 
             //Label each point using Alg 6
             first_center_assign();
 
-            //Update centers with recalculate
-            //TODO
+            //Update centers with recalculate. Ignore convergence output 
+            Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d, feature_cnt);
 
-            while ((iter < max_iter) && (!converged)) {              
+            while ((iter < max_inter) && (!converged)) {              
                 //Label each point using alg 3 
                 center_assign();
 
                 //Update centers with recalculate
-                //TODO
-                
+                converged = Recalculate(data_ptr, centroids, old_centroids, cluster_count, labels, div, n, k, d, feature_cnt);
                 iter++;
             }
 
@@ -125,35 +124,36 @@ class GstarKmeansStrategy : public KmeansStrategy {
                 //TODO Replace Near Neighbors search for candidates with KD tree
                 //NNS in linear 2D scan
                 //TODO: Move Set min into loop and see if we save time
-                double chosen = _min[p]
+                double chosen = _min[p];
                 for (int j = 0; j < k; j++) {
-                    j_x_cd = centers_2d_cd[labels[p]][j*2]; 
-                    j_y_cd = centers_2d_cd[labels[p]][j*2+1];
-                    j_x_deltac = centers_2d_deltac[labels[p]][j*2]; 
-                    j_y_deltac = centers_2d_deltac[labels[p]][j*2+1];
+                    double j_x_cd = centers_2d_cd[labels[p]][j*2]; 
+                    double j_y_cd = centers_2d_cd[labels[p]][j*2+1];
+                    double j_x_deltac = centers_2d_deltac[labels[p]][j*2]; 
+                    double j_y_deltac = centers_2d_deltac[labels[p]][j*2+1];
 
                     if (sqrt((std::get<0>(cords_p_2D_cd)-j_x_cd)*(std::get<0>(cords_p_2D_cd)-j_x_cd)+(std::get<1>(cords_p_2D_cd)-j_y_cd)*(std::get<1>(cords_p_2D_cd)-j_y_cd)) < _min[p]) {
                         if (sqrt((std::get<0>(cords_p_2D_deltac)-j_x_deltac)*(std::get<0>(cords_p_2D_deltac)-j_x_deltac)+(std::get<1>(cords_p_2D_deltac)-j_y_deltac)*(std::get<1>(cords_p_2D_deltac)-j_y_deltac)) < _min[p]) {
                             //full distance comparison
                             //calculate dist to div
                     
-                        double tmp = 0;
-                        for (int f = 0; f < d; f++) {
-                            tmp += ((data_ptr[p*d+f] - centroids[j*d+f]) *
-                                (data_ptr[p*d+f] - centroids[j*d+f]));
-                        }
-                        //feature_cnt += d;
-                        if(tmp < 0.0) tmp = 0.0;
-                            tmp = sqrt(tmp);
-                        }
+                            double tmp = 0;
+                            for (int f = 0; f < d; f++) {
+                                tmp += ((data_ptr[p*d+f] - centroids[j*d+f]) *
+                                    (data_ptr[p*d+f] - centroids[j*d+f]));
+                            }
+                            //feature_cnt += d;
+                            if(tmp < 0.0) tmp = 0.0;
+                                tmp = sqrt(tmp);
 
-                        if (chosen > tmp) {
-                            chosen = tmp;
-                            labels[p] = j;
+                            if (chosen > tmp) {
+                                chosen = tmp;
+                                labels[p] = j;
+                            } 
+
                         } 
                     }
                 }
-                _min = chosen;
+                _min[p] = chosen;
   
             }
 
@@ -239,8 +239,8 @@ class GstarKmeansStrategy : public KmeansStrategy {
                 double p2Dy = std::get<1>(cords);
 
                 //Find candidates with 2D nearest neighbor search to centroids
-                std::set<int> candidates;
-                //TODO: Check their code for NNS
+                //std::set<int> candidates;   
+                //NOTE: In their code they loop all except C_r and D
 
                 //Init label to closest of C_r and D
                 labels[p] = C_r ? pC_r < pD : D; 
@@ -254,8 +254,9 @@ class GstarKmeansStrategy : public KmeansStrategy {
  
 
                 //For all candidates
-                for (int O : candidates) {
-                    
+                //NOTE: In their code they loop all excep C_r and D
+                for (int O = 0; O < k; O++) {
+                    if (O == C_r || O == D) continue;
 
                     if (F != -1) {
                         //Determine angle using alg 5
@@ -331,13 +332,13 @@ class GstarKmeansStrategy : public KmeansStrategy {
             double FP_map = sqrt((pF*pF)-(HpHF*HpHF));
 
             //Find angle1
-            double angle1 = acos(((std::get<1>(F_2d)*std::get<1>(F_2d))+(std::get<1>(p_2d)*std::get<1>(p_2d))-(FP_map*FP_map)) / 2*std::get<1>(p_2d)*std::get<1>(F_2d))            
+            double angle1 = acos(((std::get<1>(F_2d)*std::get<1>(F_2d))+(std::get<1>(p_2d)*std::get<1>(p_2d))-(FP_map*FP_map)) / 2*std::get<1>(p_2d)*std::get<1>(F_2d));            
 
             //Find angle2
             std::tuple<double, double> O_2d = get_2D_coordinations(MN, MO, NO);
             double HOHF = abs(std::get<0>(O_2d)-std::get<0>(F_2d));
             double OF_map = sqrt((FO*FO)-(HOHF*HOHF));
-            double angle2 = acos((std::get<1>(F_2d)*std::get<1>(F_2d))+(std::get<1>(O_2d)*std::get<1>(O_2d))-(OF_map*OF_map)/ 2*std::get<1>(F_2d)*std::get<1>(O_2d) )
+            double angle2 = acos((std::get<1>(F_2d)*std::get<1>(F_2d))+(std::get<1>(O_2d)*std::get<1>(O_2d))-(OF_map*OF_map)/ 2*std::get<1>(F_2d)*std::get<1>(O_2d));
 
             //Find theta
             double theta = abs(angle1-angle2);
@@ -364,7 +365,7 @@ class GstarKmeansStrategy : public KmeansStrategy {
             }
             delete[] c_to_c;
 
-            for (int i = 0; i < k-1; i++) {
+            for (int i = 0; i < k; i++) {
                 delete[] sorted_to_c[i];
             }
             delete[] sorted_to_c;
@@ -423,7 +424,7 @@ class GstarKmeansStrategy : public KmeansStrategy {
             } 
 
             sorted_to_c = new double*[k];//[new double[k]];
-            for (int i = 0; i < k-1; i++) {
+            for (int i = 0; i < k; i++) {
                 sorted_to_c[i] = new double[k-1];
             }
 

@@ -7,6 +7,7 @@
 #include "strategies/elkham_kmeans_strategy.cpp"
 #include "strategies/elkan_kmeans_strategy.cpp"
 #include "strategies/hamerly_kmeans_strategy.cpp"
+#include "strategies/gstar_kmeans_strategy.cpp"
 #include "benchmark/benchmark.h"
 
 std::string data_file_name;
@@ -19,6 +20,17 @@ static void BM_Kmeans_lloyd(benchmark::State& state) {
     //lloyd_strategy;
     runner.set_strategy(std::make_unique<LloydKmeansStrategy>());
 
+
+    for (auto _ : state) { 
+        runner.run_kmeans(state.range(0),state.range(1),state.range(2));
+    
+        
+    }
+}
+
+static void BM_Kmeans_gstar(benchmark::State& state) { 
+    //lloyd_strategy;
+    runner.set_strategy(std::make_unique<GstarKmeansStrategy>());
 
     for (auto _ : state) { 
         runner.run_kmeans(state.range(0),state.range(1),state.range(2));
@@ -122,8 +134,8 @@ static void BM_load_data_Flickr(benchmark::State& state) {
 
 int main(int argc, char **argv) { 
     n = 168;
-    d = 1024*1024;
-    k = 40;
+    d = 128*128;
+    k = 5;
 
     //; lloyd_strategy;
     /*KmeansRunner runner(std::make_unique<LloydKmeansStrategy>());
@@ -138,7 +150,9 @@ int main(int argc, char **argv) {
     //BENCHMARK(BM_load_data_Flickr)->Args({n,d,k})->Repetitions(1)->Iterations(1)->Unit(benchmark::kMillisecond);
     
     BENCHMARK(BM_Kmeans_lloyd)->Args({n,d,5})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
-    BENCHMARK(BM_Kmeans_Hamerly)->Args({n,d,5})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    BENCHMARK(BM_Kmeans_gstar)->Args({n,d,5})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
+    
+    //BENCHMARK(BM_Kmeans_Hamerly)->Args({n,d,5})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
     
     
     //BENCHMARK(BM_Kmeans_Elkan)->Args({n,d,5})->Args({n,d,40})->Unit(benchmark::kMillisecond)->Iterations(1);
