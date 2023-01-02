@@ -131,15 +131,43 @@ class GstarKmeansStrategy : public KmeansStrategy {
 
         void first_center_assign() {
             //calculate c_to_c
-            //TODO
+            for (int i = 0; i < k; i++) {
+                c_to_c[i][i] = 0;
+                
+                for (int j = i+1; j < k; j++) {
+                    double tmp = 0;
+                    for (int f = 0; f < d; f++) {
+                        tmp += ((centroids[i*d+f] - centroids[j*d+f]) *
+                            (centroids[i*d+f] - centroids[j*d+f]));
+                    }
+                    //feature_cnt += d;
+                    if(tmp < 0.0) tmp = 0.0;
+                    tmp = sqrt(tmp);
+
+                    
+                    //We can save distances for later use
+                    c_to_c[i][j] = (tmp);
+                    // THEY'RE THE SAME
+                    c_to_c[j][i] = c_to_c[i][j];
+                }
+            }
 
             //Choose random C_r from k
             int C_r = 0;
-            //TODO?
+            //NOTE: Set to 0 to keep initialisation the same for testing
 
             //Find D, the k/2-th nearest center to C_r
-            int D; 
-            //TODO
+            std::vector<std::pair<double, int>> list_of_c;
+            for (int o = 0; o < k; o++) {
+                if (o == C_r) continue;
+                list_of_c.push_back(std::make_pair(c_to_c[C_r][o], o));
+            }
+            //Sort pairs in vector form, dump keys() to memory array. 
+            //Distances can still be found in c_to_c.
+            sort(list_of_c.begin(), list_of_c.end());
+
+            int D = list_of_c[k/2].second;
+
 
             //For all centers i, find 2D coordinate on plane iDC_r  
             for (int j = 0; j < k; j++) {
@@ -151,13 +179,31 @@ class GstarKmeansStrategy : public KmeansStrategy {
             //Loop over all points
             for (int p = 0; p < n; p++) {
                 //Compute |p, C_r|
-                double pC_r;
-                //TODO
+                double tmp = 0;
+                for (int f = 0; f < d; f++) {
+                    tmp += ((data_ptr[p*d+f] - centroids[C_r*d+f]) *
+                        (data_ptr[p*d+f] - centroids[C_r*d+f]));
+                }
+                //feature_cnt += d;
+                if(tmp < 0.0) tmp = 0.0;
+                tmp = sqrt(tmp);
+
+                double pC_r = tmp;
+                
 
                 //Compute |p, D|
-                double pD;
-                //TODO
+                double tmp = 0;
+                for (int f = 0; f < d; f++) {
+                    tmp += ((data_ptr[p*d+f] - centroids[D*d+f]) *
+                        (data_ptr[p*d+f] - centroids[D*d+f]));
+                }
+                //feature_cnt += d;
+                if(tmp < 0.0) tmp = 0.0;
+                tmp = sqrt(tmp);
 
+                double pD = tmp;
+
+                //Get 2d cords
                 std::tuple<double, double> cords = get_2D_coordinations(c_to_c[C_r][D], pC_r, pD); 
                 double p2Dx = std::get<0>(cords);
                 double p2Dy = std::get<1>(cords);
@@ -192,15 +238,24 @@ class GstarKmeansStrategy : public KmeansStrategy {
                         double p3Dz = std::get<2>(cords3d);
 
                         //Calculate 3d distance as an lower bound
-                        double LB; //TODO
+                        double LB = sqrt(((p3Dx-centroids_2D[O*2])*(p3Dx-centroids_2D[O*2]))+((p3Dy-centroids_2D[O*2+1])*(p3Dy-centroids_2D[O*2+1]))+((p3Dz-0)*(p3Dz-0))); //TODO
 
                         if (LB > _min[p]) {
                             continue;
                         }
                     }
+
                     //Calculate pO
-                    double pO; 
-                    //TODO
+                    double tmp = 0;
+                    for (int f = 0; f < d; f++) {
+                        tmp += ((data_ptr[p*d+f] - centroids[O*d+f]) *
+                            (data_ptr[p*d+f] - centroids[O*d+f]));
+                    }
+                    //feature_cnt += d;
+                    if(tmp < 0.0) tmp = 0.0;
+                    tmp = sqrt(tmp);
+
+                    double pO = tmp; 
 
                     //Set F if undefined
                     if (F == -1) {
@@ -251,7 +306,7 @@ class GstarKmeansStrategy : public KmeansStrategy {
             //Find angle2
             std::tuple<double, double> O_2d = get_2D_coordinations(MN, MO, NO);
             double HOHF = abs(std::get<0>(O_2d)-std::get<0>(F_2d));
-            OF_map = sqrt((FO*FO)-(HOHF*HOHF));
+            double OF_map = sqrt((FO*FO)-(HOHF*HOHF));
             double angle2 = acos((std::get<1>(F_2d)*std::get<1>(F_2d))+(std::get<1>(O_2d)*std::get<1>(O_2d))-(OF_map*OF_map)/ 2*std::get<1>(F_2d)*std::get<1>(O_2d) )
 
             //Find theta
