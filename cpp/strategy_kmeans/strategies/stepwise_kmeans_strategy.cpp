@@ -131,7 +131,7 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
             feature_cnt = 0;
 
             //stepwise levels
-            L = log10(d)/log10(4);
+            L = ceil(log10(d)/log10(4));
             LB = new double[k];
 
             div = new double[k];
@@ -146,7 +146,11 @@ class StepWiseKmeansStrategy : public KmeansStrategy {
 
             l_pow = new int[L+1];
             for (int i = 0; i <= L; i++) {
-                l_pow[i] = int(pow(2,i));
+                if (i == L && log10(d)/log10(4) < L) {
+                    l_pow[i] = sqrt(d);
+                } else {
+                    l_pow[i] = int(pow(2,i));
+                } 
             }
 
             

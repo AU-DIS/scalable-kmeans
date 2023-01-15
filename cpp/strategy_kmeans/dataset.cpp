@@ -56,7 +56,7 @@ class Dataset {
         int data_count = std::count(std::istreambuf_iterator<char>(data_file),
                                 std::istreambuf_iterator<char>(), '\n');
         if (data_count < n) {
-            std::cout << "NOT ENOUGH DATA!!\n";
+            std::cout << "NOT ENOUGH DATA!! data_count: " << data_count << " n: " << n << "\n";
             exit(3);
         }
 

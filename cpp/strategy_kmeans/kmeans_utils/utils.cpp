@@ -130,10 +130,10 @@ bool Recalculate(const double data[], double centroids[], double old_centroids[]
         }
     }
 
-    for (int i = 0; i < k; i++) {      
-        std::cout << cluster_count[i] << " "; 
-        }
-    std::cout << std::endl;
+    //for (int i = 0; i < k; i++) {      
+    //    std::cout << cluster_count[i] << " "; 
+    //    }
+    //std::cout << std::endl;
 
     //calculate div
     for (int j = 0; j < k; j++) {
@@ -218,6 +218,7 @@ std::tuple<double, double> DistToLevel_bot(const int x, const int c, const int d
     //int pow_l = pow(2,l);
     //l_pow[l]
     
+    
     if (l==0) {
         dist -= 2*data[x*d+0]*centroids[c*d+0];
     } else {
@@ -285,11 +286,11 @@ void Calculate_squared(const int d, const int elements, const double raw[], doub
 
 
 void Calculate_squared_botup(int d, int elements, double raw[], double* squared[], const int l_pow[]) {
-    int L = log10(d)/log10(4);
+    int L = ceil(log10(d)/log10(4));
     int d_sqrt = sqrt(d);
     int two_p_level_m1, two_p_level;
-    int bot_start = int(log2(d_sqrt));
-   
+    int bot_start = L;
+    
     for (int e = 0; e < elements; e++) {
         squared[e][L+1] = 0; 
 

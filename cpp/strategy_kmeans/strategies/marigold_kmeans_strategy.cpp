@@ -66,7 +66,7 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
 
             while (l <= L && mask_sum > 1) {
                 for (int j = 0; j < k; j++) {
-                    if (mask[j] != 1) continue;  
+                    if (mask[j] != 1) continue; 
 
                     //Elkan prune
                     val = std::max(l_elkan[x][j], 0.5 * c_to_c[labels[x]][j]);  
@@ -76,12 +76,12 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
                         //DistToLevel params (int x, int c, int d, double data[], double centroids[], double* data_ss[], double* centroid_ss[], double* dots[], int l, int L)
                         DistToLevel_bot(x, j, d, data_ptr, centroids, data_ss, centroid_ss, l, L, dist[j], UB, LB, feature_cnt, l_pow);
                         LB = sqrt(std::max(0.0, LB));                
-                        if (LB > l_elkan[x][j]) {
+                        //if (LB > l_elkan[x][j]) {
                             
                             if (LB > l_elkan[x][j]) {
                                 l_elkan[x][j] = LB; //Keep maximum LB per c
                             }   
-                        }
+                        //}
                         
                         UB = sqrt(std::max(0.0, UB));
                         if (UB < u_elkan[x]) {
@@ -157,7 +157,7 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
             feature_cnt = 0;
 
             //stepwise levels
-            L = log10(d)/log10(4);
+            L = ceil(log10(d)/log10(4));
 
             //bounds
             l_elkan = new double*[n];
@@ -187,7 +187,11 @@ class MARIGOLDKmeansStrategy : public KmeansStrategy {
 
             l_pow = new int[L+1];
             for (int i = 0; i <= L; i++) {
-                l_pow[i] = int(pow(2,i));
+                if (i == L && log10(d)/log10(4) < L) {
+                    l_pow[i] = sqrt(d);
+                } else {
+                    l_pow[i] = int(pow(2,i));
+                } 
             }
 
             
