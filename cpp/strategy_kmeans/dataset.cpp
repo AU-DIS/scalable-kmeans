@@ -17,6 +17,7 @@ class Dataset {
     std::ifstream data_file;
     //Data as one memoryblock: data[i][j] written as data[i*d+j]
     double* data;
+    bool selfset_data = false;
     
     public:
     explicit Dataset(int _n, int _d){
@@ -24,6 +25,13 @@ class Dataset {
         d = _d;
     
         data = new double[n*d];
+        selfset_data = true;
+    };
+    explicit Dataset(int _n, int _d, double* _data){
+        n = _n;
+        d = _d;
+    
+        data = _data;
     };
     explicit Dataset(){
         n = 0;
@@ -31,8 +39,9 @@ class Dataset {
     
         data = new double[0];
     };
-    ~Dataset(){    
-        delete data; 
+    
+    ~Dataset() {    
+        if (selfset_data) delete data; 
     };
 
     
@@ -70,9 +79,11 @@ class Dataset {
         }
     };
 
-    void print_datasample() {
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < 10; j++) {
+    void print_datasample(int n, int d) {
+        int max1 = std::min(10,n);
+        int max2 = std::min(10,d);
+        for (int i = 0; i < max1; i++) {
+            for (int j = 0; j < max2; j++) {
                 std::cout << data[i*d+j] << " ";
             }
             std::cout << "\n";
