@@ -4,7 +4,6 @@
 
 !*/
 *.csv
-*.h5
 *.nxs
 *ncdf
 .vscode/
@@ -18,4 +17,3 @@ __pycache__/
 *.o
 *.so
 *.dll
-/Data
