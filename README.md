@@ -14,5 +14,7 @@ Installation guide: https://docs.github.com/en/repositories/working-with-files/m
 
 They can be found in Data/ folder and converted to another format using pandas. *NOTE:* The provided files have not been DCT transformed. You must do so first to obtain the best performance from MARIGOLD.  
 
+If the above fails then the Git LFS is out of storage. Please contact the authors to get the data provided.
+
 
 [DeepGlobe](https://openaccess.thecvf.com/content_cvpr_2018_workshops/papers/w4/Demir_DeepGlobe_2018_A_CVPR_2018_paper.pdf) Land Cover can be found online. Here is a current link: https://www.kaggle.com/datasets/balraj98/deepglobe-land-cover-classification-dataset/data
